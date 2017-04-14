@@ -49,24 +49,38 @@ pos = np.array([0,0])
 cDir = dirn.N
 
 posL = [];          
-for entry in listIn:
+for j, entry in enumerate(listIn):
     turn = turns[entry[0]]
     #assert(turn == 'L' or turn == 'R')
     dist = int(entry[1:])
     
     cDir = dirn((cDir.value + turn.value)%4)
     
-    pos = pos + (dist * cDir.vector())
-    posL.append(pos) 
+    moves = []
+    for i in range(1,dist+1):    
+        moves.append(pos + i*cDir.vector())
     
-    print(turn.name + ':' + str(dist) + '   ' + cDir.name + ' - ' + str(pos.tolist()))
+    pos = pos + (dist * cDir.vector())
+    
+    
+    print(str(j) + ': ' + turn.name + ':' + str(dist) + '   ' + cDir.name + ' - ' + str(pos.tolist()))
 
     
-    #if len(posL)>1:
-        #inHist = (pos == posL[:-1]).all(1)
-        #if inHist.any():
-            #pass # for first part
-            #break # for second part
+    found = False
+    if len(posL)>1:
+        #print(moves)
+        for move in moves:
+            #print(move)
+            inHist = (move == posL[:-1]).all(1)
+            if inHist.any():
+                found = True
+                break # for second part
+        if found:
+            foundInds = [i for i,b in enumerate(inHist) if b]
+            endPos = posL[foundInds[0]]
+            break
+    posL+=(moves)
     
-totalDist = sum(abs(pos))
-print(totalDist)
+totalDist = sum(abs(endPos))
+print('End pos: ' + str(endPos))
+print('Distance from origin: ' + str(totalDist))
