@@ -23,11 +23,18 @@ lines = inStr.splitlines()
 keypad = [[1,2,3],
           [4,5,6],
           [7,8,9]];
+keypad = [['#','#','1','#','#'],
+          ['#','2','3','4','#'],
+          ['5','6','7','8','9'],
+          ['#','A','B','C','#'],
+          ['#','#','D','#','#']]
           
-pos = [1,1];
+pos = [2,0];
 code = []
 for line in lines:
     for char in line:
+        prevPos = list(pos)
+        print(pos)
         if   char == 'U':
             pos[0] -= 1
         elif char == 'D':
@@ -48,7 +55,9 @@ for line in lines:
             pos[1] = 0
         if pos[1] >= len(keypad[0]):
             pos[1] = len(keypad[0])-1
-            
+        if keypad[pos[0]][pos[1]] == '#':
+            pos = prevPos
+        print(pos)
         print(keypad[pos[0]][pos[1]])
         
     code.append(keypad[pos[0]][pos[1]])
