@@ -13,6 +13,12 @@ def testPart1():
     data = np.loadtxt('input.txt')
     assert day2.checksum(data) == 43074
 
+def test2():
+    data = [[5, 9, 2, 8],
+            [9, 4, 7, 3],
+            [3, 8, 6, 5]]
+    assert day2.checksum(data, True) == 9
+
 #def test2():
 #	assert day1.captcha('1111') == 4
 #
