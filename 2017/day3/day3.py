@@ -1,5 +1,26 @@
 import math
 from typing import Tuple
+from enum import Enum
+
+
+class Direction(Enum):
+    NORTH = (0, 1)
+    SOUTH = (0, -1)
+    EAST = (1, 0)
+    WEST = (-1, 0)
+
+    def turn_left(self):
+        if self == Direction.NORTH:
+            out = Direction.WEST
+        elif self == Direction.WEST:
+            out = Direction.SOUTH
+        elif self == Direction.SOUTH:
+            out = Direction.EAST
+        elif self == Direction.EAST:
+            out = Direction.NORTH
+        else:
+            raise ValueError
+        return out
 
 
 def manhattan_dist(pt1: Tuple[int, int], pt2: Tuple[int, int]) -> int:
@@ -19,21 +40,6 @@ def add_pos(pt1: Tuple[int, int], pt2: Tuple[int, int]) -> Tuple[int, int]:
     return pt1[0]+pt2[0], pt1[1]+pt2[1]
 
 
-def turn_left(dir_in: Tuple[int, int]) -> Tuple[int, int]:
-    if dir_in == (0, 1):
-        dir_out = (-1, 0)
-    elif dir_in == (-1, 0):
-        dir_out = (0, -1)
-    elif dir_in == (0, -1):
-        dir_out = (1, 0)
-    elif dir_in == (1, 0):
-        dir_out = (0, 1)
-    else:
-        raise ValueError
-
-    return dir_out
-
-
 def spiral_distance_quick(n: int) -> int:
     if n == 1:
         return 0
@@ -44,15 +50,15 @@ def spiral_distance_quick(n: int) -> int:
     start_coord = int((turn-1)/2)
     pos = (start_coord, -(start_coord-1))
 
-    direct = (0, 1)
+    direct = Direction.NORTH
     pts_moved = 0
     while pts_left > 0:
         pts_left -= 1
         pts_moved += 1
-        pos = add_pos(pos, direct)
-        if (direct == (0, 1) and pts_moved >= turn-2) or pts_moved >= turn-1:
+        pos = add_pos(pos, direct.value)
+        if (direct == Direction.NORTH and pts_moved >= turn-2) or pts_moved >= turn-1:
             pts_moved = 0
-            direct = turn_left(direct)
+            direct = direct.turn_left()
 
     dist = manhattan_dist(pos, (0, 0))
 
@@ -62,13 +68,14 @@ def spiral_distance_quick(n: int) -> int:
 def spiral_distance_full(n: int) -> int:
     return 0
 
-def spiral_distance(n: int, full_spiral: bool=False) -> int:
 
+def spiral_distance(n: int, full_spiral: bool=False) -> int:
     if full_spiral:
         dist = spiral_distance_full(n)
     else:
         dist = spiral_distance_quick(n)
     return dist
+
 
 def main() -> int:
     input_n = 368078
