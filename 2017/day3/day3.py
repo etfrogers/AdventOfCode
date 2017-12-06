@@ -1,6 +1,7 @@
 import math
 from typing import Tuple
 from enum import Enum
+import numpy as np
 
 
 class Direction(Enum):
@@ -21,6 +22,39 @@ class Direction(Enum):
         else:
             raise ValueError
         return out
+
+    def move(self, pos: Tuple[int, int]):
+        return add_pos(pos, self.value)
+
+
+class SpiralMemory:
+    def __init__(self, size):
+        self._size = size
+        self._data = np.zeros((size, size), dtype=np.int)
+
+    # get_val and set_val take pos in units such that (0, 0) is the centre
+
+    def set_val(self, pos: Tuple[int, int], val: int):
+        self._data[self._to_local_units(pos)] = val
+
+    def get_val(self, pos: Tuple[int, int]) -> int:
+        return self._data[self._to_local_units(pos)]
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def _offset(self) -> Tuple[int, int]:
+        ov = -int(math.ceil(self._size/2))
+        return ov, ov
+
+    def _to_local_units(self, pos: Tuple[int, int]) -> Tuple[int, int]:
+        new_pos = add_pos(pos, self._offset)
+        return new_pos[1], new_pos[0]
+
+    def __str__(self):
+        return str(self._data)
 
 
 def manhattan_dist(pt1: Tuple[int, int], pt2: Tuple[int, int]) -> int:
@@ -55,18 +89,36 @@ def spiral_distance_quick(n: int) -> int:
     while pts_left > 0:
         pts_left -= 1
         pts_moved += 1
-        pos = add_pos(pos, direct.value)
+        pos = direct.move(pos)
         if (direct == Direction.NORTH and pts_moved >= turn-2) or pts_moved >= turn-1:
             pts_moved = 0
             direct = direct.turn_left()
 
     dist = manhattan_dist(pos, (0, 0))
-
     return dist
 
 
 def spiral_distance_full(n: int) -> int:
-    return 0
+    if n == 1:
+        return 0
+    outer_turn = get_turn(n)
+    mem = SpiralMemory(outer_turn)
+
+    pos = (0, 0)
+    direct = Direction.EAST
+    val = 1
+    while val <= n:
+        mem.set_val(pos, val)
+        val += 1
+        old_pos = pos
+        pos = direct.move(pos)
+        pos_to_left = direct.turn_left().move(pos)
+        if mem.get_val(pos_to_left) == 0:
+            direct = direct.turn_left()
+        #print(mem)
+
+    dist = manhattan_dist(old_pos, (0, 0))
+    return dist
 
 
 def spiral_distance(n: int, full_spiral: bool=False) -> int:
@@ -78,8 +130,8 @@ def spiral_distance(n: int, full_spiral: bool=False) -> int:
 
 
 def main() -> int:
-    input_n = 368078
-    dist = spiral_distance(input_n)
+    input_n = 12
+    dist = spiral_distance(input_n, True)
     print(dist)
     return 0
 
