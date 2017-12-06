@@ -32,6 +32,22 @@ class SpiralMemory:
         self._size = size
         self._data = np.zeros((size, size), dtype=np.int)
 
+    def fill_to_value(self, n: int) -> Tuple[int, int]:
+        pos = (0, 0)
+        direct = Direction.EAST
+        val = 1
+        old_pos = pos
+        while val <= n:
+            self.set_val(pos, val)
+            val += 1
+            old_pos = pos
+            pos = direct.move(pos)
+            pos_to_left = direct.turn_left().move(pos)
+            if self.get_val(pos_to_left) == 0:
+                direct = direct.turn_left()
+            # print(mem)
+        return old_pos
+
     # get_val and set_val take pos in units such that (0, 0) is the centre
 
     def set_val(self, pos: Tuple[int, int], val: int):
@@ -99,25 +115,11 @@ def spiral_distance_quick(n: int) -> int:
 
 
 def spiral_distance_full(n: int) -> int:
-    if n == 1:
-        return 0
     outer_turn = get_turn(n)
     mem = SpiralMemory(outer_turn)
+    pos = mem.fill_to_value(n)
 
-    pos = (0, 0)
-    direct = Direction.EAST
-    val = 1
-    while val <= n:
-        mem.set_val(pos, val)
-        val += 1
-        old_pos = pos
-        pos = direct.move(pos)
-        pos_to_left = direct.turn_left().move(pos)
-        if mem.get_val(pos_to_left) == 0:
-            direct = direct.turn_left()
-        #print(mem)
-
-    dist = manhattan_dist(old_pos, (0, 0))
+    dist = manhattan_dist(pos, (0, 0))
     return dist
 
 
