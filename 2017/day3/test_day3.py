@@ -29,6 +29,7 @@ def test_spiral_distance3():
 def test_spiral_distance4():
     assert day3.spiral_distance(1024) == 31
 
+
 def test_spiral_distance5():
     assert day3.spiral_distance(1, True) == 0
 
@@ -43,3 +44,12 @@ def test_spiral_distance7():
 
 def test_spiral_distance8():
     assert day3.spiral_distance(1024, True) == 31
+
+
+def test_spiral_distance9():
+    assert day3.spiral_distance(368078, False) == 371
+
+
+def test_spiral_distance9():
+    assert day3.spiral_distance(368078, True) == 371
+
