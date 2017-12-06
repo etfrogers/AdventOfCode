@@ -1,5 +1,5 @@
 import math
-from typing import Tuple
+from typing import Tuple, List
 from enum import Enum
 import numpy as np
 
@@ -48,7 +48,30 @@ class SpiralMemory:
             # print(mem)
         return old_pos
 
-    # get_val and set_val take pos in units such that (0, 0) is the centre
+    def stress_test_to_val(self, n: int) -> int:
+        pos = (0, 0)
+        direct = Direction.EAST
+        val = 1
+        while val <= n:
+            self.set_val(pos, val)
+            pos = direct.move(pos)
+            val = self.sum_of_neighbours(pos)
+            pos_to_left = direct.turn_left().move(pos)
+            if self.get_val(pos_to_left) is None or self.get_val(pos_to_left) == 0:
+                direct = direct.turn_left()
+            print(self)
+        return val
+
+    def sum_of_neighbours(self, pos: Tuple[int, int]) -> int:
+        nbours = self.get_neighbours(pos)
+        nbour_values = [self.get_val(n) for n in nbours]
+        return sum(nbour_values)
+
+    def get_neighbours(self, pos: Tuple[int, int]) -> List[Tuple[int, int]]:
+        all_neighbours = [add_pos(pos, (i, j)) for i in [-1, 0, 1] for j in [-1, 0, 1]]
+        neighbours_local = [self._to_local_units(p) for p in all_neighbours]
+        neighbours = [n for (n, c) in zip(all_neighbours, neighbours_local) if self.in_bounds(c)]
+        return neighbours
 
     def in_bounds(self, pos):
         return all([c > 0 for c in pos]) and all([c < self._size for c in pos])
@@ -134,6 +157,13 @@ def spiral_distance_full(n: int) -> int:
     return dist
 
 
+def stress_test(n: int) -> int:
+    outer_turn = get_turn(n)
+    mem = SpiralMemory(outer_turn)
+    output = mem.stress_test_to_val(n)
+    return output
+
+
 def spiral_distance(n: int, full_spiral: bool=False) -> int:
     if full_spiral:
         dist = spiral_distance_full(n)
@@ -143,8 +173,9 @@ def spiral_distance(n: int, full_spiral: bool=False) -> int:
 
 
 def main() -> int:
-    input_n = 12
-    dist = spiral_distance(input_n, True)
+    input_n = 368078
+    dist = stress_test(input_n)
+    #dist = spiral_distance(input_n, True)
     print(dist)
     return 0
 
