@@ -43,18 +43,29 @@ class SpiralMemory:
             old_pos = pos
             pos = direct.move(pos)
             pos_to_left = direct.turn_left().move(pos)
-            if self.get_val(pos_to_left) == 0:
+            if self.get_val(pos_to_left) is None or self.get_val(pos_to_left) == 0:
                 direct = direct.turn_left()
             # print(mem)
         return old_pos
 
     # get_val and set_val take pos in units such that (0, 0) is the centre
 
+    def in_bounds(self, pos):
+        return all([c > 0 for c in pos]) and all([c < self._size for c in pos])
+
+    # get_val and set_val take pos in units such that (0, 0) is the centre
     def set_val(self, pos: Tuple[int, int], val: int):
-        self._data[self._to_local_units(pos)] = val
+        local_pos = self._to_local_units(pos)
+        self._data[local_pos] = val
 
     def get_val(self, pos: Tuple[int, int]) -> int:
-        return self._data[self._to_local_units(pos)]
+        local_pos = self._to_local_units(pos)
+        if self.in_bounds(local_pos):
+            value = self._data[local_pos]
+        else:
+            value = None
+        return value
+
 
     @property
     def data(self):
@@ -62,7 +73,7 @@ class SpiralMemory:
 
     @property
     def _offset(self) -> Tuple[int, int]:
-        ov = -int(math.ceil(self._size/2))
+        ov = int(math.floor(self._size/2))
         return ov, ov
 
     def _to_local_units(self, pos: Tuple[int, int]) -> Tuple[int, int]:
