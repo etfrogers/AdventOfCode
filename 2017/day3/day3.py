@@ -34,7 +34,7 @@ def turn_left(dir_in: Tuple[int, int]) -> Tuple[int, int]:
     return dir_out
 
 
-def spiral_distance(n: int) -> int:
+def spiral_distance_quick(n: int) -> int:
     if n == 1:
         return 0
     turn = get_turn(n)
@@ -58,6 +58,17 @@ def spiral_distance(n: int) -> int:
 
     return dist
 
+
+def spiral_distance_full(n: int) -> int:
+    return 0
+
+def spiral_distance(n: int, full_spiral: bool=False) -> int:
+
+    if full_spiral:
+        dist = spiral_distance_full(n)
+    else:
+        dist = spiral_distance_quick(n)
+    return dist
 
 def main() -> int:
     input_n = 368078
