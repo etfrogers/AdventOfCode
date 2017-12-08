@@ -15,7 +15,10 @@ def count_jumps(inst, part2=False):
     while in_bounds(inst, pos):
         # print(to_str(inst, pos))
         curr_inst = inst[pos]
-        inst[pos] += 1
+        if part2:
+            inst[pos] += -1 if (inst[pos] >= 3) else 1
+        else:
+            inst[pos] += 1
         pos = pos+curr_inst
         steps += 1
     return steps
@@ -28,7 +31,7 @@ def main():
     inst = [int(l) for l in inst]
     # inst = [0, 3, 0, 1, -3]
     print(inst)
-    count = count_jumps(inst)
+    count = count_jumps(inst, True)
     print(count)
 
 
