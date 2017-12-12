@@ -70,10 +70,12 @@ def build_memory(instructions):
     instructions = [parse_instruction(instr) for instr in instructions]
     #print([str(instr) for instr in instructions])
     bank = Memory()
+    all_time_max = 0
     for instr in instructions:
         bank.apply_instruction(instr)
+        all_time_max = max([all_time_max, bank.max_value()])
     print(bank)
-    return bank.max_value()
+    return bank.max_value(), all_time_max
 
 
 def main():
@@ -81,8 +83,9 @@ def main():
         instructions = file.readlines()
     instructions = [line.strip() for line in instructions]
     #print(instructions)
-    max_val = build_memory(instructions)
-    print(max_val)
+    max_vals = build_memory(instructions)
+    print(max_vals)
+
 
 if __name__ == '__main__':
     main()
