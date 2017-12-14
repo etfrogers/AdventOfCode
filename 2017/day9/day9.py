@@ -5,6 +5,7 @@ def process_stream(stream):
     scores = []
     ignoring = False
     in_garbage = False
+    garbage_count = 0
 
     for char in stream:
         if ignoring:
@@ -16,6 +17,8 @@ def process_stream(stream):
         if in_garbage:
             if char == '>':
                 in_garbage = False
+                continue
+            garbage_count += 1
             continue
         if char == '{':
             depth += 1
@@ -27,16 +30,16 @@ def process_stream(stream):
             scores.append(depth)
             depth -= 1
 
-    return len(scores), sum(scores)
+    return len(scores), sum(scores), garbage_count
 
 
 def main():
     with open('input.txt', 'r') as file:
         stream = file.read()
     stream = stream.strip()
-    # stream = '{{<!>},{<!>},{<!>},{<a>}}'
-    n_groups, total_score = process_stream(stream)
-    print('%d groups found. Total score was %d' % (n_groups, total_score))
+    # stream = '<random characters>'
+    results = process_stream(stream)
+    print('%d groups found. Total score was %d. Garbage count was %d' % results)
 
 
 if __name__ == '__main__':
