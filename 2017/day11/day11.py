@@ -14,7 +14,7 @@ def hex_walk(instructions):
         dir = directions[instruction]
         pos = [p+d for p, d in zip(pos, dir)]
         all_dists.append(hex_dist(pos))
-    return pos
+    return pos, all_dists
 
 
 def hex_dist(pos):
@@ -27,8 +27,8 @@ def main():
     path = path.strip()
     path = path.split(',')
     # path = ['ne', 'ne', 's', 's']
-    pos = hex_walk(path)
-    print(hex_dist(pos))
+    pos, all_dists = hex_walk(path)
+    print(hex_dist(pos), max(all_dists))
 
 
 if __name__ == '__main__':
