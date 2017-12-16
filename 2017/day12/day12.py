@@ -41,11 +41,17 @@ def count_connections_to_node_zero(connections):
     return count_connections_to_node(graph, 0)
 
 
+def count_groups(connections):
+    connections = parse_connection_strings(connections)
+    graph = build_network(connections)
+    return networkx.number_connected_components(graph)
+
+
 def main():
     with open('input.txt', 'r') as file:
         connections = file.readlines()
     connections = [line.strip() for line in connections]
-    print(count_connections_to_node_zero(connections))
+    print(count_groups(connections))
 
 
 if __name__ == '__main__':
