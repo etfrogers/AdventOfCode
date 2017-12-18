@@ -26,14 +26,21 @@ class Firewall:
             self.reset()
             self.run(delay)
             finished = (not self.ever_caught) or delay > 2000
-            # print(delay)
+            print(delay)
         return delay
 
-    def run(self, delay=0):
+    def run(self, delay=None):
+        if delay is None:
+            early_break = False
+            delay = 0
+        else:
+            early_break = True
         for _ in range(delay):
             self.step_scanners()
         while self.packet_pos < self._length - 1:
-            self.step() 
+            self.step()
+            if early_break and self.ever_caught:
+                break
 
     def step(self):
         self.step_packet()
