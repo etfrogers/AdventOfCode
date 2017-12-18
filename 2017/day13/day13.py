@@ -25,8 +25,8 @@ class Firewall:
             delay += 1
             self.reset()
             self.run(delay)
-            finished = (not self.ever_caught)
-            print(delay)
+            finished = (not self.ever_caught) or delay > 2000
+            # print(delay)
         return delay
 
     def run(self, delay=0):
@@ -41,12 +41,10 @@ class Firewall:
             self.severities.append(self.get_severity())
         self.step_scanners()
 
+    # noinspection PyAttributeOutsideInit
     def step_scanners(self):
-        for ii in range(self._length):
-            if self.ranges[ii] > 0:
-                self.scanner_pos[ii] += self.dirs[ii]
-                if self.scanner_pos[ii] == self.ranges[ii] - 1 or self.scanner_pos[ii] == 0:
-                    self.dirs[ii] *= -1
+        self.scanner_pos = [p + d if p is not None else None for p, d in zip(self.scanner_pos, self.dirs)]
+        self.dirs = [(d * (-1 if (p == r - 1) or p == 0 else 1)) if d is not None else None for d, p, r in zip(self.dirs, self.scanner_pos, self.ranges)]
 
     def step_packet(self):
         self.packet_pos += 1
