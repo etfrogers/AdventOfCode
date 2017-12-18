@@ -1,6 +1,12 @@
 
 class Firewall:
     def __init__(self, specs):
+        self._saved_specs = specs
+        self.reset()
+
+    # noinspection PyAttributeOutsideInit
+    def reset(self):
+        specs = self._saved_specs
         self._length = max([depth for depth, _ in specs])+1
         self.packet_pos = -1
         self.ranges = [0 for _ in range(self._length)]
@@ -12,7 +18,20 @@ class Firewall:
             self.dirs[depth] = 1 if scan_range > 1 else 0
         self.severities = []
 
-    def run(self):
+    def find_delay(self):
+        delay = -1
+        finished = False
+        while not finished:
+            delay += 1
+            self.reset()
+            self.run(delay)
+            finished = (not self.ever_caught)
+            print(delay)
+        return delay
+
+    def run(self, delay=0):
+        for _ in range(delay):
+            self.step_scanners()
         while self.packet_pos < self._length - 1:
             self.step() 
 
@@ -38,8 +57,13 @@ class Firewall:
     def get_severity(self):
         return self.packet_pos * self.ranges[self.packet_pos]
 
+    @property
     def total_severity(self):
         return sum(self.severities)
+
+    @property
+    def ever_caught(self):
+        return len(self.severities) > 0
 
 
 def parse_firewall_line(line):
@@ -60,8 +84,9 @@ def main():
     print(firewall_spec)
 
     firewall = Firewall(firewall_spec)
-    firewall.run()
-    print(firewall.total_severity())
+    # firewall.run(10)
+    delay = firewall.find_delay()
+    print(delay)
 
 
 if __name__ == '__main__':
