@@ -25,8 +25,9 @@ class Firewall:
             delay += 1
             self.reset()
             self.run(delay)
-            finished = (not self.ever_caught) or delay > 2000
-            print(delay)
+            finished = (not self.ever_caught)
+            if delay % 1000 == 0:
+                print(delay)
         return delay
 
     def run(self, delay=None):
@@ -35,8 +36,15 @@ class Firewall:
             delay = 0
         else:
             early_break = True
-        for _ in range(delay):
-            self.step_scanners()
+
+        for i in range(self._length):
+            if self.ranges[i] != 0:
+                poss_pos = list(range(self.ranges[i])) + list(range(self.ranges[i] - 2, 0, -1))
+                poss_dirs = [1 for _ in range(self.ranges[i]-1)] + [-1 for _ in range(self.ranges[i] - 1)]
+                ind = delay % len(poss_pos)
+                self.scanner_pos[i] = poss_pos[ind]
+                self.dirs[i] = poss_dirs[ind]
+
         while self.packet_pos < self._length - 1:
             self.step()
             if early_break and self.ever_caught:
@@ -51,7 +59,8 @@ class Firewall:
     # noinspection PyAttributeOutsideInit
     def step_scanners(self):
         self.scanner_pos = [p + d if p is not None else None for p, d in zip(self.scanner_pos, self.dirs)]
-        self.dirs = [(d * (-1 if (p == r - 1) or p == 0 else 1)) if d is not None else None for d, p, r in zip(self.dirs, self.scanner_pos, self.ranges)]
+        self.dirs = [(d * (-1 if (p == r - 1) or p == 0 else 1)) if d is not None else None
+                     for d, p, r in zip(self.dirs, self.scanner_pos, self.ranges)]
 
     def step_packet(self):
         self.packet_pos += 1
@@ -85,13 +94,14 @@ def main():
         firewall_spec = file.readlines()
     firewall_spec = [line.strip() for line in firewall_spec]
     firewall_spec = parse_firewall_spec(firewall_spec)
-
     print(firewall_spec)
 
     firewall = Firewall(firewall_spec)
     # firewall.run(10)
     delay = firewall.find_delay()
     print(delay)
+
+    # answer to part 2 is 3921270 - it takes 10s of min to calculate this way...
 
 
 if __name__ == '__main__':
