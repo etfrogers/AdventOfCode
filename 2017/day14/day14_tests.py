@@ -37,3 +37,15 @@ def test_part1():
     key = 'jzgqcdpd'
     bits = day14.build_grid(128, key)
     assert day14.count_used_bits(bits) == 8074
+
+
+def test_count_regions():
+    key = 'flqrgnkx'
+    bits = day14.build_grid(128, key)
+    assert day14.count_regions(bits) == 1242
+
+
+def test_part2():
+    key = 'jzgqcdpd'
+    bits = day14.build_grid(128, key)
+    assert day14.count_regions(bits) == 1212

@@ -1,4 +1,6 @@
 import sys
+import scipy.ndimage as ndimage
+import numpy as np
 sys.path.insert(0, r'C:\Users\Ed\Dropbox (Personal)\AOC\2017\day10')
 # noinspection PyUnresolvedReferences
 import day10
@@ -22,12 +24,18 @@ def count_used_bits(bits):
     return sum([row.count('1') for row in bits])
 
 
+def count_regions(bits):
+    bit_array = np.array([[int(b) for b in row] for row in bits])
+    _, nr_objects = ndimage.label(bit_array)
+    return nr_objects
+
+
 def main():
     key = 'jzgqcdpd'   # main input
     # key = 'flqrgnkx'   # test input
     grid_size = 128
     bits = build_grid(grid_size, key)
-    print(count_used_bits(bits))
+    print(count_regions(bits))
 
 
 if __name__ == '__main__':
