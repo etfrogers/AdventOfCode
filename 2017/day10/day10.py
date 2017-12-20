@@ -49,7 +49,7 @@ def full_hash(n, string):
     hash = np.array(range(0, n))
     position = 0
     skip_size = 0
-    for i in range(0,64):
+    for i in range(0, 64):
         hash, position, skip_size = do_knot_hash(hash, lengths, position, skip_size)
 
     dense_hash = sparse_to_dense(hash)
