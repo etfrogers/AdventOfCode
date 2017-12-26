@@ -14,9 +14,7 @@ class Dancers:
         self._formation = self._formation[-n:] + self._formation[:len(self._formation) - n]
 
     def exchange(self, i1, i2):
-        temp = self._formation[i1]
-        self._formation[i1] = self._formation[i2]
-        self._formation[i2] = temp
+        self._formation[i1], self._formation[i2] = self._formation[i2], self._formation[i1]
 
     def partner(self, p1, p2):
         self.exchange(self._formation.index(p1), self._formation.index(p2))
