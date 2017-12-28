@@ -3,8 +3,7 @@ from enum import Enum
 
 class Speed(Enum):
     SLOW = 0
-    FASTER = 1
-    FASTEST = 2
+    FAST = 1
 
 
 class Dancers:
@@ -47,76 +46,46 @@ class Dancers:
     def perform(self, moves):
         [self.do_move(move) for move in moves]
 
-    def store_reposition(self):
-        self.reposition = [self.char_list().index(c) for c in self._formation]
-        print(self.reposition)
-
-    def apply_reposition(self):
-        if self.reposition is None:
-            raise AttributeError
-        else:
-            # self._formation = [self._formation[i] for i in self.reposition]
-            print('-------------------')
-            print('Applying reposition')
-            print('State before')
-            print(self.formation)
-            for j, i in enumerate(self.reposition):
-                print('%d - %d: %s' % (j, i, self._formation[i]))
-            self._formation = [self._formation[i] for i in self.reposition]
-            print('State after')
-            print(self.formation)
-            print('Finished reposition')
-            print('-------------------')
-
-    def whole_dance(self, moves, reps, speed=Speed.FASTEST):
+    def whole_dance(self, moves, reps, speed=Speed.FAST):
         self.reset()
         if speed == speed.SLOW:
             for _ in range(reps):
                 self.perform(moves)
             return None
 
-        self.perform(moves)
-        self.store_reposition()
-        self.reset()
-
-        configs = []
+        configs = [self.formation]
         for i in range(0, reps):
-            self.apply_reposition()
-            if speed == Speed.FASTEST:
-                if self.formation in configs:
-                    break
-                configs.append(self.formation)
-            # if i % 10000 == 0:
-        if speed == Speed.FASTER:
-            return None
-        else:  # speed = Speed.FASTEST
-            pre_len = configs.index(self.formation)
-            #print(pre_len)
-            loop_len = len(configs)-pre_len
-            remainder = (reps - pre_len) % loop_len
+            self.perform(moves)
+            if self.formation in configs:
+                break
+            configs.append(self.formation)
+            #if i % 10 == 0:
+            print(i)
+        pre_len = configs.index(self.formation)
+        # print(pre_len)
+        loop_len = len(configs)-pre_len
+        remainder = (reps - pre_len) % loop_len
 
-            self._formation = configs[remainder]
-            # print(self.formation)
+        self._formation = configs[remainder]
+        # print(self.formation)
 
 
 def main():
     reps = int(1e9)
-    reps = int(1e6)
-    with open('test_input.txt', 'r') as file:
+    # reps = int(1e6)
+    with open('input.txt', 'r') as file:
         dance_moves = file.read()
     dance_moves = dance_moves.strip()
     dance_moves = dance_moves.split(',')
-    dancers = Dancers(5, 'a')
+    dancers = Dancers(16)
 
-    reps = 50
-    dancers.whole_dance(dance_moves, reps, Speed.SLOW)
-    slow_formation = dancers.formation
-    print(slow_formation)
-    dancers.store_reposition()
-    print(dancers.reposition)
-    dancers.whole_dance(dance_moves, reps, Speed.FASTER)
-    faster_formation = dancers.formation
-    print(faster_formation)
+    # reps = 50
+    # dancers.whole_dance(dance_moves, reps, Speed.SLOW)
+    # slow_formation = dancers.formation
+    dancers.whole_dance(dance_moves, reps, Speed.FAST)
+    # faster_formation = dancers.formation
+    #assert slow_formation == faster_formation
+    print(dancers.formation)
 
 
 if __name__ == '__main__':
