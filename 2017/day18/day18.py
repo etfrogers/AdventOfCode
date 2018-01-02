@@ -6,61 +6,69 @@ class SoundCard:
     def __init__(self, instruction_list):
         self.last_played = None
         self.registers = defaultdict(lambda: 0)
-        do_nothing = lambda x: x
-        self.instruction_dict = {'snd': {'func': self.sound, 'conv': chr},
-                                 'set': {'func': self.set, 'conv': [chr, int]},
-                                 'add': {'func': self.add, 'conv': [chr, int]},
-                                 'mul': {'func': self.multiply, 'conv': [chr, int]},
-                                 'mod': {'func': self.modulo, 'conv': [chr, int]},
-                                 'rcv': {'func': self.recover, 'conv': chr},
-                                 'jgz': {'func': self.jump, 'conv': chr},
+        self.instruction_dict = {'snd': self.sound,
+                                 'set': self.set,
+                                 'add': self.add,
+                                 'mul': self.multiply,
+                                 'mod': self.modulo,
+                                 'rcv': self.recover,
+                                 'jgz': self.jump,
                                  }
         self.instructions = [self.parse_instruction(i) for i in instruction_list]
         self.finished = False
         self.pointer = 0
+        self.jumped = False
 
     def execute(self):
         self.finished = False
         self.pointer = 0
         while not self.finished:
             instruction = self.instructions[self.pointer]
+            instruction['func'](*instruction['args'])
+            if not self.jumped:
+                self.pointer += 1  # if not jumped?
+                self.jumped = False
 
-            self.pointer += 1  # if not jumped?
+    def get_value(self, value):
+        try:
+            val = int(value)
+        except ValueError:
+            val = self.registers[value]
+        return val
 
-    def sound(self, register):
-        self.last_played = self.registers[register]
+    def sound(self, value):
+        val = self.get_value(value)
+        self.last_played = val
+        print('Playing: %d' % val)
 
     def set(self, register, value):
-        self.registers[register] = value
+        self.registers[register] = self.get_value(value)
 
     def add(self, register, value):
-        self.registers[register] += value
+        self.registers[register] += self.get_value(value)
 
     def multiply(self, register, value):
-        self.registers[register] *= value
+        self.registers[register] *= self.get_value(value)
 
     def modulo(self, register, value):
-        self.registers[register] %= value
+        self.registers[register] %= self.get_value(value)
 
     def recover(self, register):
         if self.registers[register] != 0:
             print('Recovered value: %d' % self.last_played)
             self.finished = True
+            return self.last_played
 
     def jump(self, register, value):
         if self.registers[register] != 0:
-            self.pointer += value
+            self.pointer += self.get_value(value)
+            self.jumped = True
 
     def parse_instruction(self, instruction_text):
         tokens = instruction_text.split()
-        d = self.instruction_dict[tokens[0]]
-        convert = d['conv']
-        if len(tokens) > 2:
-            args = (f(*v) for f, v in zip(convert, tokens[1:]))
-        else:
-            args = convert(tokens[1])
-        instruction = {'func': d['func'],
-                       'args': args}
+        print(tokens)
+        args = tuple(tokens[1:])
+        instruction = {'func': self.instruction_dict[tokens[0]], 'args': args}
         return instruction
 
 
@@ -70,7 +78,7 @@ def main():
     instructions = [line.strip() for line in instructions]
     print(instructions)
     snd = SoundCard(instructions)
-    snd.execute()
+    print(snd.execute())
 
 
 if __name__ == '__main__':
