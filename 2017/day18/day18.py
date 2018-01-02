@@ -22,12 +22,15 @@ class SoundCard:
     def execute(self):
         self.finished = False
         self.pointer = 0
-        while not self.finished:
+        retval = None
+        while retval is None:
             instruction = self.instructions[self.pointer]
-            instruction['func'](*instruction['args'])
+            # print(instruction)
+            retval = instruction['func'](*instruction['args'])
             if not self.jumped:
-                self.pointer += 1  # if not jumped?
-                self.jumped = False
+                self.pointer += 1
+            self.jumped = False
+        return retval
 
     def get_value(self, value):
         try:
@@ -56,7 +59,6 @@ class SoundCard:
     def recover(self, register):
         if self.registers[register] != 0:
             print('Recovered value: %d' % self.last_played)
-            self.finished = True
             return self.last_played
 
     def jump(self, register, value):
@@ -66,14 +68,14 @@ class SoundCard:
 
     def parse_instruction(self, instruction_text):
         tokens = instruction_text.split()
-        print(tokens)
+        # print(tokens)
         args = tuple(tokens[1:])
         instruction = {'func': self.instruction_dict[tokens[0]], 'args': args}
         return instruction
 
 
 def main():
-    with open('test_input.txt', 'r') as file:
+    with open('input.txt', 'r') as file:
         instructions = file.readlines()
     instructions = [line.strip() for line in instructions]
     print(instructions)
