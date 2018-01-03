@@ -25,6 +25,7 @@ class Direction(Point):
 class Diagram:
     def __init__(self, diagram):
         self.data = diagram
+        self.counter = 0
 
     def __getitem__(self, item):
         if item.y < 0 or item.y >= len(self.data):
@@ -38,12 +39,14 @@ class Diagram:
         return Point(x_coord, 0)
 
     def walk(self, start_point, direction):
+        self.counter = 0  # to get into the diagram
         pt = start_point
         curr_dir = direction
         letter_stack = []
         letters = [chr(v) for v in range(ord('A'), ord('Z')+1)]
         finished = False
         while not finished:
+            self.counter += 1
             pt = pt + curr_dir
             char = self[pt]
             # print(char)
@@ -81,7 +84,7 @@ def main():
     direction = Direction(0, 1)
     print(diagram)
     letter_stack = diagram.walk(pt, direction)
-    print(''.join(letter_stack))
+    print(diagram.counter)
 
 
 if __name__ == '__main__':
