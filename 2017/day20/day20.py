@@ -1,4 +1,5 @@
 import re
+from collections import Counter
 vec_re = re.compile('[pva]=<([0-9, -]*)>')
 
 
@@ -10,6 +11,18 @@ class Vector:
 
     def norm(self):
         return abs(self.x) + abs(self.y) + abs(self.z)
+
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+        self.z += other.z
+        return self
+
+    def __str__(self):
+        return '<%i,%i,%i>' % (self.x, self.y, self.z)
 
 
 class Particle:
@@ -25,6 +38,13 @@ class Particle:
         # print(parts)
         return (string_to_vec(p) for p in parts)
 
+    def tick(self):
+        self.v += self.a
+        self.p += self.v
+
+    def __str__(self):
+        return str(self.p)
+
 
 def string_to_vec(string):
     match = re.match(vec_re, string)
@@ -35,12 +55,24 @@ def string_to_vec(string):
 
 def get_closest_to_zero_long_term(particles):
     sorted_particles = sorted(particles, key=lambda p: p.a.norm())
-    # for i, p in enumerate(sorted_particles):
-    #     print(i, p.a.norm())
     low_velocity_particles = [p for p in particles if p.a.norm() == sorted_particles[0].a.norm()]
-    # print(low_velocity_particles)
     sorted_low_v_particles = sorted(low_velocity_particles, key=lambda p: p.v.norm())
     return particles.index(sorted_low_v_particles[0])
+
+
+def tick(particles):
+    for p in particles:
+        p.tick()
+
+
+def iterate(particles):
+    for i in range(1000):
+        tick(particles)
+        # remove particles with duplicate positions
+        positions = [str(p) for p in particles]
+        pos_counts = Counter(positions)
+        particles = [part for pos, part in zip(positions, particles) if pos_counts[pos] == 1]
+    return particles
 
 
 def main():
@@ -49,9 +81,10 @@ def main():
     specs = [spec.strip() for spec in specs]
 
     particles = [Particle(*Particle.parse_spec(spec)) for spec in specs]
-    print(particles)
-    target = get_closest_to_zero_long_term(particles)
-    print(target)
+    print([str(p) for p in particles])
+    particles = iterate(particles)
+    print([str(p) for p in particles])
+    print(len(particles))
 
 
 if __name__ == '__main__':
