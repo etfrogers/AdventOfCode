@@ -21,3 +21,14 @@ def test_part1():
     image = day21.Pattern(day21.start_pattern)
     image.enhance_cycle(n_iter, rulebook)
     assert image.number_of_pixels() == 133
+
+
+def test_part2():
+    with open('input.txt', 'r') as file:
+        rules = file.readlines()
+    rules = [rule.strip() for rule in rules]
+    rulebook = day21.RuleBook(rules)
+    n_iter = 18
+    image = day21.Pattern(day21.start_pattern)
+    image.enhance_cycle(n_iter, rulebook)
+    assert image.number_of_pixels() == 2221990

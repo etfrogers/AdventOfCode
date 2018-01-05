@@ -61,8 +61,9 @@ class Pattern:
         side = math.sqrt(len(chunks))
         assert side == int(side)
         side = int(side)
-        lines = [np.concatenate([c.data for c in chunks[i:i+side]]) for i in range(0, len(chunks), side)]
-        self.data = np.concatenate(lines, axis=1)
+        lines = [np.concatenate([c.data for c in chunks[i:i+side]], axis=1)
+                 for i in range(0, len(chunks), side)]
+        self.data = np.concatenate(lines, axis=0)
 
     def enhance(self, rulebook):
         chunks = self.split()
@@ -104,8 +105,8 @@ def main():
     rules = [rule.strip() for rule in rules]
     rulebook = RuleBook(rules)
     print(len(rulebook.book))
-    n_iter = 5
-    print(str(rulebook))
+    n_iter = 18
+    # print(str(rulebook))
     image = Pattern(start_pattern)
     print(image.display_str())
     image.enhance_cycle(n_iter, rulebook)
