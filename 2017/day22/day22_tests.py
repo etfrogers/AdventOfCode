@@ -123,3 +123,10 @@ def test_count10000():
     assert vmap.infection_counter == 5587
 
 
+def test_part1():
+    with open('input.txt', 'r') as file:
+        map = file.readlines()
+    map = [line.strip() for line in map]
+    vmap = day22.VirusMap(map)
+    vmap.do_bursts(10000)
+    assert vmap.infection_counter == 5305
