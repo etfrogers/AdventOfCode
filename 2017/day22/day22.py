@@ -1,12 +1,24 @@
 import sys
 import os
 import numpy as np
+import collections
 
 rel_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'day19')
 sys.path.insert(0, rel_path)
 # noinspection PyUnresolvedReferences
-from day19 import Point
 import day19
+
+
+class Point(day19.Point):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    @property
+    def tuple(self):
+        return self.x, self.y
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
 
 
 class Direction(day19.Direction):
@@ -52,26 +64,22 @@ class VirusMap:
 
     CLEAN_CHAR = '.'
     INFECTED_CHAR = '#'
-    CLEAN = 0
-    INFECTED = 1
-    EXPANSION = 5
+    CLEAN = CLEAN_CHAR
+    INFECTED = INFECTED_CHAR
 
     CHAR_MAPPING = {CLEAN_CHAR: CLEAN, INFECTED_CHAR: INFECTED}
-    INT_MAPPING = {v: k for k,v in CHAR_MAPPING.items()}
+    INT_MAPPING = {v: k for k, v in CHAR_MAPPING.items()}
 
     def __init__(self, map_string_list):
         self.map = self.parse_map_string(map_string_list)
-        assert self.is_square()
-        self.pos = Point(*self.get_centre())
+        self.pos = Point(*self.get_centre(map_string_list))
         self.dir = Direction(*Direction.NORTH)
         self.infection_counter = 0
 
-    def get_centre(self):
-        return int((self.map.shape[0] - 1) / 2), int((self.map.shape[1] - 1) / 2)
-
-    @property
-    def shape(self):
-        return self.map.shape
+    @staticmethod
+    def get_centre(string_list):
+        assert all([len(line) == len(string_list[0]) for line in string_list])
+        return int((len(string_list[0]) - 1) / 2), int((len(string_list) - 1) / 2)
 
     @staticmethod
     def to_num(c):
@@ -79,21 +87,19 @@ class VirusMap:
 
     @staticmethod
     def parse_map_string(map_string_list):
+        new_map = collections.defaultdict(lambda: VirusMap.CLEAN)
         assert all([len(line) == len(map_string_list[0]) for line in map_string_list])
-        data = [[VirusMap.to_num(c) for c in line] for line in map_string_list]
-        return np.array(data)
+        for i, line in enumerate(map_string_list):
+            for j, c in enumerate(line):
+                if not c == VirusMap.CLEAN:
+                    new_map[(i, j)] = c
+        return new_map
 
     def __getitem__(self, item):
-        if item.x < 0 or item.y < 0 or item.x >= self.map.shape[1] or item.y >= self.map.shape[0]:
-            self.expand()
-            item = item + Point(self.EXPANSION, self.EXPANSION)
-        return self.map[item.y, item.x]
+        return self.map[item.tuple]
 
     def __setitem__(self, key, value):
-        if key.x < 0 or key.y < 0 or key.x >= self.map.shape[1] or key.y >= self.map.shape[0]:
-            self.expand()
-            key = key + Point(self.EXPANSION, self.EXPANSION)
-        self.map[key.y, key.x] = value
+        self.map[key.tuple] = value
 
     def burst(self):
         status = self[self.pos]
@@ -113,43 +119,53 @@ class VirusMap:
         for _ in range(n):
             self.burst()
 
-    def expand(self):
-        self.map = self.pad(self.map, (self.EXPANSION, self.EXPANSION))
-        # shift point to maintain position relative to previous cells
-        self.pos += Point(self.EXPANSION, self.EXPANSION)
-        assert self.is_square()
-
-    def is_square(self):
-        return len(set(self.map.shape)) == 1
-
-    @staticmethod
-    def pad(array, pad_width):
-        return np.pad(array, pad_width, mode='constant', constant_values=VirusMap.CLEAN)
-
     def __eq__(self, other):
-        self_m = self.map.copy()
-        other_m = other.map.copy()
-        assert len(set(self_m.shape)) == 1
-        assert len(set(other_m.shape)) == 1
-        len_self = self_m.shape[0]
-        len_other = other_m.shape[0]
-        if len_self < len_other:
-            padding = int((len_other - len_self) / 2)
-            self_m = self.pad(self_m, (padding, padding))
-        if len_self > len_other:
-            padding = int((len_self - len_other) / 2)
-            other_m = self.pad(other_m, (padding, padding))
-        return np.all(self_m == other_m)
+        self_vals = self.map.values()
+        self_xs, self_ys = zip(*self.map.keys())
+        other_vals = other.map.values()
+        other_xs, other_ys = zip(*other.map.keys())
+
+        # TODO take out condition? Not sure it is needed as long as we normalise, it doesn't matter
+        # which one we normalise to
+        if min(self_xs) > min(other_xs):
+            self_xs = [s - min(self_xs) + min(other_xs) for s in self_xs]
+        elif min(other_xs) > min(self_xs):
+            other_xs = [o - min(other_xs) + min(self_xs) for o in other_xs]
+
+        if min(self_ys) > min(other_ys):
+            self_ys = [s - min(self_ys) + min(other_ys) for s in self_ys]
+        elif min(other_ys) > min(self_ys):
+            other_ys = [o - min(other_ys) + min(self_ys) for o in other_ys]
+
+        return all(x1 == x2 and y1 == y2 and v1 == v2 for (x1, y1, v1, x2, y2, v2) in
+                   zip(self_xs, self_ys, self_vals, other_xs, other_ys, other_vals))
 
 
 def main():
-    with open('input.txt', 'r') as file:
+    # with open('input.txt', 'r') as file:
+    #     map = file.readlines()
+    # map = [line.strip() for line in map]
+    # vmap = VirusMap(map)
+    # print(vmap.map)
+    # vmap.do_bursts(10000)
+    # print(vmap.infection_counter)
+
+    with open('test_input.txt', 'r') as file:
         map = file.readlines()
     map = [line.strip() for line in map]
     vmap = VirusMap(map)
-    print(vmap.map)
-    vmap.do_bursts(10000)
-    print(vmap.infection_counter)
+    vmap.do_bursts(2)
+    string = '''.........
+.........
+.........
+.....#...
+....#....
+.........
+.........
+.........
+.........'''
+    test_map = VirusMap(string.split('\n'))
+    assert test_map == vmap
 
 
 if __name__ == '__main__':
