@@ -26,6 +26,7 @@ class Point(day19.Point):
         return self
 
 
+# noinspection PyAttributeOutsideInit
 class Direction(day19.Direction):
 
     NORTH = (0, -1)
@@ -64,31 +65,29 @@ class Direction(day19.Direction):
             raise ValueError
         self.x, self.y = new
 
+    def reverse(self):
+        self.x = -self.x
+        self.y = -self.y
+
 
 class VirusMap:
 
-    CLEAN_CHAR = '.'
-    INFECTED_CHAR = '#'
-    CLEAN = CLEAN_CHAR
-    INFECTED = INFECTED_CHAR
+    CLEAN = '.'
+    INFECTED = '#'
+    WEAKENED = 'W'
+    FLAGGED = 'F'
 
-    CHAR_MAPPING = {CLEAN_CHAR: CLEAN, INFECTED_CHAR: INFECTED}
-    INT_MAPPING = {v: k for k, v in CHAR_MAPPING.items()}
-
-    def __init__(self, map_string_list):
+    def __init__(self, map_string_list, evolved=False):
         self.map = self.parse_map_string(map_string_list)
         self.pos = Point(0, 0)
         self.dir = Direction(*Direction.NORTH)
         self.infection_counter = 0
+        self.evolved = evolved
 
     @staticmethod
     def get_centre(string_list):
         assert all([len(line) == len(string_list[0]) for line in string_list])
         return int((len(string_list[0]) - 1) / 2), int((len(string_list) - 1) / 2)
-
-    @staticmethod
-    def to_num(c):
-        return VirusMap.CHAR_MAPPING[c]
 
     @staticmethod
     def parse_map_string(map_string_list):
@@ -109,15 +108,29 @@ class VirusMap:
 
     def burst(self):
         status = self[self.pos]
-        if status == self.INFECTED:
-            self.dir.turn_right()
-            self[self.pos] = self.CLEAN
-        elif status == self.CLEAN:
-            self.dir.turn_left()
-            self[self.pos] = self.INFECTED
-            self.infection_counter += 1
+        if self.evolved:
+            if status == self.CLEAN:
+                self.dir.turn_left()
+                self[self.pos] = self.WEAKENED
+            elif status == self.WEAKENED:
+                self[self.pos] = self.INFECTED
+                self.infection_counter += 1
+            elif status == self.INFECTED:
+                self.dir.turn_right()
+                self[self.pos] = self.FLAGGED
+            elif status == self.FLAGGED:
+                self.dir.reverse()
+                self[self.pos] = self.CLEAN
         else:
-            raise ValueError
+            if status == self.INFECTED:
+                self.dir.turn_right()
+                self[self.pos] = self.CLEAN
+            elif status == self.CLEAN:
+                self.dir.turn_left()
+                self[self.pos] = self.INFECTED
+                self.infection_counter += 1
+            else:
+                raise ValueError
         self.pos += self.dir
 
     def do_bursts(self, n):
@@ -136,12 +149,10 @@ def main():
     with open('input.txt', 'r') as file:
         map = file.readlines()
     map = [line.strip() for line in map]
-    vmap = VirusMap(map)
+    vmap = VirusMap(map, evolved=True)
     print(vmap.map)
-    vmap.do_bursts(1000000)
+    vmap.do_bursts(10000000)
     print(vmap.infection_counter)
-
-
 
 
 if __name__ == '__main__':

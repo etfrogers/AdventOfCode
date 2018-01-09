@@ -130,3 +130,30 @@ def test_part1():
     vmap = day22.VirusMap(map)
     vmap.do_bursts(10000)
     assert vmap.infection_counter == 5305
+
+
+def test_evolved_100():
+    with open('test_input.txt', 'r') as file:
+        map = file.readlines()
+    map = [line.strip() for line in map]
+    vmap = day22.VirusMap(map, evolved=True)
+    vmap.do_bursts(100)
+    assert vmap.infection_counter == 26
+
+
+def test_evolved_10million():
+    with open('test_input.txt', 'r') as file:
+        map = file.readlines()
+    map = [line.strip() for line in map]
+    vmap = day22.VirusMap(map, evolved=True)
+    vmap.do_bursts(10000000)
+    assert vmap.infection_counter == 2511944
+
+
+def test_part2():
+    with open('input.txt', 'r') as file:
+        map = file.readlines()
+    map = [line.strip() for line in map]
+    vmap = day22.VirusMap(map, evolved=True)
+    vmap.do_bursts(10000000)
+    assert vmap.infection_counter == 2511424
