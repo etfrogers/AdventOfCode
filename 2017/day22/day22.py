@@ -72,7 +72,7 @@ class VirusMap:
 
     def __init__(self, map_string_list):
         self.map = self.parse_map_string(map_string_list)
-        self.pos = Point(*self.get_centre(map_string_list))
+        self.pos = Point(0, 0)
         self.dir = Direction(*Direction.NORTH)
         self.infection_counter = 0
 
@@ -87,12 +87,13 @@ class VirusMap:
 
     @staticmethod
     def parse_map_string(map_string_list):
+        centre = VirusMap.get_centre(map_string_list)
         new_map = collections.defaultdict(lambda: VirusMap.CLEAN)
         assert all([len(line) == len(map_string_list[0]) for line in map_string_list])
         for i, line in enumerate(map_string_list):
             for j, c in enumerate(line):
                 if not c == VirusMap.CLEAN:
-                    new_map[(i, j)] = c
+                    new_map[(j-centre[1], i-centre[0])] = c
         return new_map
 
     def __getitem__(self, item):
@@ -120,52 +121,22 @@ class VirusMap:
             self.burst()
 
     def __eq__(self, other):
-        self_vals = self.map.values()
-        self_xs, self_ys = zip(*self.map.keys())
-        other_vals = other.map.values()
-        other_xs, other_ys = zip(*other.map.keys())
-
-        # TODO take out condition? Not sure it is needed as long as we normalise, it doesn't matter
-        # which one we normalise to
-        if min(self_xs) > min(other_xs):
-            self_xs = [s - min(self_xs) + min(other_xs) for s in self_xs]
-        elif min(other_xs) > min(self_xs):
-            other_xs = [o - min(other_xs) + min(self_xs) for o in other_xs]
-
-        if min(self_ys) > min(other_ys):
-            self_ys = [s - min(self_ys) + min(other_ys) for s in self_ys]
-        elif min(other_ys) > min(self_ys):
-            other_ys = [o - min(other_ys) + min(self_ys) for o in other_ys]
-
-        return all(x1 == x2 and y1 == y2 and v1 == v2 for (x1, y1, v1, x2, y2, v2) in
-                   zip(self_xs, self_ys, self_vals, other_xs, other_ys, other_vals))
+        self_m = {k: v for k, v in self.map.items() if not v == self.CLEAN}
+        other_m = {k: v for k, v in other.map.items() if not v == self.CLEAN}
+        unmatched_item = set(self_m.items()) ^ set(other_m.items())
+        return len(unmatched_item) == 0
 
 
 def main():
-    # with open('input.txt', 'r') as file:
-    #     map = file.readlines()
-    # map = [line.strip() for line in map]
-    # vmap = VirusMap(map)
-    # print(vmap.map)
-    # vmap.do_bursts(10000)
-    # print(vmap.infection_counter)
-
-    with open('test_input.txt', 'r') as file:
+    with open('input.txt', 'r') as file:
         map = file.readlines()
     map = [line.strip() for line in map]
     vmap = VirusMap(map)
-    vmap.do_bursts(2)
-    string = '''.........
-.........
-.........
-.....#...
-....#....
-.........
-.........
-.........
-.........'''
-    test_map = VirusMap(string.split('\n'))
-    assert test_map == vmap
+    print(vmap.map)
+    vmap.do_bursts(1000000)
+    print(vmap.infection_counter)
+
+
 
 
 if __name__ == '__main__':
