@@ -20,6 +20,11 @@ class Point(day19.Point):
     def __add__(self, other):
         return Point(self.x + other.x, self.y + other.y)
 
+    def __iadd__(self, other):
+        self.x += other.x
+        self.y += other.y
+        return self
+
 
 class Direction(day19.Direction):
 
