@@ -25,7 +25,7 @@ class SoundCard:
         #     return None
         self.finished = False
         retval = None
-        while retval is None:
+        while retval is None and self.pointer < len(self.instructions):
 
             instruction = self.instructions[self.pointer]
             # print(instruction)
