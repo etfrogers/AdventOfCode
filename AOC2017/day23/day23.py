@@ -106,15 +106,7 @@ for line in prime_lines:
 
 
 def is_prime(b):
-    found_multiple = False
-    for d in range(2, b):
-        # print(a, b, end_search, d, e, found_multiple, g, counter)
-        found_multiple = any([d * e == b for e in range(2, b)])
-        if found_multiple:
-            break
-        # print(a, b, end_search, d, e, found_multiple, g, counter)
-        # print()
-    return found_multiple
+    return b in primes
 
 
 def main():
