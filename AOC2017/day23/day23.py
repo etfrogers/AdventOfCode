@@ -85,26 +85,29 @@ def rawcode2(b_in=None, end_in=None):
     if not a == 0:  # jnz a 2, jnz 1 5
         b = (b * 100) + 100000
         end_search = b + 17000 if end_in is None else end_in
-    while True:
-        found_multiple = 1
-        for d in range(2, b):
-            # print(a, b, end_search, d, e, found_multiple, g, counter)
-            for e in range(2, b):
-                if d * e == b:
-                    found_multiple = 0
-            # print(a, b, end_search, d, e, found_multiple, g, counter)
-            # print()
-        e += 1  # to make registers match
-        d += 1  # to make registers match
-        if found_multiple == 0:
+    start_search = b
+    for b in range(start_search, end_search, 17):
+        found_multiple = is_prime(b)
+        if found_multiple:
             counter += 1
-        if b >= end_search:
-            break
-        b += 17
 
-    registers = (a, b, end_search, d, e, found_multiple, g, counter)
-    print(registers)
+    f = 0 if found_multiple else 1
+    registers = (a, b, end_search, b, b, f, g, counter)
+    # print(registers)
     return None, registers
+
+
+
+def is_prime(b):
+    found_multiple = False
+    for d in range(2, b):
+        # print(a, b, end_search, d, e, found_multiple, g, counter)
+        found_multiple = any([d * e == b for e in range(2, b)])
+        if found_multiple:
+            break
+        # print(a, b, end_search, d, e, found_multiple, g, counter)
+        # print()
+    return found_multiple
 
 
 def main():
@@ -117,7 +120,7 @@ def main():
     coproc.execute(show_status=False)
     print(coproc.register_string)
     print(coproc.mul_count)
-    mul = rawcode2(84, 84+17*3)
+    mul = rawcode2()
     print(mul)
 
 
