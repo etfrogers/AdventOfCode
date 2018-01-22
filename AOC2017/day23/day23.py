@@ -76,7 +76,8 @@ def rawcode():
 
 def rawcode2(b_in=None):
     mul_counter = 0
-    a = b = c = d = e = f = g = h = 0
+    # noinspection PyUnusedLocal
+    a = b = c = d = e = found_multiple = g = counter = 0
     a = 0  # for part 2
     # above is Ed's code
     b = 84 if b_in is None else b_in
@@ -87,48 +88,38 @@ def rawcode2(b_in=None):
         c = b
         c -= -17000
     while True:  # label .minus23
-        f = 1
-        d = 2
-        while True:  # label .minus13
-            e = 2
-            while True:  # label .minus8
-                g = d
-                g *= e; mul_counter += 1
-                g -= b
-                if g == 0:  # jnz g 2
-                    f = 0
-                e -= -1
-                g = e
-                g -= b
-                if g == 0:
-                    break  # jnz g -8
-            d -= -1
-            g = d
-            g -= b
-            if g == 0:
-                break  # goto .minus13  # jnz g -13
-        if f == 0:  # jnz f 2
-            h -= -1
-        g = b
-        g -= c
-        if g == 0:  # jnz g 2
+        found_multiple = 1
+        for d in range(2, b):  # label .minus13
+            print(a, b, c, d, e, found_multiple, g, counter)
+            for e in range(2, b):  # label .minus8
+                mul_counter += 1
+                if d * e == b:  # jnz g 2
+                    found_multiple = 0
+            print(a, b, c, d, e, found_multiple, g, counter)
+            print()
+        e += 1  # to make registers match
+        d += 1  # to make registers match
+        if found_multiple == 0:  # jnz found_multiple 2
+            counter += 1
+        if b == c:  # jnz g 2
             break  # jnz 1 3
-        b -= -17
-    #goto .minus23
-    #label .plus3
-    registers = (a, b, c, d, e, f, g, h)
+        b += 17
+
+    registers = (a, b, c, d, e, found_multiple, g, counter)
     print(registers)
     return mul_counter, registers
 
+
 def main():
-    # with open('input.txt', 'r') as file:
-    #     instructions = file.readlines()
-    # instructions = [line.strip() for line in instructions]
-    # print(instructions)
-    # coproc = CoProc(instructions)
-    # coproc.registers['a'] = 0
-    # coproc.execute(show_status=True)
-    # print(coproc.mul_count)
+    with open('input.txt', 'r') as file:
+        instructions = file.readlines()
+    instructions = [line.strip() for line in instructions]
+    print(instructions)
+    coproc = CoProc(instructions)
+    coproc.registers['a'] = 0
+    coproc.execute(show_status=False)
+    print(coproc.register_string)
+    print(coproc.mul_count)
     mul = rawcode2()
     print(mul)
 
