@@ -74,40 +74,37 @@ def rawcode():
     return mul_counter, ()
 
 
-def rawcode2(b_in=None):
-    mul_counter = 0
+def rawcode2(b_in=None, end_in=None):
+
     # noinspection PyUnusedLocal
-    a = b = c = d = e = found_multiple = g = counter = 0
+    a = b = end_search = d = e = found_multiple = g = counter = 0
     a = 0  # for part 2
     # above is Ed's code
     b = 84 if b_in is None else b_in
-    c = b
+    end_search = b if end_in is None else end_in
     if not a == 0:  # jnz a 2, jnz 1 5
-        b *= 100; mul_counter += 1
-        b -= -100000
-        c = b
-        c -= -17000
-    while True:  # label .minus23
+        b = (b * 100) + 100000
+        end_search = b + 17000 if end_in is None else end_in
+    while True:
         found_multiple = 1
-        for d in range(2, b):  # label .minus13
-            print(a, b, c, d, e, found_multiple, g, counter)
-            for e in range(2, b):  # label .minus8
-                mul_counter += 1
-                if d * e == b:  # jnz g 2
+        for d in range(2, b):
+            # print(a, b, end_search, d, e, found_multiple, g, counter)
+            for e in range(2, b):
+                if d * e == b:
                     found_multiple = 0
-            print(a, b, c, d, e, found_multiple, g, counter)
-            print()
+            # print(a, b, end_search, d, e, found_multiple, g, counter)
+            # print()
         e += 1  # to make registers match
         d += 1  # to make registers match
-        if found_multiple == 0:  # jnz found_multiple 2
+        if found_multiple == 0:
             counter += 1
-        if b == c:  # jnz g 2
-            break  # jnz 1 3
+        if b >= end_search:
+            break
         b += 17
 
-    registers = (a, b, c, d, e, found_multiple, g, counter)
+    registers = (a, b, end_search, d, e, found_multiple, g, counter)
     print(registers)
-    return mul_counter, registers
+    return None, registers
 
 
 def main():
@@ -120,7 +117,7 @@ def main():
     coproc.execute(show_status=False)
     print(coproc.register_string)
     print(coproc.mul_count)
-    mul = rawcode2()
+    mul = rawcode2(84, 84+17*3)
     print(mul)
 
 
