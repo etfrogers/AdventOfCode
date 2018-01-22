@@ -97,6 +97,13 @@ def rawcode2(b_in=None, end_in=None):
     return None, registers
 
 
+primes = set()
+with open('primes_to_1million.txt', 'r') as file:
+    prime_lines = file.readlines()
+for line in prime_lines:
+    for p in line.split():
+        primes.add(p)
+
 
 def is_prime(b):
     found_multiple = False
