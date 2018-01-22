@@ -1,11 +1,7 @@
 import os
 import sys
 from collections import defaultdict
-
-rel_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'day18')
-sys.path.insert(0, rel_path)
-# noinspection PyUnresolvedReferences
-import day18
+from AOC2017.day18 import day18
 
 
 class CoProc(day18.SoundCard):
