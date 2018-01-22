@@ -1,12 +1,6 @@
-import sys
-import os
-import numpy as np
 import collections
 
-rel_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'day19')
-sys.path.insert(0, rel_path)
-# noinspection PyUnresolvedReferences
-import day19
+from AOC2017.day19 import day19
 
 
 class Point(day19.Point):

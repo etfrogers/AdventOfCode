@@ -1,9 +1,6 @@
-import sys
 import scipy.ndimage as ndimage
 import numpy as np
-sys.path.insert(0, r'C:\Users\Ed\Dropbox (Personal)\AOC\2017\day10')
-# noinspection PyUnresolvedReferences
-import day10
+from AOC2017.day10 import day10
 
 
 def hash_to_bin(hash_string):

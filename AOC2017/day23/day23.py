@@ -1,5 +1,3 @@
-import os
-import sys
 from collections import defaultdict
 from AOC2017.day18 import day18
 
