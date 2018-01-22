@@ -16,18 +16,20 @@ def test_rawcode_part1():
 
 
 def test_multi_b_values():
-    for b in range(80, 100, 2):
-        yield rawcode_equals_complex_code, b
-    # for b in range(100, 1000, 17):
-    #     yield rawcode_equals_complex_code, b
+
+    for b in range(80, 100, 1):
+        for end in range(b, b+(17*3), 17):
+            yield rawcode_equals_complex_code, b, end
 
 
-def rawcode_equals_complex_code(b):
-    _, registers_raw = day23.rawcode2(b_in=b)
+def rawcode_equals_complex_code(b, c=None):
+    _, registers_raw = day23.rawcode2(b_in=b, end_in=c)
     with open('input.txt', 'r') as file:
         instructions = file.readlines()
     instructions = [line.strip() for line in instructions]
     instructions[0] = 'set b ' + str(b)
+    if c is not None:
+        instructions[1] = 'set c ' + str(c)
     coproc = day23.CoProc(instructions)
     coproc.execute()
     reg_list = sorted(coproc.registers.items())
