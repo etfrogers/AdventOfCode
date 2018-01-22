@@ -19,20 +19,22 @@ class SoundCard:
         self.pointer = 0
         self.jumped = False
 
-    def execute(self):
-        # if self.pointer >= len(self.instructions):
-        #     raise IndexError
-        #     return None
+    def execute(self, show_status=False):
         self.finished = False
         retval = None
+        if show_status:
+            print(self.register_string)
         while retval is None and self.pointer < len(self.instructions):
 
             instruction = self.instructions[self.pointer]
-            # print(instruction)
+            if show_status:
+                print(instruction_to_string(instruction))
             retval = instruction['func'](*instruction['args'])
             if not self.jumped:
                 self.pointer += 1
             self.jumped = False
+            if show_status:
+                print(self.register_string)
         return retval
 
     def get_value(self, value):
@@ -75,6 +77,19 @@ class SoundCard:
         args = tuple(tokens[1:])
         instruction = {'func': self.instruction_dict[tokens[0]], 'args': args}
         return instruction
+
+    @property
+    def register_string(self):
+        labels = []
+        values = []
+        for entry in sorted(self.registers.items()):
+            labels.append('{:>3}'.format(entry[0]))
+            values.append('{:>3}'.format(entry[1]))
+        return ' '.join(labels) + '\n' + ' '.join(values)
+
+
+def instruction_to_string(instruction):
+    return instruction['func'].__name__ + '(' + str(instruction['args']) + ')'
 
 
 class Program(SoundCard):
