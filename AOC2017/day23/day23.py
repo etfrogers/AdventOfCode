@@ -78,7 +78,7 @@ def rawcode2(b_in=None, end_in=None):
 
     # noinspection PyUnusedLocal
     a = b = end_search = d = e = found_multiple = g = counter = 0
-    a = 0  # for part 2
+    a = 1  # for part 2
     # above is Ed's code
     b = 84 if b_in is None else b_in
     end_search = b if end_in is None else end_in
@@ -120,7 +120,7 @@ def main():
     coproc.execute(show_status=False)
     print(coproc.register_string)
     print(coproc.mul_count)
-    mul = rawcode2(84, 84+17*3)
+    mul = rawcode2()
     print(mul)
 
 
