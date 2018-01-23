@@ -34,4 +34,7 @@ def rawcode_equals_complex_code(b, c=None):
     coproc.execute()
     reg_list = sorted(coproc.registers.items())
     registers_complex = (v for k, v in reg_list)
+    registers_complex = tuple(registers_complex)
+    print(registers_raw)
+    print(registers_complex)
     assert all([c == r for c, r in zip(registers_complex, registers_raw)])
