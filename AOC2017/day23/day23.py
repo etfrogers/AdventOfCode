@@ -71,15 +71,15 @@ def rawcode():
             break
         b -= -17
     print(a, b, c, d, e, f, g, h)
-    return mul_counter
+    return mul_counter, ()
 
 
-def rawcode2():
+def rawcode2(b_in=None):
     mul_counter = 0
     a = b = c = d = e = f = g = h = 0
     a = 0  # for part 2
     # above is Ed's code
-    b = 84
+    b = 84 if b_in is None else b_in
     c = b
     if not a == 0:  # jnz a 2, jnz 1 5
         b *= 100; mul_counter += 1
@@ -116,8 +116,9 @@ def rawcode2():
         b -= -17
     #goto .minus23
     #label .plus3
-    print(a, b, c, d, e, f, g, h)
-    return mul_counter
+    registers = (a, b, c, d, e, f, g, h)
+    print(registers)
+    return mul_counter, registers
 
 def main():
     # with open('input.txt', 'r') as file:
