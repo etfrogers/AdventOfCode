@@ -1,6 +1,0 @@
-[submodule "AOC2017/day23/python-goto"]
-	path = AOC2017/day23/python_goto
-	url = git@github.com:snoack/python-goto.git
-[submodule "AOC2017/day23/python_goto"]
-	path = AOC2017/day23/python_goto
-	url = git@github.com:snoack/python-goto.git
