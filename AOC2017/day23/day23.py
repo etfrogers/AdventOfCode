@@ -90,8 +90,8 @@ def rawcode2(b_in=None, end_in=None):
         found_multiple = is_prime(b)
         if found_multiple:
             counter += 1
-
-    f = 0 if found_multiple else 1
+    b = end_search  # after original loop, b is left as last value.
+    f = 1 if is_prime(b) else 0
     registers = (a, b, end_search, b, b, f, g, counter)
     # print(registers)
     return None, registers
