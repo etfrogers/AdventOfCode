@@ -86,25 +86,28 @@ def rawcode2(b_in=None, end_in=None):
         b = (b * 100) + 100000
         end_search = b + 17000 if end_in is None else end_in
     while True:
-        found_multiple = 1
-        for d in range(2, b):
-            # print(a, b, end_search, d, e, found_multiple, g, counter)
-            for e in range(2, b):
-                if d * e == b:
-                    found_multiple = 0
-            # print(a, b, end_search, d, e, found_multiple, g, counter)
-            # print()
-        e += 1  # to make registers match
-        d += 1  # to make registers match
+        found_multiple = is_prime(b)
         if found_multiple == 0:
             counter += 1
         if b >= end_search:
             break
         b += 17
 
-    registers = (a, b, end_search, d, e, found_multiple, g, counter)
-    print(registers)
+    registers = (a, b, end_search, b, b, found_multiple, g, counter)
     return None, registers
+
+
+primes = set()
+with open('primes_to_1million.txt', 'r') as file:
+    prime_lines = file.readlines()
+for line in prime_lines:
+    for p in line.split():
+        primes.add(int(p))
+
+
+def is_prime(b):
+    assert b < max(primes)
+    return b in primes
 
 
 def main():
