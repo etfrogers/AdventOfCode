@@ -102,21 +102,12 @@ with open('primes_to_1million.txt', 'r') as file:
     prime_lines = file.readlines()
 for line in prime_lines:
     for p in line.split():
-        primes.add(p)
+        primes.add(int(p))
 
 
 def is_prime(b):
-    found_multiple = 1
-    for d in range(2, b):
-        # print(a, b, end_search, d, e, found_multiple, g, counter)
-        for e in range(2, b):
-            if d * e == b:
-                found_multiple = 0
-        # print(a, b, end_search, d, e, found_multiple, g, counter)
-        # print()
-    e += 1  # to make registers match
-    d += 1  # to make registers match
-    return found_multiple
+    assert b < max(primes)
+    return b in primes
 
 
 def main():
