@@ -26,14 +26,14 @@ def get_password(door_id, part2=False):
     if part2:
         pw = ['*' for _ in range(8)]
         while '*' in pw:
-            pos, char = pw_chars.__next__()
+            pos, char = next(pw_chars)
             if pw[pos] == '*':
                 pw[pos] = char
             print(pw)
     else:
         pw = []
-        while len(pw) < 8:
-            pw.append(pw_chars.__next__())
+        for _, char in zip(range(8), pw_chars):
+            pw.append(char)
             print(pw)
     return ''.join(list(pw))
 
