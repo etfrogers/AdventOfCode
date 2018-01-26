@@ -56,3 +56,39 @@ def test10():
 def test11():
     addr = 'io11oj[asa1aagh]zxcqjjqjkkjv[sdaiouinisabn]'
     assert day7.supports_tls(addr)
+
+
+def test_ssl_1():
+    addr = 'aba[bab]xyz'  # supports SSL (aba outside square brackets with corresponding bab within square brackets).
+    assert day7.supports_ssl(addr)
+
+
+def test_ssl_2():
+    addr = 'xyx[xyx]xyx'  # does not support SSL (xyx, but no corresponding yxy).
+    assert not day7.supports_ssl(addr)
+
+
+def test_ssl_3():
+    addr = 'aaa[kek]eke'  # supports SSL (eke in supernet with corresponding kek in hypernet;
+    # the aaa sequence is not related, because the interior character must be different).
+    assert day7.supports_ssl(addr)
+
+
+def test_ssl_4():
+    addr = 'zazbz[bzb]cdb'  # supports SSL (zaz has no corresponding aza,
+    # but zbz has a corresponding bzb, even though zaz and zbz overlap).
+    assert day7.supports_ssl(addr)
+
+
+def test_part1():
+    with open('day7_input.txt') as file:
+        addrs = file.readlines()
+    valid_ssl = [addr for addr in addrs if day7.supports_tls(addr)]
+    assert len(valid_ssl) == 115
+
+
+def test_part2():
+    with open('day7_input.txt') as file:
+        addrs = file.readlines()
+    valid_ssl = [addr for addr in addrs if day7.supports_ssl(addr)]
+    assert len(valid_ssl) == 231
