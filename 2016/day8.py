@@ -61,6 +61,7 @@ def main():
     screen.run(commands)
     print(str(screen))
     print(screen.checksum())
+    # answer to part 2 is CFLELOYFCS
 
 
 if __name__ == '__main__':
