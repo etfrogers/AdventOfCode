@@ -1,30 +1,35 @@
+import re
+
+compression_marker = re.compile(r'\((\d+)x(\d+)\)')
 
 
-def decompress(compressed):
+def decompress(compressed, v2=False):
     dec = ''
     pointer = 0
     dec_length = len(compressed)
-    while pointer < len(compressed):
-        if compressed[pointer] == '(':
-            end = compressed.index(')', pointer)
-            comp_string = compressed[pointer+1:end]
-            length, reps = [int(v) for v in comp_string.split('x')]
-            to_rep = compressed[end+1:end+1+length]
-            dec = dec + (to_rep * reps)
-            dec_length -= len(comp_string)+2  # remove the comp_string plus associated (not captured) brackets
-            dec_length += length*(reps-1)  # additional length is one less than the number of reps
-
-            pointer = end+1+length
-        else:
-            dec = dec + compressed[pointer]
-            pointer += 1
+    while True:
+        marker = compression_marker.search(compressed, pointer)
+        if not marker:
+            if not v2:
+                dec += compressed[pointer:]
+            break
+        marker_start = marker.span()[0]
+        rep_length = int(marker[1])
+        reps = int(marker[2])
+        if not v2:
+            dec += compressed[pointer:marker_start]
+            to_rep = compressed[marker_start+len(marker[0]):marker_start+len(marker[0])+rep_length]
+            dec += to_rep * reps
+        dec_length -= len(marker[0])
+        dec_length += rep_length*(reps-1)  # we only add extension here
+        pointer = marker_start+len(marker[0])+rep_length
     return dec, dec_length
 
 
 def main():
-    # compressed = 'A(2x2)BCD(2x2)EFG'
-    with open('day9_input.txt') as file:
-        compressed = file.read().strip()
+    compressed = 'A(2x2)BCD(2x2)EFG'
+    # with open('day9_input.txt') as file:
+    #     compressed = file.read().strip()
     dec = decompress(compressed)
     print(dec)
 
