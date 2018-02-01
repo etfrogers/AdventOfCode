@@ -81,3 +81,9 @@ def test_v2_4():
     _, length = day9.decompress(compressed, v2=True)
     assert length == 445
 
+
+def test_part2():
+    with open('day9_input.txt') as file:
+        compressed = file.read().strip()
+    _, length = day9.decompress(compressed, v2=True)
+    assert length == 10780403063
