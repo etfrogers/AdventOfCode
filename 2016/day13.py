@@ -51,11 +51,19 @@ class Office:
         self.layout = old_layout
         return steps
 
+    def reachable_locs(self, n_steps):
+        path = np.zeros_like(self.layout)
+        mask = np.logical_not(self.layout)
+        path[1, 1] = 1
+        path = binary_dilation(path, mask=mask, iterations=n_steps)
+        return sum(sum(path))
+
 
 def main():
     office = Office((50, 50), 1364)
     print(str(office))
     print(office.steps_to((39, 31)))
+    print(office.reachable_locs(50))
 
 
 if __name__ == '__main__':

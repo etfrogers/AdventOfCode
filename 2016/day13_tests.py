@@ -61,3 +61,8 @@ def test_steps():
 def test_part_1():
     office = day13.Office((50, 50), 1364)
     assert office.steps_to((39, 31)) == 86
+
+
+def test_part_2():
+    office = day13.Office((50, 50), 1364)
+    assert office.reachable_locs(50) == 127
