@@ -1,47 +1,57 @@
 import re
 from collections import defaultdict
 
-class Link:
-    def __init__(self, source=None, dest=None, value=None):
-        self.source = source
-        self.dest = dest
-        self.value = value
-
-    def isempty(self):
-        return self.dest is None
-
 
 class Bot:
     def __init__(self):
-        self.high = Link()
-        self.low = Link()
-        self.in1 = Link()
-        self.in2 = Link()
+        self.high = None
+        self.low = None
+        self._inputs = [None, None]
+
+    def set_input(self, value):
+        first_none = self._inputs.index(None)
+        self._inputs[first_none] = value
+        if not any([v is None for v in self._inputs]):
+            self.high.set_input(self.high_val)
+            self.low.set_input(self.low_val)
 
     @property
-    def next_input(self):
-        if self.in1.isempty():
-            return self.in1
-        elif self.in2.isempty():
-            return self.in2
-        else:
-            raise ValueError
+    def low_val(self):
+        return min(self._inputs)
 
-    @next_input.setter
-    def next_input(self, value):
-        if self.in1.isempty():
-            self.in1 = value
-        elif self.in2.isempty():
-            self.in2 = value
-        else:
-            raise ValueError
+    @property
+    def high_val(self):
+        return max(self._inputs)
+
+    @property
+    def inputs(self):
+        return sorted(self._inputs)
+
+    def compares(self, pair):
+        return all([a == b for a, b in zip(self.inputs, sorted(pair))])
+
+    def __str__(self):
+        return 'L: [{}]  -> , H: [{}] -> '.format(self.low_val, self.high_val)
+
+
+class Output(Bot):
+    def __init__(self):
+        super().__init__()
+        self._inputs = [None]  # Force length to 1
+
+    def set_input(self, value):
+        first_none = self._inputs.index(None)  # complex setting to mirror case in Bot
+        self._inputs[first_none] = value
+
+    def __str__(self):
+        return '[{}]'.format(self._inputs[0])
 
 
 class Factory:
     def __init__(self, instructions):
         self.bots = defaultdict(lambda: Bot())
-        self.inputs = []
-        self.outputs = []
+        self.inputs = {}
+        self.outputs = defaultdict(lambda: Output())
         self.instructions = instructions
         self.parse_instructions()
         self.fill_values()
@@ -59,7 +69,7 @@ class Factory:
             bot_id = int(match[2])
             value = int(match[1])
             bot = self.bots[bot_id]
-            self.inputs.append(Link(source='input', dest=bot, value=value))
+            self.inputs[value] = bot
         else:
             match = self.bot_rule_exp.match(instruction)
             if not match:
@@ -69,23 +79,34 @@ class Factory:
             low_id = int(match[3])
             high_type = match[4]
             high_id = int(match[5])
-            low_dest = self.bots[low_id] if low_type == 'bot' else 'output {}'.format(low_id)
-            self.bots[giver_id].low = Link(low_dest)
-            high_dest = self.bots[high_id] if high_type == 'bot' else 'output {}'.format(high_id)
-            self.bots[giver_id].high = Link(high_dest)
+            low_dest = self.bots[low_id] if low_type == 'bot' else self.outputs[low_id]
+            self.bots[giver_id].low = low_dest
+            high_dest = self.bots[high_id] if high_type == 'bot' else self.outputs[high_id]
+            self.bots[giver_id].high = high_dest
 
     def fill_values(self):
-        for input in self.inputs:
-            input.dest.next_input = input
+        for val, dest in self.inputs.items():
+            dest.set_input(val)
+
+    def __str__(self):
+        lst = [
+                '\n'.join([str(id) + ': ' + str(bot) for id, bot in self.bots.items()]),
+                '\t'.join(['{} -> {}'.format(output, id) for id, output in self.outputs.items()])
+              ]
+        return '\n'.join(lst)
+
+    def get_comparator(self, pair):
+        return [(id, bot) for id, bot in self.bots.items() if bot.compares(pair)]
 
 
 def main():
-    with open('day10_test_input.txt') as file:
+    with open('day10_input.txt') as file:
         instructions = file.readlines()
     instructions = [i.strip() for i in instructions]
     print(instructions)
     factory = Factory(instructions)
-    print(factory)
+    print(str(factory))
+    print(factory.get_comparator((17, 61)))
 
 
 if __name__ == '__main__':
