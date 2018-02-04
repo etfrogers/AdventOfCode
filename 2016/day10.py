@@ -1,6 +1,7 @@
 import re
 from collections import defaultdict
-
+from operator import mul
+import functools
 
 class Bot:
     def __init__(self):
@@ -98,6 +99,16 @@ class Factory:
     def get_comparator(self, pair):
         return [(id, bot) for id, bot in self.bots.items() if bot.compares(pair)]
 
+    def get_outputs(self, ids):
+        return [self.outputs[id].inputs[0] for id in ids]
+
+
+def product(list):
+    prod = 1
+    for i in list:
+        prod *= int(i)
+    return prod
+
 
 def main():
     with open('day10_input.txt') as file:
@@ -107,6 +118,10 @@ def main():
     factory = Factory(instructions)
     print(str(factory))
     print(factory.get_comparator((17, 61)))
+    outputs = factory.get_outputs((0, 1, 2))
+    print(outputs)
+    val = product(outputs)
+    print(val)
 
 
 if __name__ == '__main__':
