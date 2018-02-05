@@ -37,23 +37,23 @@ def generate_keys(salt, n=1):
 
 
 def get_hash(salt, i):
-    if get_hash.cache_salt is None:
-        get_hash.cache_salt = salt
-    else:
-        assert salt == get_hash.cache_salt
+    try:
+        hash_dict = get_hash.hashes[salt]
+    except KeyError:
+        hash_dict = get_hash.hashes[salt] = {}
 
     try:
-        return get_hash.hashes[i]
+        return hash_dict[i]
     except KeyError:
         hasher = hashlib.md5()
         data = (salt + str(i)).encode('ascii')
         hasher.update(data)
         hash = hasher.hexdigest()
-        get_hash.hashes[i] = hash
+        hash_dict[i] = hash
         return hash
 
 
-get_hash.hashes = {}
+get_hash.hashes = dict()
 get_hash.cache_salt = None
 
 
