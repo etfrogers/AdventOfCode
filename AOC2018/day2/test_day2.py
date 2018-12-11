@@ -15,3 +15,17 @@ def test1():
 # aabcdd contains two a and two d, but it only counts once.
 # abcdee contains two e.
 # ababab contains three a and three b, but it only counts once.
+
+
+def test2():
+    input = '''abcde
+fghij
+klmno
+pqrst
+fguij
+axcye
+wvxyz'''
+    input = input.split('\n')
+    ids = [day2.BoxID(label) for label in input]
+    id1, id2 = day2.find_similar_ids(ids)
+    assert id1.find_matched_letters(id2) == 'fgij'
