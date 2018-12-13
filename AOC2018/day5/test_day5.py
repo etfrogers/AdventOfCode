@@ -29,3 +29,9 @@ def test5():
     input = 'dabAcCaCBAcCcaDA'
     remainder = day5.reduce(input)
     assert len(remainder) == 10
+
+
+def test_part2():
+    input = 'dabAcCaCBAcCcaDA'
+    min_length = day5.check_problems(input)
+    assert min_length == 4

@@ -1,3 +1,5 @@
+import re
+import string
 
 
 def reduce(polymer):
@@ -27,9 +29,21 @@ def reduce_step(polymer):
     return ''.join(new_polymer)
 
 
+def remove_letter(polymer, letter):
+    return re.sub(letter, '', polymer, flags=re.IGNORECASE)
+
+
+def check_problems(polymer):
+    lengths = [len(reduce(remove_letter(polymer, letter))) for letter in string.ascii_lowercase]
+    return min(lengths)
+
+
 if __name__ == '__main__':
     with open('input.txt') as f:
         input = f.read().strip()
     polymer = reduce(input)
     print(polymer)
     print(len(polymer))
+
+    min_length = check_problems(polymer)
+    print(min_length)
