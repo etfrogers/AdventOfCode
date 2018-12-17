@@ -1,4 +1,4 @@
-import day4
+from AOC2018.day4 import day4
 
 test_input = '''[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
@@ -42,3 +42,10 @@ def test_5():
     guard = records.sleepiest_guard()
     minute = records.sleepiest_minute(guard)
     assert guard * minute == 240
+
+
+def test_6():
+    guard, minute = records.sleepiest_guard_minute()
+    assert guard == 99
+    assert minute == 45
+    assert guard * minute == 4455

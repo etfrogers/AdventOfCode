@@ -111,8 +111,18 @@ class RecordSet:
         return ids[sleep_minutes.index(max(sleep_minutes))]
 
     def sleepiest_minute(self, guard_id):
-        minutes = np.sum(self.guard_is_asleep(guard_id), 0)
+        minutes = self.minutes_asleep(guard_id)
         return np.argmax(minutes)
+
+    def minutes_asleep(self, guard_id):
+        minutes = np.sum(self.guard_is_asleep(guard_id), 0)
+        return minutes
+
+    def sleepiest_guard_minute(self):
+        ids = list(self.guards)
+        sleep_minutes = np.array([self.minutes_asleep(guard) for guard in ids])
+        guard_index, minute = np.unravel_index(np.argmax(sleep_minutes), sleep_minutes.shape)
+        return ids[guard_index], minute
 
 
 def is_unique(list_):
@@ -128,6 +138,12 @@ if __name__ == '__main__':
 
     guard = records.sleepiest_guard()
     minute = records.sleepiest_minute(guard)
+    print(guard)
+    print(minute)
+    print(guard * minute)
+
+    guard, minute = records.sleepiest_guard_minute()
+    print()
     print(guard)
     print(minute)
     print(guard * minute)
