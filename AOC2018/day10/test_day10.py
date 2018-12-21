@@ -128,3 +128,7 @@ def test4():
 ...............#......
 ......................
 ......................'''
+
+
+def test_message_finding1():
+    assert sky.find_message() == 3

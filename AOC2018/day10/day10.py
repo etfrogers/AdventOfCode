@@ -17,19 +17,23 @@ class Point:
 class Sky:
     def __init__(self, instructions):
         self.points = [Point(line) for line in instructions]
+        self._initial_positions = np.vstack((p.position for p in self.points))
+        self._velocities = np.vstack((p.velocity for p in self.points))
 
-    def render_at(self, time):
+    def render_at(self, time, rng=None):
         xs = [p.position[0] for p in self.points]
         ys = [p.position[1] for p in self.points]
 
-        x = list(range(min(xs), max(xs)+1))
-        y = list(range(min(ys), max(ys)+1))
-        x = range(-100, 100)
-        y = range(-100, 100)
+        pos = self.get_pos(time)
+        if rng is None:
+            x = list(range(min(xs), max(xs)+1))
+            y = list(range(min(ys), max(ys)+1))
+        else:
+            x = range(np.min(pos[:, 0]), np.max(pos[:, 0])+1)
+            y = range(np.min(pos[:, 1]), np.max(pos[:, 1])+1)
 
         sky = np.zeros((len(x), len(y)))
         any_point = False
-        # initial_positions = np.vstack((p.position for p in self.points))
         for point in self.points:
             pos = point.position + point.velocity * time
             try:
@@ -40,6 +44,26 @@ class Sky:
             except ValueError:
                 pass
         return sky_array_to_string(sky) if any_point else None
+
+    def get_pos(self, time):
+        return self._initial_positions + self._velocities * time
+
+    def find_message(self):
+        min_var = 1000000000
+        var = min_var
+        min_time = 0
+
+        time = 0
+        while var < min_var*1.1:
+            pos = self.get_pos(time)
+            var = np.max(pos[:, 1]) - np.min(pos[:, 1])
+            if var < min_var:
+                min_time = time
+                min_var = var
+            time += 1
+            if time == 10000000:
+                return False
+        return min_time
 
 
 def sky_array_to_string(array: np.ndarray):
@@ -56,10 +80,9 @@ if __name__ == '__main__':
         input_ = f.readlines()
     input_ = [line.strip() for line in input_]
     sky = Sky(input_)
-    for i in range(100000):
-        string = sky.render_at(i)
-        if string:
-            print(string)
-            sleep(1)
-        elif i % 100 == 0:
-            print(i)
+
+    msg_time = sky.find_message()
+    print(msg_time)
+
+    msg = sky.render_at(msg_time, (200, 200))
+    print(msg)
