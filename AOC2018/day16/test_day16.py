@@ -7,12 +7,19 @@ test_input = '''Before: [3, 2, 1, 1]
 9 2 1 2
 After:  [3, 2, 2, 1]'''
 
-sample = day16.Sample(test_input.split('\n'))
+test_sample = day16.Sample(test_input.split('\n'))
 device = day16.Device()
+
+with open('input.txt') as f:
+    input_ = f.read()
+input_ = input_.split('\n\n\n\n')
+
+input_part1, input_part2 = ([line.strip() for line in part.split('\n')] for part in input_)
+samples = day16.input_to_samples(input_part1)
 
 
 def test1():
-    assert device.n_opcodes(sample) == 3
+    assert device.n_opcodes(test_sample) == 3
 
 
 def test_addr():
@@ -72,12 +79,15 @@ def combi_reddit(reddit_func, input_, cmd, my_func, my_cmd):
 
 
 def test_part1():
-    with open('input.txt') as f:
-        input_ = f.read()
-    input_ = input_.split('\n\n\n\n')
 
-    input_part1, input_part2 = ([line.strip() for line in part.split('\n')] for part in input_)
-    samples = day16.input_to_samples(input_part1)
-
-    n = sum([1 if device.n_opcodes(sample) >=3 else 0 for sample in samples ])
+    n = sum([1 if device.n_opcodes(sample) >= 3 else 0 for sample in samples ])
     assert n == 493
+
+
+def test_part2():
+
+    device.build_opcode_mapping(samples)
+
+    device.run(input_part2)
+
+    assert device.registers[0] == 445

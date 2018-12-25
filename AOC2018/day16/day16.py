@@ -64,13 +64,35 @@ class Device:
                }
     assert len(opcodes) == 16
 
+    def __init__(self):
+        self.opcode_map = dict()
+        self.registers = [0] * 4
+
+    def working_opcodes(self, sample):
+        return set((opcode.label for opcode in self.opcodes.values() if self.opcode_works(opcode, sample)))
+
     def n_opcodes(self, sample):
-        return sum([1 for opcode in self.opcodes.values() if self.opcode_works(opcode, sample)])
+        return len(self.working_opcodes(sample))
 
     @staticmethod
     def opcode_works(opcode, sample):
-        # return all(t == v for t, v in zip(sample.after_state, opcode(sample.before_state, sample.opcode_data)))
         return sample.after_state == opcode(sample.before_state, sample.opcode_data)
+
+    def build_opcode_mapping(self, samples):
+        while len(self.opcode_map) < len(self.opcodes):
+            for sample in samples:
+                possibilities = self.working_opcodes(sample)
+                possibilities.difference_update(self.opcode_map.values())
+                if len(possibilities) == 1:
+                    known_code = possibilities.pop()
+                    self.opcode_map[sample.opcode_data[0]] = known_code
+
+    def run(self, program):
+        for str_line in program:
+            line = [int(v) for v in str_line.split()]
+            opcode = self.opcodes[self.opcode_map[line[0]]]
+            result = opcode(self.registers, line)
+            self.registers = list(result)
 
 
 def input_to_samples(input_):
@@ -80,7 +102,7 @@ def input_to_samples(input_):
     return [Sample(d) for d in data]
 
 
-if __name__ == '__main__':
+def main():
     device = Device()
     with open('input.txt') as f:
         input_ = f.read()
@@ -89,6 +111,16 @@ if __name__ == '__main__':
     input_part1, input_part2 = ([line.strip() for line in part.split('\n')] for part in input_)
     samples = input_to_samples(input_part1)
 
-    n = sum([1 if device.n_opcodes(sample) >=3 else 0 for sample in samples ])
+    n = sum([1 if device.n_opcodes(sample) >= 3 else 0 for sample in samples ])
 
     print(n)
+
+    device.build_opcode_mapping(samples)
+
+    device.run(input_part2)
+
+    print(device.registers)
+
+
+if __name__ == '__main__':
+    main()
