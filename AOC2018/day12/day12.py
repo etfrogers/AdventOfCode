@@ -20,24 +20,43 @@ class State:
                 adj = index
         return adj
 
-    def __getitem__(self, item):
-        item = self.adjusted_index(item)
-        if type(item) is int:
-            min_ = item
-            max_ = item
+    def extend(self, dist):
+        length = abs(dist)
+        if dist < 0:
+            self.index_of_0 += length
+            self._state = self.default * length + self._state
         else:
-            min_ = min((item.start, item.stop)) if item.start is not None else None
-            max_ = max((item.start, item.stop)) if item.start is not None else None
-        while min_ is not None and min_ < 0:
-            self.index_of_0 -= 1
-            min_ += 1
-            self._state = self.default + self._state
-        while max_ is not None and max_ > len(self._state):
-            self._state = self._state + self.default
-        return self._state[item]
+            self._state = self._state + self.default * length
+
+    def __getitem__(self, item):
+        # item = self.adjusted_index(item)
+        if type(item) is int:
+            item = slice(item, item+1, 1)
+
+        if ((item.start is None and item.stop is not None) or
+           (item.stop is None and item.start is not None)):
+            raise NotImplementedError
+
+        if item.start is None:
+            return self._state[slice(None, None, None)]
+
+        if item.stop <= item.start:
+            raise NotImplementedError
+
+        low_diff = item.start - min(self.indicies)
+        high_diff = item.stop - max(self.indicies)
+        if low_diff < 0:
+            self.extend(low_diff)
+        if high_diff > 0:
+            self.extend(high_diff)
+        return self._state[slice(self.indicies.index(item.start), self.indicies.index(item.stop), item.step)]
 
     def __len__(self):
         return len(self._state)
+
+    @property
+    def indicies(self):
+        return list(range(-self.index_of_0, len(self._state) - self.index_of_0))
 
 
 class Plants:
@@ -59,7 +78,7 @@ class Plants:
     def add_generation(self):
         prev = self.state[-1]
         new = []
-        for i, _ in enumerate(prev[:]):
+        for i in prev.indicies:
             new.append(self.mapping[prev[i-2:i+3]])
         self.state.append(State(new, prev.index_of_0))
 
