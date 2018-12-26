@@ -48,11 +48,12 @@ class State:
     @property
     def indicies(self):
         indicies = list(range(-self.index_of_0, len(self._state) - self.index_of_0))
-        assert len(indicies) == len(self._state)
+        # assert len(indicies) == len(self._state)
         return indicies
 
     def checksum(self):
         return sum([index for index, val in zip(self.indicies, self._state) if val != self.default])
+
 
 class Plants:
     def __init__(self, initial_state, mapping_string):
@@ -89,6 +90,20 @@ class Plants:
     def checksum(self, n):
         return self.get_generation(n).checksum()
 
+    def large_checksum(self, n):
+        i = 10
+        while not all_same(diff([self.checksum(i) for i in range(i-10, i)])):
+            i += 1
+        return self.checksum(i) + (n - i) * (self.checksum(i) - self.checksum(i-1))
+
+
+def diff(lst):
+    return [val - lst[i - 1] for i, val in zip(range(0, len(lst)), lst) if i > 0]
+
+
+def all_same(lst):
+    return all([val == lst[0] for val in lst])
+
 
 def main():
     with open('input.txt') as f:
@@ -96,13 +111,16 @@ def main():
     initial_state, mapping_string = input_.split('\n\n')
 
     plants = Plants(initial_state, mapping_string)
-    #
-    # for i in range(21):
-    #     generation_ = plants.get_generation(i)[:]
-    #     print(generation_)
-    #     print(len(generation_))
+    print(plants.checksum(20), '\n')
+    for i in range(21):
+        generation_ = plants.get_generation(i)[:]
+        print(plants.checksum(i))
+    sums = [plants.checksum(i) for i in range(160)]
+    print(sums)
+    diffs = diff(sums)
+    print(diffs)
 
-    print(plants.checksum(20))
+    print(plants.large_checksum(50000000000))
 
 
 if __name__ == '__main__':
