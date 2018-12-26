@@ -1,3 +1,4 @@
+from copy import deepcopy
 from itertools import product
 
 
@@ -9,16 +10,6 @@ class State:
             string = ''.join(string)
         self._state: str = string
         self.index_of_0 = ind
-
-    def adjusted_index(self, index):
-        try:
-            adj = index - self.index_of_0
-        except TypeError:
-            try:
-                adj = slice(index.start - self.index_of_0, index.stop - self.index_of_0, index.step)
-            except TypeError:
-                adj = index
-        return adj
 
     def extend(self, dist):
         length = abs(dist)
@@ -56,8 +47,12 @@ class State:
 
     @property
     def indicies(self):
-        return list(range(-self.index_of_0, len(self._state) - self.index_of_0))
+        indicies = list(range(-self.index_of_0, len(self._state) - self.index_of_0))
+        assert len(indicies) == len(self._state)
+        return indicies
 
+    def checksum(self):
+        return sum([index for index, val in zip(self.indicies, self._state) if val != self.default])
 
 class Plants:
     def __init__(self, initial_state, mapping_string):
@@ -76,14 +71,39 @@ class Plants:
         return self.state[n]
 
     def add_generation(self):
-        prev = self.state[-1]
+        prev = deepcopy(self.state[-1])
         new = []
+        prev.extend(-2)
+        prev.extend(2)
         for i in prev.indicies:
             new.append(self.mapping[prev[i-2:i+3]])
-        self.state.append(State(new, prev.index_of_0))
+        # -2 because we have extended extended prev to left after calculating indicies
+        self.state.append(State(new, prev.index_of_0-2))
 
     def fill_unfilled_mapping(self):
         for key in product(set(self.state[0][:]), repeat=5):
             key = ''.join(key)
             if key not in self.mapping.keys():
                 self.mapping[key] = State.default
+
+    def checksum(self, n):
+        return self.get_generation(n).checksum()
+
+
+def main():
+    with open('input.txt') as f:
+        input_ = f.read()
+    initial_state, mapping_string = input_.split('\n\n')
+
+    plants = Plants(initial_state, mapping_string)
+    #
+    # for i in range(21):
+    #     generation_ = plants.get_generation(i)[:]
+    #     print(generation_)
+    #     print(len(generation_))
+
+    print(plants.checksum(20))
+
+
+if __name__ == '__main__':
+    main()

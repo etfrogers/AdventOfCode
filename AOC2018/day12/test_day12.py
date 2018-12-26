@@ -54,3 +54,17 @@ def test_1():
     test_list = test_results.split('\n')
     for i, result in enumerate(test_list):
         yield generation_matches, plants.get_generation(i)[-3:36], result
+
+
+def test_2():
+    assert plants.checksum(20) == 325
+
+
+def test_part1():
+    with open('input.txt') as f:
+        input_ = f.read()
+    initial_state, mapping_string = input_.split('\n\n')
+
+    plants = day12.Plants(initial_state, mapping_string)
+
+    assert plants.checksum(20) == 4818
