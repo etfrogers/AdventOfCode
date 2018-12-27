@@ -76,3 +76,17 @@ def test_part1():
     space = day6.Space(input_)
     space.build_regions()
     assert space.safest_size() == 4771
+
+
+def test_safe_region_size():
+    space = day6.Space(test_input, test_labels)
+    space.build_regions()
+    assert space.safe_region_size(32) == 16
+
+
+def test_part2():
+    with open('input.txt') as f:
+        input_ = f.read()
+    space = day6.Space(input_)
+    space.build_regions()
+    assert space.safe_region_size(10000) == 39149

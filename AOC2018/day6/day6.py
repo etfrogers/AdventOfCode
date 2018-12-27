@@ -14,6 +14,7 @@ class Space:
         y_ = np.arange(np.min(self.points[:, 1]) - 1, np.max(self.points[:, 1] + 2))
         self.x, self.y = np.meshgrid(x_, y_)
         self.map = np.zeros_like(self.x)
+        self.totals = np.zeros_like(self.x)
         self.label_strs = label_strs
 
     def render(self):
@@ -31,6 +32,7 @@ class Space:
         pt_y = self.points[:, 1]
         dists = np.abs(self.x[:, :, np.newaxis] - pt_x[np.newaxis, np.newaxis, :]) + \
                 np.abs(self.y[:, :, np.newaxis] - pt_y[np.newaxis, np.newaxis, :])
+        self.totals = np.sum(dists, 2)
 
         min_ind = np.argmin(dists, 2)
         min_val = np.min(dists, 2)
@@ -64,6 +66,10 @@ class Space:
         sizes = self.sizes()
         return max(sizes.values())
 
+    def safe_region_size(self, dist):
+        safe_space = self.totals < dist
+        return np.sum(safe_space)
+
 
 def main():
     with open('input.txt') as f:
@@ -71,6 +77,7 @@ def main():
     space = Space(input_)
     space.build_regions()
     print('Part 1: ', space.safest_size())
+    print('Part 2: ', space.safe_region_size(10000))
 
 
 if __name__ == '__main__':
