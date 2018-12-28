@@ -16,7 +16,7 @@ class Sample:
 
 
 class Opcode:
-    def __init__(self,label, func, derefA, derefB, useB=True):
+    def __init__(self, label, func, derefA, derefB, useB=True):
         self.label = label
         self.func = func
         self.derefA = derefA
@@ -26,13 +26,13 @@ class Opcode:
     def __call__(self, input_state, command, *args, **kwargs):
         output_state = list(input_state)
         if self.derefA:
-            a = input_state[command[1]]
+            a = input_state[command[0]]
         else:
-            a = command[1]
+            a = command[0]
         if self.derefB:
-            b = input_state[command[2]]
+            b = input_state[command[1]]
         else:
-            b = command[2]
+            b = command[1]
         if self.func is None:
             assert not self.useB
             val = a
@@ -40,8 +40,11 @@ class Opcode:
             val = self.func(a, b)
         else:
             val = self.func(a)
-        output_state[command[3]] = int(val)
+        output_state[command[2]] = int(val)
         return tuple(output_state)
+
+    def __str__(self):
+        return self.label
 
 
 class Device:
@@ -64,9 +67,12 @@ class Device:
                }
     assert len(opcodes) == 16
 
-    def __init__(self):
+    def __init__(self, n_registers=4):
         self.opcode_map = dict()
-        self.registers = [0] * 4
+        self.registers = [0] * n_registers
+
+    def reset(self):
+        self.registers = [0] * len(self.registers)
 
     def working_opcodes(self, sample):
         return set((opcode.label for opcode in self.opcodes.values() if self.opcode_works(opcode, sample)))
@@ -76,7 +82,7 @@ class Device:
 
     @staticmethod
     def opcode_works(opcode, sample):
-        return sample.after_state == opcode(sample.before_state, sample.opcode_data)
+        return sample.after_state == opcode(sample.before_state, sample.opcode_data[1:])
 
     def build_opcode_mapping(self, samples):
         while len(self.opcode_map) < len(self.opcodes):
@@ -88,11 +94,31 @@ class Device:
                     self.opcode_map[sample.opcode_data[0]] = known_code
 
     def run(self, program):
-        for str_line in program:
-            line = [int(v) for v in str_line.split()]
-            opcode = self.opcodes[self.opcode_map[line[0]]]
-            result = opcode(self.registers, line)
-            self.registers = list(result)
+        self.reset()
+        for line in self.parse_program(program):
+            self.execute_line(line)
+
+    def execute_line(self, line):
+        opcode = line[0]
+        data = line[1]
+        result = opcode(self.registers, data)
+        self.registers = list(result)
+
+    def parse_program(self, program):
+        if type(program) is str:
+            program = program.split('\n')
+        parsed = []
+        for line in program:
+            opcode_name, *data = line.split()
+            data = [int(v) for v in data]
+            try:
+                opcode_num = int(opcode_name)
+                opcode_name = self.opcode_map[opcode_num]
+            except ValueError:
+                pass
+            opcode = self.opcodes[opcode_name]
+            parsed.append((opcode, data))
+        return parsed
 
 
 def input_to_samples(input_):

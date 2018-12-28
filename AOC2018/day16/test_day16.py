@@ -24,7 +24,7 @@ def test1():
 
 def test_addr():
     input_state = (0, 1, 2, 3)
-    command = (0, 2, 3, 0)
+    command = (2, 3, 0)
     val = device.opcodes['addr'](input_state, command)
     test = (5, 1, 2, 3)
     assert all([v == t for v, t in zip(val, test)])
@@ -32,7 +32,7 @@ def test_addr():
 
 def test_setr():
     input_state = (0, 1, 2, 3)
-    command = (0, 2, 3, 0)
+    command = (2, 3, 0)
     val = device.opcodes['setr'](input_state, command)
     test = (2, 1, 2, 3)
     assert all([v == t for v, t in zip(val, test)])
@@ -40,7 +40,7 @@ def test_setr():
 
 def test_seti():
     input_state = (0, 1, 2, 3)
-    command = (0, 6, 3, 0)
+    command = (6, 3, 0)
     val = device.opcodes['seti'](input_state, command)
     test = (6, 1, 2, 3)
     assert all([v == t for v, t in zip(val, test)])
@@ -48,7 +48,7 @@ def test_seti():
 
 def test_eqir1():
     input_state = (0, 1, 2, 3)
-    command = (0, 3, 3, 0)
+    command = (3, 3, 0)
     val = device.opcodes['eqir'](input_state, command)
     test = (1, 1, 2, 3)
     assert all([v == t for v, t in zip(val, test)])
@@ -56,7 +56,7 @@ def test_eqir1():
 
 def test_eqir2():
     input_state = (0, 1, 2, 3)
-    command = (0, 1, 3, 0)
+    command = (1, 3, 0)
     val = device.opcodes['eqir'](input_state, command)
     test = (0, 1, 2, 3)
     assert all([v == t for v, t in zip(val, test)])
