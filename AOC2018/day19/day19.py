@@ -1,6 +1,7 @@
 import time
 
 from AOC2018.day16 import day16
+from AOC2018.day19 import assembly
 
 
 class JumpDevice(day16.Device):
@@ -42,13 +43,16 @@ def main():
     with open('input.txt') as f:
         program = f.read()
     device = JumpDevice()
-    device.run(program, do_print=True)
+    device.run(program, do_print=False)
     print('Part 1: ', device.registers)
+    print('Part 1 direct: ', assembly.run_direct(part2=False))
 
     # device.reset()
     # registers = [1] + [0] * 5
     # device.run(program, registers=registers, do_print=True)
     # print('Part 2: ', device.registers)
+
+    print('Part 2: ', assembly.run_direct(part2=True))
 
 
 if __name__ == '__main__':

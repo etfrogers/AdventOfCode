@@ -50,6 +50,72 @@ def test_lines():
 part1_expected = (2016, 941, 940, 256, 941, 1)
 
 
+def test_part1_assembly():
+    result = assembly.run([0] + [0] * 5)
+    assert result[0] == part1_expected[0]
+    assert result[2] == part1_expected[2]
+
+
+def test_part1_assembly_renamed():
+    result = assembly.run_renamed(part2=False)
+    assert result[0] == part1_expected[0]
+    assert result[1] == part1_expected[2]
+
+
+def test_part1_assembly_target():
+    result = assembly.run_target(part2=False)
+    assert result[0] == part1_expected[0]
+    assert result[1] == part1_expected[2]
+
+
+def test_part1_assembly_for_loops():
+    result = assembly.run_for_loops(part2=False)
+    assert result[0] == part1_expected[0]
+    assert result[1] == part1_expected[2]
+
+
+def test_part1_assembly_list_comps():
+    result = assembly.run_list_comps(part2=False)
+    assert result[0] == part1_expected[0]
+    assert result[1] == part1_expected[2]
+
+
+def test_part1_assembly_direct():
+    result = assembly.run_direct(part2=False)
+    assert result[0] == part1_expected[0]
+    assert result[1] == part1_expected[2]
+
+
+def test_target1():
+    with open('input.txt') as f:
+        program = f.read()
+    device = day19.JumpDevice()
+    device.run(program, limit=100)
+    vm = device.registers[2]
+    target = assembly.get_target(part2=False)
+    assert vm == target
+
+
+def test_target2a():
+    with open('input.txt') as f:
+        program = f.read()
+    device = day19.JumpDevice()
+    device.run(program, registers=[1] + [0] * 5, limit=100)
+    vm = device.registers[2]
+    target = assembly.run(registers=[1] + [0] * 5, do_loop=False)[2]
+    assert vm == target
+
+
+def test_target2b():
+    with open('input.txt') as f:
+        program = f.read()
+    device = day19.JumpDevice()
+    device.run(program, registers=[1] + [0] * 5, limit=100)
+    vm = device.registers[2]
+    target = assembly.get_target(part2=True)
+    assert vm == target
+
+
 if long_tests:
     def test_part1_vm():
         with open('input.txt') as f:
@@ -59,7 +125,5 @@ if long_tests:
         assert tuple(device.registers) == part1_expected
 
 
-def test_part1_assembly():
-    result = assembly.part1()
-    assert result[0] == part1_expected[0]
-    assert result[2] == part1_expected[2]
+def test_part2():
+    assert assembly.run_direct(part2=True) == (22674960, 10551340)
