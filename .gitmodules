@@ -1,4 +1,4 @@
-[submodule "AOC2018/day18/cellula_automata"]
-	path = AOC2018/day18/cellula_automata
+[submodule "AOC2018/day18/cellular_automata"]
+	path = AOC2018/day18/cellular_automata
 	url = git@github.com:etfrogers/cellular-automata.git
 	branch = aoc
