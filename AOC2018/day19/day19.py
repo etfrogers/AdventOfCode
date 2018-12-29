@@ -35,20 +35,20 @@ class JumpDevice(day16.Device):
             counter += 1
             if do_print:
                 print(f'{line[0]}: {line[1:]} -> {self.registers}')
-                time.sleep(0.3)
+                # time.sleep(0.3)
 
 
 def main():
     with open('input.txt') as f:
         program = f.read()
     device = JumpDevice()
-    # device.run(program, do_print=True)
-    # print('Part 1: ', device.registers)
+    device.run(program, do_print=True)
+    print('Part 1: ', device.registers)
 
-    device.reset()
-    registers = [1] + [0] * 5
-    device.run(program, registers=registers, do_print=True)
-    print('Part 2: ', device.registers)
+    # device.reset()
+    # registers = [1] + [0] * 5
+    # device.run(program, registers=registers, do_print=True)
+    # print('Part 2: ', device.registers)
 
 
 if __name__ == '__main__':

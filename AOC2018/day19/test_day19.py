@@ -1,5 +1,7 @@
-from AOC2018.day19 import day19
+from AOC2018.day19 import day19, assembly
 import nose
+
+long_tests = False
 
 test_program = '''#ip 0
 seti 5 0 1
@@ -45,10 +47,19 @@ def test_lines():
         yield line_runner, device, prog, i+1, result
 
 
-def test_part1():
-    expected = (2016, 941, 940, 256, 941, 1)
-    with open('input.txt') as f:
-        program = f.read()
-    device = day19.JumpDevice()
-    device.run(program)
-    assert tuple(device.registers) == expected
+part1_expected = (2016, 941, 940, 256, 941, 1)
+
+
+if long_tests:
+    def test_part1_vm():
+        with open('input.txt') as f:
+            program = f.read()
+        device = day19.JumpDevice()
+        device.run(program)
+        assert tuple(device.registers) == part1_expected
+
+
+def test_part1_assembly():
+    result = assembly.part1()
+    assert result[0] == part1_expected[0]
+    assert result[2] == part1_expected[2]
