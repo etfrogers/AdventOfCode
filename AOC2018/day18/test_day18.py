@@ -196,3 +196,18 @@ def test_part1():
     area = day18.Area(initial_state)
     area.evolve(10)
     assert area.total_resources == 536370
+
+
+def test_total_non_loop():
+    with open('input.txt') as f:
+        initial_state = f.read()
+    area = day18.Area(initial_state)
+    assert area.get_total_resources(10) == 536370
+
+
+def test_part2():
+    with open('input.txt') as f:
+        initial_state = f.read()
+    area = day18.Area(initial_state)
+    n = 1000000000
+    assert area.get_total_resources(n) == 190512
