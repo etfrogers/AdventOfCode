@@ -9,8 +9,9 @@ class JumpDevice(day16.Device):
         super().__init__(n_registers)
         self.instruction_pointer = 0
         self.opcodes['#ip'] = None
+        self.log = []
 
-    def run(self, program, limit=None, registers=None, do_print=False):
+    def run(self, program, limit=None, registers=None, do_print=False, log_at_line=None):
         self.reset()
         if registers is not None:
             self.registers = registers
@@ -20,7 +21,6 @@ class JumpDevice(day16.Device):
         assert ip_line[0] is None
         self.instruction_pointer = ip_line[1][0]
         ip = self.registers[self.instruction_pointer]
-
         counter = 0
         while True:
             if limit is not None and counter >= limit:
@@ -29,6 +29,8 @@ class JumpDevice(day16.Device):
                 line = program[ip]
             except IndexError:
                 break
+            if log_at_line and log_at_line == ip:
+                self.log.append(self.registers)
             self.registers[self.instruction_pointer] = ip
             self.execute_line(line)
             ip = self.registers[self.instruction_pointer]
@@ -37,6 +39,7 @@ class JumpDevice(day16.Device):
             if do_print:
                 print(f'{line[0]}: {line[1:]} -> {self.registers}')
                 # time.sleep(0.3)
+        return counter
 
 
 def main():
