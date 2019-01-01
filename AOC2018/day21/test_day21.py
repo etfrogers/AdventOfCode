@@ -43,3 +43,8 @@ def test_part1():
     assert a[1] == 10504829
     assert b[1] == 10504829
     assert device.log[1][3] == 10504829
+
+
+def test_part2():
+    part2 = assembly_refactor(0)
+    assert part2[-1] == 6311823
