@@ -171,6 +171,125 @@ def test_outcome1():
     assert fight.outcome() == 27730
 
 
+def test_summaries():
+    step = 0  # run to end of fight
+    map_sets = summary_maps.split('\n\n\n')
+    for map_set in map_sets:
+        initial_state, final_state, text = map_set.split('\n\n')
+        final_state, hp_list = extract_hp_list(final_state)
+        outcome = int(text.split()[-1])
+        yield check_evolution, initial_state, final_state, step, hp_list, False, outcome
+
+
+summary_maps = '''#######
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
+#######
+
+#######                 
+#...#E#   E(200)        
+#E#...#   E(197)        
+#.E##.#   E(185)        
+#E..#E#   E(200), E(200)
+#.....#                 
+#######                 
+
+Combat ends after 37 full rounds
+Elves win with 982 total hit points left
+Outcome: 37 * 982 = 36334
+
+
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+
+#######                 
+#.E.E.#   E(164), E(197)
+#.#E..#   E(200)        
+#E.##.#   E(98)         
+#.E.#.#   E(200)        
+#...#.#                 
+#######                 
+
+Combat ends after 46 full rounds
+Elves win with 859 total hit points left
+Outcome: 46 * 859 = 39514
+
+
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+
+#######                
+#G.G#.#   G(200), G(98)
+#.#G..#   G(200)       
+#..#..#                
+#...#G#   G(95)        
+#...G.#   G(200)       
+#######                
+
+Combat ends after 35 full rounds
+Goblins win with 793 total hit points left
+Outcome: 35 * 793 = 27755
+
+
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+
+#######                       
+#.....#                       
+#.#G..#   G(200)                    
+#.###.#                       
+#.#.#.#                       
+#G.G#G#   G(98), G(38), G(200)
+#######                       
+
+Combat ends after 54 full rounds
+Goblins win with 536 total hit points left
+Outcome: 54 * 536 = 28944
+
+
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+
+#########                    
+#.G.....#   G(137)           
+#G.G#...#   G(200), G(200)   
+#.G##...#   G(200)           
+#...##..#                    
+#.G.#...#   G(200)           
+#.......#                    
+#.......#                    
+#########                    
+
+Combat ends after 20 full rounds
+Goblins win with 937 total hit points left
+Outcome: 20 * 937 = 18740'''
+
+
 movement_maps = '''#########
 #G..G..G#
 #.......#

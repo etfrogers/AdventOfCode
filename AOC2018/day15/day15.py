@@ -215,6 +215,10 @@ class Fight:
 
     def do_round(self):
         for unit in self.move_list():
+            if unit.type is None:
+                # skip dead units. Needed because move_list is evaluated at start of loop, so cleanp only takes
+                # effect on next round
+                continue
             unit.move_in(self)
             unit.attack_in(self)
             self.cleanup_dead_units()
@@ -249,3 +253,5 @@ def reading_order(position):
 
 def in_reading_order(lst):
     return sorted(lst, key=lambda unit: reading_order(unit.position))
+
+
