@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 
 from AOC2018.day15 import day15
@@ -108,6 +110,67 @@ def test_simple_movement():
     assert fight == fight_after
 
 
+def test_movement():
+    maps = movement_maps.split('\n\n')
+    initial_state, *final_states = maps
+    for i, final_state in enumerate(final_states):
+        yield check_evolution, initial_state, final_state, i+1, None, True
+
+
+def check_evolution(initial_map, final_map, n_rounds, hp_list=None, ignore_hp=False, outcome=None):
+    fight = day15.Fight(initial_map)
+    fight.evolve(n_rounds)
+    after_fight = day15.Fight(final_map)
+    if hp_list:
+        for unit, hp_info in zip(after_fight.move_list(), hp_list):
+            assert unit.type.to_string() == hp_info[0]
+            unit.hit_points = hp_info[1]
+    if ignore_hp:
+        for a, b in zip(fight.move_list(), after_fight.move_list()):
+            b.hit_points = a.hit_points
+    assert fight == after_fight
+    if outcome:
+        assert fight.outcome() == outcome
+
+
+def extract_hp_list(state):
+    lines = state.split('\n')
+    state_part, hp_part = zip(*[line.split('   ') for line in lines])
+    state = '\n'.join(state_part)
+    hp_str = ' '.join(hp_part).strip()
+    hp_str.replace(',', '')
+    hp_list = re.finditer(r'([EG])\((\d+)\)', hp_str)
+    hp_list = [(item.group(1), int(item.group(2))) for item in hp_list]
+    return state, hp_list
+
+
+def test_combat_step():
+    maps = combat_step_maps.split('\n\n')
+    initial_state, *final_states = maps
+    initial_state_match = re.match(r'(Initially:\n)(.*)', initial_state, re.DOTALL)
+    initial_state = initial_state_match.group(2)
+    initial_state, initial_hp_list = extract_hp_list(initial_state)
+    assert all([item[1] == 200 for item in initial_hp_list])
+    for final_state_input in final_states:
+        state_match = re.match(r'After (\d+) round[s]?:\n(.*)', final_state_input, re.DOTALL)
+        step = int(state_match.group(1))
+        final_state = state_match.group(2)
+        final_state, hp_list = extract_hp_list(final_state)
+        yield check_evolution, initial_state, final_state, step, hp_list
+
+
+def test_outcome1():
+    maps = combat_step_maps.split('\n\n')
+    initial_state, *final_states = maps
+    initial_state_match = re.match(r'(Initially:\n)(.*)', initial_state, re.DOTALL)
+    initial_state = initial_state_match.group(2)
+    initial_state, initial_hp_list = extract_hp_list(initial_state)
+    assert all([item[1] == 200 for item in initial_hp_list])
+    fight = day15.Fight(initial_state)
+    fight.evolve()
+    assert fight.outcome() == 27730
+
+
 movement_maps = '''#########
 #G..G..G#
 #.......#
@@ -149,15 +212,92 @@ movement_maps = '''#########
 #########'''
 
 
-def check_evolution(initial_map, final_map, n_rounds):
-    fight = day15.Fight(initial_map)
-    fight.evolve(n_rounds)
-    after_fight = day15.Fight(final_map)
-    assert fight == after_fight
+combat_step_maps = '''Initially:
+#######   
+#.G...#   G(200)
+#...EG#   E(200), G(200)
+#.#.#G#   G(200)
+#..G#E#   G(200), E(200)
+#.....#   
+#######   
 
+After 1 round:
+#######   
+#..G..#   G(200)
+#...EG#   E(197), G(197)
+#.#G#G#   G(200), G(197)
+#...#E#   E(197)
+#.....#   
+#######   
 
-def test_movement():
-    maps = movement_maps.split('\n\n')
-    initial_state, *final_states = maps
-    for i, final_state in enumerate(final_states):
-        yield check_evolution, initial_state, final_state, i+1
+After 2 rounds:
+#######   
+#...G.#   G(200)
+#..GEG#   G(200), E(188), G(194)
+#.#.#G#   G(194)
+#...#E#   E(194)
+#.....#   
+#######   
+
+After 23 rounds:
+#######   
+#...G.#   G(200)
+#..G.G#   G(200), G(131)
+#.#.#G#   G(131)
+#...#E#   E(131)
+#.....#   
+#######   
+
+After 24 rounds:
+#######   
+#..G..#   G(200)
+#...G.#   G(131)
+#.#G#G#   G(200), G(128)
+#...#E#   E(128)
+#.....#   
+#######   
+
+After 25 rounds:
+#######   
+#.G...#   G(200)
+#..G..#   G(131)
+#.#.#G#   G(125)
+#..G#E#   G(200), E(125)
+#.....#   
+#######   
+
+After 26 rounds:
+#######   
+#G....#   G(200)
+#.G...#   G(131)
+#.#.#G#   G(122)
+#...#E#   E(122)
+#..G..#   G(200)
+#######   
+
+After 27 rounds:
+#######   
+#G....#   G(200)
+#.G...#   G(131)
+#.#.#G#   G(119)
+#...#E#   E(119)
+#...G.#   G(200)
+#######   
+
+After 28 rounds:
+#######   
+#G....#   G(200)
+#.G...#   G(131)
+#.#.#G#   G(116)
+#...#E#   E(113)
+#....G#   G(200)
+#######   
+
+After 47 rounds:
+#######   
+#G....#   G(200)
+#.G...#   G(131)
+#.#.#G#   G(59)
+#...#.#   
+#....G#   G(200)
+#######   '''
