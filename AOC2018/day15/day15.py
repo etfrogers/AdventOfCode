@@ -38,16 +38,16 @@ class Square:
     def numpy_coord(self):
         return tuple(np.flipud(self.position))
 
-    def distance_map(self, fight):
+    def distance_map(self, map_):
         x = self.position[0]
         y = self.position[1]
-        dists = np.zeros_like(fight.map)
+        dists = np.zeros_like(map_)
         max_dist = dists.size + 1
         img = np.zeros_like(dists)
         img[self.numpy_coord] = 1
-        blocks = np.logical_not(fight.map == 0)
+        blocks = np.logical_not(map_ == 0)
         dist = 1
-        reachable_region = self.reachable_region(fight.map)
+        reachable_region = self.reachable_region(map_)
         while not np.all(np.logical_or.reduce((img, np.logical_not(reachable_region), blocks))):
             last_img = img.copy()
             img = binary_dilation(img).astype(int)
@@ -164,7 +164,7 @@ class Unit(Square):
         # broken because does not take account of blocking
         if np.array_equal(self.position, target.position):
             return NO_MOVEMENT
-        all_dists = target.distance_map(fight)
+        all_dists = target.distance_map(fight.map)
         dists = [all_dists[(self + pos).numpy_coord] for pos in NEARBY]
         # index returns first occurrence, but that is ok because NEARBY is in reading order
         return NEARBY[dists.index(min(dists))]
