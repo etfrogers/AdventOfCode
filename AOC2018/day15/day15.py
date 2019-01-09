@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Union
+from typing import List
 
 import numpy as np
 from scipy.ndimage import measurements, binary_dilation
@@ -207,8 +207,34 @@ class Fight:
 
     def __eq__(self, other):
         return np.array_equal(self.map, other.map) and \
-            np.array_equal(self.cave, other.cave) and \
             all([a == b for a, b in zip(in_reading_order(self.units), in_reading_order(other.units))])
+
+    @property
+    def walls(self):
+        return self.get_walls_from_map(self.map)
+
+    @staticmethod
+    def get_walls_from_map(map_):
+        walls = map_.copy()
+        walls[walls == UnitType.ELF.value] = 0
+        walls[walls == UnitType.GOBLIN.value] = 0
+        return walls
+
+    @property
+    def elves(self):
+        return self.get_elves_from_map(self.map)
+
+    @staticmethod
+    def get_elves_from_map(map_):
+        return (map_ == UnitType.ELF.value).astype(int)
+
+    @property
+    def goblins(self):
+        return self.get_goblins_from_map(self.map)
+
+    @staticmethod
+    def get_goblins_from_map(map_):
+        return (map_ == UnitType.GOBLIN.value).astype(int)
 
     def move_list(self):
         return in_reading_order(self.units)
