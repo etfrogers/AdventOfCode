@@ -135,7 +135,7 @@ def check_evolution(initial_map, final_map, n_rounds, hp_list=None, ignore_hp=Fa
 
 def extract_hp_list(state):
     lines = state.split('\n')
-    state_part, hp_part = zip(*[line.split('   ') for line in lines])
+    state_part, hp_part, *_ = zip(*[line.split('   ') for line in lines])
     state = '\n'.join(state_part)
     hp_str = ' '.join(hp_part).strip()
     hp_str.replace(',', '')
@@ -173,12 +173,13 @@ def test_outcome1():
 
 def test_summaries():
     step = 0  # run to end of fight
+    ignore_hit_points = False
     map_sets = summary_maps.split('\n\n\n')
     for map_set in map_sets:
         initial_state, final_state, text = map_set.split('\n\n')
         final_state, hp_list = extract_hp_list(final_state)
         outcome = int(text.split()[-1])
-        yield check_evolution, initial_state, final_state, step, hp_list, False, outcome
+        yield check_evolution, initial_state, final_state, step, hp_list, ignore_hit_points, outcome
 
 
 summary_maps = '''#######

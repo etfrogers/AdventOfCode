@@ -31,40 +31,65 @@ class Square:
     def __add__(self, other):
         return Square(self.position + other.position)
 
-    def distance_to(self, other):
-        return np.sum(np.abs(self.position - other.position))
+    def distance_to(self, other, map_):
+        # return np.sum(np.abs(self.position - other.position))
+        old_val = np.sum(np.abs(self.position - other.position))
+        new_val = self.distance_map(map_)[other.numpy_coord]
+        return new_val
 
     @property
     def numpy_coord(self):
         return tuple(np.flipud(self.position))
 
     def distance_map(self, map_):
-        x = self.position[0]
-        y = self.position[1]
-        dists = np.zeros_like(map_)
-        max_dist = dists.size + 1
+        SENTINEL = -1
+        walls = Fight.get_walls_from_map(map_)
+        elves = Fight.get_elves_from_map(map_)
+        goblins = Fight.get_goblins_from_map(map_)
+        units = np.logical_or(elves, goblins)
+        blocks = np.logical_or(walls, units)
+
+        max_dist = map_.size + 1
+        dists = np.full_like(map_, SENTINEL)
+        dists[self.numpy_coord] = 0  # by definition! can get overwritten above
+
         img = np.zeros_like(dists)
         img[self.numpy_coord] = 1
-        blocks = np.logical_not(map_ == 0)
         dist = 1
         reachable_region = self.reachable_region(map_)
-        while not np.all(np.logical_or.reduce((img, np.logical_not(reachable_region), blocks))):
+        while not np.all(np.logical_or.reduce((dists >= 0, np.logical_not(reachable_region), walls))):
             last_img = img.copy()
             img = binary_dilation(img).astype(int)
+            dists[np.logical_and(dists == SENTINEL, img != last_img)] = dist
             img[blocks] = 0
-            dists[img != last_img] = dist
+            img[self.numpy_coord] = 1
             dist += 1
-        dists[np.logical_or(blocks, np.logical_not(reachable_region))] = max_dist
+        dists[np.logical_or(walls, np.logical_not(reachable_region))] = max_dist
+        dists[self.numpy_coord] = 0  # by definition! can get overwritten above
         return dists
 
     def reachable_region(self, map_: np.ndarray):
         regions = map_.copy()
-        regions[regions == 2] = 1  # remove elves
-        regions[regions == 3] = 1  # remove goblins
+        elves = regions == UnitType.ELF.value
+        goblins = regions == UnitType.GOBLIN.value
+        regions[elves] = 1  # remove elves
+        regions[goblins] = 1  # remove goblins
         regions[self.numpy_coord] = 0  # add back self
         regions = np.logical_not(regions).astype(int)
         measurements.label(regions, output=regions)
-        return regions == regions[self.numpy_coord]
+        own_region: np.ndarray = regions == regions[self.numpy_coord]
+        # add back reachable units
+        units = np.logical_or(elves, goblins)
+        adjacent = binary_dilation(own_region)
+        units_adjacent = np.logical_and(units, adjacent)
+        own_region[units_adjacent] = True
+        return own_region
+
+    def __str__(self):
+        return f'({self.position[0]}, {self.position[1]})'
+
+    def __repr__(self):
+        return self.__str__()
 
 
 NEARBY = [Square(np.array([0, -1])),  # these should be in reading order
@@ -111,7 +136,7 @@ class Unit(Square):
         for unit in fight.units:
             if self.is_target(unit):
                 found_target_unit = True
-                if self.distance_to(unit) <= 1:
+                if self.distance_to(unit, fight.map) <= 1:
                     # if already next to a target unit, add own position (which should then be nearest target), as a
                     # movement target
                     targets.append(Square(self.position))
@@ -123,7 +148,9 @@ class Unit(Square):
 
     def filter_by_reachable(self, map_: np.ndarray, target_list: List[Square]):
         reachable = self.reachable_region(map_)
-        return [target for target in target_list if reachable[target.numpy_coord]]
+        return [target for target in target_list
+                if reachable[target.numpy_coord] and
+                (map_[target.numpy_coord] == 0 or np.array_equal(self.position, target.position))]
 
     def find_target(self, fight):
         target_list = self.get_all_targets(fight)
@@ -131,16 +158,16 @@ class Unit(Square):
             # no target UNITS found
             return None
         target_list = self.filter_by_reachable(fight.map, target_list)
-        target_list.sort(key=lambda unit: self.distance_to(unit))
+        target_list.sort(key=lambda unit_: self.distance_to(unit_, fight.map))
         if not target_list:
             # no target SQUARES found (i.e. all enemy units are surrounded)
             return []
         nearby_targets = [target_list[0]]
-        dist = self.distance_to(target_list[0])
+        dist = self.distance_to(target_list[0], fight.map)
         if dist == 0:
             return Square(self.position)
-        for unit in target_list:
-            if self.distance_to(unit) > dist:
+        for unit in target_list[1:]:
+            if self.distance_to(unit, fight.map) > dist:
                 break
             else:
                 nearby_targets.append(unit)
@@ -161,11 +188,11 @@ class Unit(Square):
         fight.map[self.numpy_coord] = self.type.value
 
     def path_to(self, fight, target):
-        # broken because does not take account of blocking
         if np.array_equal(self.position, target.position):
             return NO_MOVEMENT
         all_dists = target.distance_map(fight.map)
-        dists = [all_dists[(self + pos).numpy_coord] for pos in NEARBY]
+        dists = [all_dists[(self + pos).numpy_coord] if fight.map[(self+pos).numpy_coord] == 0 else np.amax(all_dists)
+                 for pos in NEARBY]
         # index returns first occurrence, but that is ok because NEARBY is in reading order
         return NEARBY[dists.index(min(dists))]
 
@@ -198,9 +225,6 @@ class Fight:
         x = np.arange(self.map.shape[1])
         y = np.arange(self.map.shape[0])
         self.x, self.y = np.meshgrid(x, y)
-        self.cave = self.map.copy()
-        self.cave[self.cave == 2] = 0
-        self.cave[self.cave == 3] = 0
         elves = [Unit(UnitType.ELF, pos) for pos in np.transpose((self.map.transpose() == 2).nonzero())]
         goblins = [Unit(UnitType.GOBLIN, pos) for pos in np.transpose((self.map.transpose() == 3).nonzero())]
         self.units = elves + goblins
@@ -280,4 +304,15 @@ def reading_order(position):
 def in_reading_order(lst):
     return sorted(lst, key=lambda unit: reading_order(unit.position))
 
+
+def main():
+    with open('input.txt') as f:
+        initial_map = f.read()
+    fight = Fight(initial_map)
+    fight.evolve()
+    print('Part 1: ', fight.outcome())
+
+
+if __name__ == '__main__':
+    main()
 
