@@ -182,6 +182,14 @@ def test_summaries():
         yield check_evolution, initial_state, final_state, step, hp_list, ignore_hit_points, outcome
 
 
+def test_part1():
+    with open('input.txt') as f:
+        initial_map = f.read()
+    fight = day15.Fight(initial_map)
+    fight.evolve()
+    assert fight.outcome() == 183300
+
+
 summary_maps = '''#######
 #G..#E#
 #E#E.E#
