@@ -32,8 +32,6 @@ class Square:
         return Square(self.position + other.position)
 
     def distance_to(self, other, map_):
-        # return np.sum(np.abs(self.position - other.position))
-        old_val = np.sum(np.abs(self.position - other.position))
         new_val = self.distance_map(map_)[other.numpy_coord]
         return new_val
 
