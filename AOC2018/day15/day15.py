@@ -31,10 +31,6 @@ class Square:
     def __add__(self, other):
         return Square(self.position + other.position)
 
-    def distance_to(self, other, map_):
-        new_val = self.distance_map(map_)[other.numpy_coord]
-        return new_val
-
     @property
     def numpy_coord(self):
         return tuple(np.flipud(self.position))
@@ -131,10 +127,11 @@ class Unit(Square):
     def get_all_targets(self, fight):
         targets = []
         found_target_unit = False
+        distance_map = self.distance_map(fight.map)
         for unit in fight.units:
             if self.is_target(unit):
                 found_target_unit = True
-                if self.distance_to(unit, fight.map) <= 1:
+                if distance_map[unit.numpy_coord] <= 1:
                     # if already next to a target unit, add own position (which should then be nearest target), as a
                     # movement target
                     targets.append(Square(self.position))
@@ -156,16 +153,17 @@ class Unit(Square):
             # no target UNITS found
             return None
         target_list = self.filter_by_reachable(fight.map, target_list)
-        target_list.sort(key=lambda unit_: self.distance_to(unit_, fight.map))
+        distance_map = self.distance_map(fight.map)
+        target_list.sort(key=lambda unit_: distance_map[unit_.numpy_coord])
         if not target_list:
             # no target SQUARES found (i.e. all enemy units are surrounded)
             return []
         nearby_targets = [target_list[0]]
-        dist = self.distance_to(target_list[0], fight.map)
+        dist = distance_map[target_list[0].numpy_coord]
         if dist == 0:
             return Square(self.position)
         for unit in target_list[1:]:
-            if self.distance_to(unit, fight.map) > dist:
+            if distance_map[unit.numpy_coord] > dist:
                 break
             else:
                 nearby_targets.append(unit)
