@@ -54,7 +54,7 @@ def test_in_range_tgts():
 #######'''
     fight = day15.Fight(input_map)
     unit = fight.move_list()[0]
-    tgts = unit.get_all_targets(fight)
+    tgts = unit.get_all_targets(fight, unit.distance_map(fight.map))
     tgts = [s.position for s in tgts]
     assert np.array_equal(tgts,
                           np.array([[3, 1], [5, 1], [2, 2], [5, 2], [1, 3], [3, 3]]))
@@ -68,7 +68,7 @@ def test_reachable_tgts():
 #######'''
     fight = day15.Fight(input_map)
     unit = fight.move_list()[0]
-    tgts = unit.get_all_targets(fight)
+    tgts = unit.get_all_targets(fight, unit.distance_map(fight.map))
     tgts = unit.filter_by_reachable(fight.map, tgts)
     tgts = [s.position for s in tgts]
     assert np.array_equal(tgts, np.array([[3, 1], [2, 2], [1, 3], [3, 3]]))
@@ -82,7 +82,7 @@ def test_find_tgt():
 #######'''
     fight = day15.Fight(input_map)
     unit = fight.move_list()[0]
-    tgt = unit.find_target(fight)
+    tgt = unit.find_target(fight, unit.distance_map(fight.map))
     assert np.array_equal(tgt.position, np.array([3, 1]))
 
 
@@ -182,12 +182,12 @@ def test_summaries():
         yield check_evolution, initial_state, final_state, step, hp_list, ignore_hit_points, outcome
 
 
-def test_part1():
-    with open('input.txt') as f:
-        initial_map = f.read()
-    fight = day15.Fight(initial_map)
-    fight.evolve()
-    assert fight.outcome() == 183300
+# def test_part1():
+#     with open('input.txt') as f:
+#         initial_map = f.read()
+#     fight = day15.Fight(initial_map)
+#     fight.evolve()
+#     assert fight.outcome() == 183300
 
 
 summary_maps = '''#######

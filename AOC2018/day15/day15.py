@@ -124,10 +124,9 @@ class Unit(Square):
                 and self.attack_power == other.attack_power \
                 and Square.__eq__(self, other)
 
-    def get_all_targets(self, fight):
+    def get_all_targets(self, fight, distance_map):
         targets = []
         found_target_unit = False
-        distance_map = self.distance_map(fight.map)
         for unit in fight.units:
             if self.is_target(unit):
                 found_target_unit = True
@@ -147,13 +146,12 @@ class Unit(Square):
                 if reachable[target.numpy_coord] and
                 (map_[target.numpy_coord] == 0 or np.array_equal(self.position, target.position))]
 
-    def find_target(self, fight):
-        target_list = self.get_all_targets(fight)
+    def find_target(self, fight, distance_map):
+        target_list = self.get_all_targets(fight, distance_map)
         if target_list is None:
             # no target UNITS found
             return None
         target_list = self.filter_by_reachable(fight.map, target_list)
-        distance_map = self.distance_map(fight.map)
         target_list.sort(key=lambda unit_: distance_map[unit_.numpy_coord])
         if not target_list:
             # no target SQUARES found (i.e. all enemy units are surrounded)
@@ -173,7 +171,8 @@ class Unit(Square):
         return [Square(self.position + pos.position) for pos in NEARBY if map_[(self + pos).numpy_coord] == 0]
 
     def move_in(self, fight):
-        target = self.find_target(fight)
+        distance_map = self.distance_map(fight.map)
+        target = self.find_target(fight, distance_map)
         if target is None:
             raise StopIteration
         elif not target:
@@ -183,7 +182,7 @@ class Unit(Square):
         self.position += direction.position
         fight.map[self.numpy_coord] = self.type.value
 
-    def path_to(self, fight, target):
+    def path_to(self, fight, target: Square):
         if np.array_equal(self.position, target.position):
             return NO_MOVEMENT
         all_dists = target.distance_map(fight.map)
