@@ -51,15 +51,15 @@ class Square:
         img[self.numpy_coord] = 1
         dist = 1
         reachable_region = self.reachable_region(map_)
-        while not np.all(np.logical_or.reduce((dists >= 0, np.logical_not(reachable_region), walls))):
+        dists[np.logical_or(walls, np.logical_not(reachable_region))] = max_dist
+
+        while not np.all(dists >= 0):
             last_img = img.copy()
             img = binary_dilation(img).astype(int)
             dists[np.logical_and(dists == SENTINEL, img != last_img)] = dist
             img[blocks] = 0
             img[self.numpy_coord] = 1
             dist += 1
-        dists[np.logical_or(walls, np.logical_not(reachable_region))] = max_dist
-        dists[self.numpy_coord] = 0  # by definition! can get overwritten above
         return dists
 
     def reachable_region(self, map_: np.ndarray):
@@ -131,9 +131,8 @@ class Unit(Square):
             if self.is_target(unit):
                 found_target_unit = True
                 if distance_map[unit.numpy_coord] <= 1:
-                    # if already next to a target unit, add own position (which should then be nearest target), as a
-                    # movement target
-                    targets.append(Square(self.position))
+                    # if already next to a target unit, return only own position (which should then be nearest target)
+                    return [Square(self.position)]
                 targets.extend(unit.in_range_squares(fight.map))
         return in_reading_order(targets) if found_target_unit else None
 
