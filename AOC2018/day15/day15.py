@@ -337,6 +337,10 @@ def main():
     fight.evolve()
     print('Part 1: ', fight.outcome())
 
+    fight = Fight(initial_map, allow_elf_death=False)
+    fight.evolve()
+    print('Part 2: ', fight.outcome())
+
 
 if __name__ == '__main__':
     main()
