@@ -8,6 +8,10 @@ UNITTYPE_DICT = {2: 'E', 3: 'G'}
 UNITTYPE_DICT_INV = {item[1]: item[0] for item in UNITTYPE_DICT.items()}
 
 
+class ElfDeathException(Exception):
+    pass
+
+
 class UnitType(Enum):
     ELF = 2
     GOBLIN = 3
@@ -98,7 +102,7 @@ class Unit(Square):
     BASE_HIT_POINTS = 200
     BASE_ATTACK_POWER = 3
 
-    def __init__(self, type_, position):
+    def __init__(self, type_, position, attack_power=None):
         super().__init__(position)
         if type(type_) is str:
             type_ = UnitType.from_string(type_)
@@ -106,7 +110,7 @@ class Unit(Square):
             type_ = UnitType(type_)
         self.type = type_
         self._hit_points = Unit.BASE_HIT_POINTS
-        self.attack_power = Unit.BASE_ATTACK_POWER
+        self.attack_power = attack_power if attack_power is not None else Unit.BASE_ATTACK_POWER
 
     @property
     def hit_points(self):
@@ -115,13 +119,15 @@ class Unit(Square):
     @hit_points.setter
     def hit_points(self, value):
         self._hit_points = value
-        if self._hit_points < 0:
+        if self._hit_points <= 0:
+            old_type = self.type
             self.type = None
+            if old_type == UnitType.ELF:
+                raise ElfDeathException
 
     def __eq__(self, other):
         return self.type == other.type \
                 and self.hit_points == other.hit_points \
-                and self.attack_power == other.attack_power \
                 and Square.__eq__(self, other)
 
     def get_all_targets(self, fight, distance_map):
@@ -197,7 +203,11 @@ class Unit(Square):
             hp = [t.hit_points for t in targets]
             # index returns first occurrence, but that is ok because NEARBY is in reading order
             selected_target = targets[hp.index(min(hp))]
-            selected_target.hit_points -= self.attack_power
+            try:
+                selected_target.hit_points -= self.attack_power
+            except ElfDeathException as e:
+                if not fight.allow_elf_death:
+                    raise e
 
     def __str__(self):
         return f'{self.type.to_string()}, ({self.position[0]}, {self.position[1]}): {self.hit_points}HP'
@@ -208,24 +218,41 @@ class Unit(Square):
 
 class Fight:
 
-    def __init__(self, input_map: str):
+    def __init__(self, input_map: str, allow_elf_death: bool=True):
         self.completed_rounds = 0
+        self.allow_elf_death = allow_elf_death
+        self._input_map = input_map
+        self._elf_attack_power = 3
+        self.map = None
+        self.units = None
+        self.build_map(input_map)
+        self.build_units()
+
+    def __eq__(self, other):
+        return np.array_equal(self.map, other.map) and \
+            all([a == b for a, b in zip(self.move_list(), other.move_list())])
+
+    def build_map(self, input_map):
         array_str = input_map.replace('E', '2')
         array_str = array_str.replace('G', '3')
         array_str = array_str.replace('.', '0')
         array_str = array_str.replace('#', '1')
         array_list = [[int(v) for v in line] for line in array_str.split('\n')]
         self.map: np.ndarray = np.array(array_list)
-        x = np.arange(self.map.shape[1])
-        y = np.arange(self.map.shape[0])
-        self.x, self.y = np.meshgrid(x, y)
-        elves = [Unit(UnitType.ELF, pos) for pos in np.transpose((self.map.transpose() == 2).nonzero())]
+
+    def build_units(self):
+        elves = [Unit(UnitType.ELF, pos, self._elf_attack_power) for pos in np.transpose((self.map.transpose() == 2).nonzero())]
         goblins = [Unit(UnitType.GOBLIN, pos) for pos in np.transpose((self.map.transpose() == 3).nonzero())]
         self.units = elves + goblins
 
-    def __eq__(self, other):
-        return np.array_equal(self.map, other.map) and \
-            all([a == b for a, b in zip(in_reading_order(self.units), in_reading_order(other.units))])
+    def reset(self):
+        self.completed_rounds = 0
+        self.build_map(self._input_map)
+        self.build_units()
+
+    @property
+    def elf_attack_power(self):
+        return self._elf_attack_power
 
     @property
     def walls(self):
@@ -271,9 +298,13 @@ class Fight:
         while n_rounds < 1 or self.completed_rounds < n_rounds:
             try:
                 self.do_round()
+                self.completed_rounds += 1
             except StopIteration:
                 return
-            self.completed_rounds += 1
+            except ElfDeathException:
+                self._elf_attack_power += 1
+                self.reset()
+                self.evolve()
 
     def unit_at_pos(self, position):
         for unit in self.units:

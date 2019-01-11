@@ -117,8 +117,9 @@ def test_movement():
         yield check_evolution, initial_state, final_state, i+1, None, True
 
 
-def check_evolution(initial_map, final_map, n_rounds, hp_list=None, ignore_hp=False, outcome=None):
-    fight = day15.Fight(initial_map)
+def check_evolution(initial_map, final_map, n_rounds, hp_list=None, ignore_hp=False, outcome=None,
+                    allow_elf_death=True, expected_elf_power=None):
+    fight = day15.Fight(initial_map, allow_elf_death=allow_elf_death)
     fight.evolve(n_rounds)
     after_fight = day15.Fight(final_map)
     if hp_list:
@@ -131,11 +132,16 @@ def check_evolution(initial_map, final_map, n_rounds, hp_list=None, ignore_hp=Fa
     assert fight == after_fight
     if outcome:
         assert fight.outcome() == outcome
+    if expected_elf_power:
+        assert fight.elf_attack_power == expected_elf_power
 
 
 def extract_hp_list(state):
     lines = state.split('\n')
-    state_part, hp_part, *_ = zip(*[line.split('   ') for line in lines])
+    line_array = [line.split('   ') for line in lines]
+    line_array = [line if len(line) > 1 else line + [''] for line in line_array]
+    parts = zip(*line_array)
+    state_part, hp_part, *_ = parts
     state = '\n'.join(state_part)
     hp_str = ' '.join(hp_part).strip()
     hp_str.replace(',', '')
@@ -182,6 +188,21 @@ def test_summaries():
         yield check_evolution, initial_state, final_state, step, hp_list, ignore_hit_points, outcome
 
 
+def test_no_elf_death():
+    step = 0  # run to end of fight
+    ignore_hit_points = False
+    allow_elf_death = False
+    map_sets = no_elf_death_summaries.split('\n\n\n')
+    for map_set in map_sets:
+        state_match = re.match(r'(\d+)\n(.*)', map_set, re.DOTALL)
+        expected_elf_power = int(state_match.group(1))
+        map_set = state_match.group(2)
+        initial_state, final_state, text = map_set.split('\n\n')
+        final_state, hp_list = extract_hp_list(final_state)
+        outcome = int(text.split()[-1])
+        yield (check_evolution, initial_state, final_state, step, hp_list,
+               ignore_hit_points, outcome, allow_elf_death, expected_elf_power)
+
 # def test_part1():
 #     with open('input.txt') as f:
 #         initial_map = f.read()
@@ -189,6 +210,119 @@ def test_summaries():
 #     fight.evolve()
 #     assert fight.outcome() == 183300
 
+
+no_elf_death_summaries = '''15
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+
+#######
+#..E..#   E(158)
+#...E.#   E(14)
+#.#.#.#
+#...#.#
+#.....#
+#######
+
+Combat ends after 29 full rounds
+Elves win with 172 total hit points left
+Outcome: 29 * 172 = 4988
+
+
+4
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+
+#######
+#.E.E.#   E(200), E(23)
+#.#E..#   E(200)
+#E.##E#   E(125), E(200)
+#.E.#.#   E(200)
+#...#.#
+#######
+
+Combat ends after 33 full rounds
+Elves win with 948 total hit points left
+Outcome: 33 * 948 = 31284
+
+
+15
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+
+#######
+#.E.#.#   E(8)
+#.#E..#   E(86)
+#..#..#
+#...#.#
+#.....#
+#######
+
+Combat ends after 37 full rounds
+Elves win with 94 total hit points left
+Outcome: 37 * 94 = 3478
+
+
+12
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+
+#######
+#...E.#   E(14)
+#.#..E#   E(152)
+#.###.#
+#.#.#.#
+#...#.#
+#######
+
+Combat ends after 39 full rounds
+Elves win with 166 total hit points left
+Outcome: 39 * 166 = 6474
+
+
+34
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+
+#########
+#.......#
+#.E.#...#   E(38)
+#..##...#
+#...##..#
+#...#...#
+#.......#
+#.......#
+#########
+
+Combat ends after 30 full rounds
+Elves win with 38 total hit points left
+Outcome: 30 * 38 = 1140'''
 
 summary_maps = '''#######
 #G..#E#
@@ -198,13 +332,13 @@ summary_maps = '''#######
 #...E.#
 #######
 
-#######                 
-#...#E#   E(200)        
-#E#...#   E(197)        
-#.E##.#   E(185)        
+#######
+#...#E#   E(200)
+#E#...#   E(197)
+#.E##.#   E(185)
 #E..#E#   E(200), E(200)
-#.....#                 
-#######                 
+#.....#
+#######
 
 Combat ends after 37 full rounds
 Elves win with 982 total hit points left
@@ -219,13 +353,13 @@ Outcome: 37 * 982 = 36334
 #..E#.#
 #######
 
-#######                 
+#######
 #.E.E.#   E(164), E(197)
-#.#E..#   E(200)        
-#E.##.#   E(98)         
-#.E.#.#   E(200)        
-#...#.#                 
-#######                 
+#.#E..#   E(200)
+#E.##.#   E(98)
+#.E.#.#   E(200)
+#...#.#
+#######
 
 Combat ends after 46 full rounds
 Elves win with 859 total hit points left
@@ -240,13 +374,13 @@ Outcome: 46 * 859 = 39514
 #...E.#
 #######
 
-#######                
+#######
 #G.G#.#   G(200), G(98)
-#.#G..#   G(200)       
-#..#..#                
-#...#G#   G(95)        
-#...G.#   G(200)       
-#######                
+#.#G..#   G(200)
+#..#..#
+#...#G#   G(95)
+#...G.#   G(200)
+#######
 
 Combat ends after 35 full rounds
 Goblins win with 793 total hit points left
@@ -261,13 +395,13 @@ Outcome: 35 * 793 = 27755
 #...#G#
 #######
 
-#######                       
-#.....#                       
-#.#G..#   G(200)                    
-#.###.#                       
-#.#.#.#                       
+#######
+#.....#
+#.#G..#   G(200)
+#.###.#
+#.#.#.#
 #G.G#G#   G(98), G(38), G(200)
-#######                       
+#######
 
 Combat ends after 54 full rounds
 Goblins win with 536 total hit points left
@@ -284,15 +418,15 @@ Outcome: 54 * 536 = 28944
 #.....G.#
 #########
 
-#########                    
-#.G.....#   G(137)           
-#G.G#...#   G(200), G(200)   
-#.G##...#   G(200)           
-#...##..#                    
-#.G.#...#   G(200)           
-#.......#                    
-#.......#                    
-#########                    
+#########
+#.G.....#   G(137)
+#G.G#...#   G(200), G(200)
+#.G##...#   G(200)
+#...##..#
+#.G.#...#   G(200)
+#.......#
+#.......#
+#########
 
 Combat ends after 20 full rounds
 Goblins win with 937 total hit points left
