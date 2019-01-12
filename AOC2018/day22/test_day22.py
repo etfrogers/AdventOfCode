@@ -26,13 +26,20 @@ def test_time():
     assert time == 45
 
 
+def test_part1():
+    depth = 3879
+    target = (8, 713)
+    cave = day22.Cave(depth, target)
+    assert cave.risk_level() == 6323
+
+
 def test_coords():
     cave = day22.Cave(depth=TEST_DEPTH, target=TEST_TARGET)
-    yield check_indices, cave, (0, 0), 0, 510, 0
-    yield check_indices, cave, (1, 0), 16807, 17317, 1
-    yield check_indices, cave, (0, 1), 48271, 8415, 0
-    yield check_indices, cave, (1, 1), 145722555, 1805, 2
-    yield check_indices, cave, (10, 10), 0, 510, 0
+    yield check_indices, cave, (0, 0), 0, 510, day22.CaveType.ROCKY
+    yield check_indices, cave, (1, 0), 16807, 17317, day22.CaveType.WET
+    yield check_indices, cave, (0, 1), 48271, 8415, day22.CaveType.ROCKY
+    yield check_indices, cave, (1, 1), 145722555, 1805, day22.CaveType.NARROW
+    yield check_indices, cave, (10, 10), 0, 510, day22.CaveType.ROCKY
 
 
 # At 0,0, the geologic index is 0. The erosion level is (0 + 510) % 20183 = 510. The type is 510 % 3 = 0, rocky.
