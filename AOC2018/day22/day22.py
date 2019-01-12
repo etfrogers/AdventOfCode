@@ -1,20 +1,16 @@
+from collections import defaultdict
 from typing import Tuple
 
 import numpy as np
 
 
-class DynamicCachedArray:
-    def __init__(self, generator: callable, shape=(1,1)):
-        self.generator = generator
-        self._values = np.full(shape, np.nan)
-
-    def __getitem__(self, item):
-        assert len(item) == 2
-        assert all(i is not None for i in item)
-        assert all(i > 0 for i in item)
-        # try:
-        val = self._values[item]
-        # except:
+class KeyDefaultDict(defaultdict):
+    def __missing__(self, key):
+        if self.default_factory is None:
+            raise KeyError(key)
+        else:
+            ret = self[key] = self.default_factory(key)
+            return ret
 
 
 class Cave:
@@ -23,38 +19,57 @@ class Cave:
     def __init__(self, depth: int, target: Tuple[int, int], size: Tuple[int, int]=None):
         self.depth = depth
         self.target = target
-        self.size = size if size is not None else target
-        self.x = np.arange(self.size[0])
-        self.y = np.arange(self.size[1])
-        # self.x, self.y = np.meshgrid(x, y)
+        self.geologic_index = KeyDefaultDict(self.geologic_index_val)
+        self.erosion_level = KeyDefaultDict(self.erosion_level_val)
+        self.map = KeyDefaultDict(self.map_val)
 
-    def build_map(self):
-        return self.type(self.erosion_level())
+    def map_val(self, coords):
+        return self.type(self.erosion_level[coords])
 
-    def erosion_level(self):
-        return np.mod(self.geologic_index() + self.depth, self.EROSION_LEVELS)
+    def erosion_level_val(self, coords):
+        return np.mod(self.geologic_index[coords] + self.depth, self.EROSION_LEVELS)
 
-    def geologic_index(self):
-        gi = np.zeros(self.size, dtype=int)
-        # (0,0) = 0 implicitly
-        gi[1:, 0] = self.x[1:] * 16807
-        gi[0, 1:] = self.y[1:] * 48271
-
-        for i in range(1, max(self.size)):
-            for j in range(i, self.size[0]):
-                gi[i, j] = gi[i-1, j] * gi[i, j-1]
-            for j in range(i, self.size[1]):
-                gi[j, i] = gi[j-1, i] * gi[j, i-1]
-        return gi
+    def geologic_index_val(self, coords):
+        if coords == (0, 0):
+            return 0
+        elif coords == self.target:
+            return 0
+        elif coords[0] == 0:
+            return coords[1] * 48271
+        elif coords[1] == 0:
+            return coords[0] * 16807
+        else:
+            return self.erosion_level[coords[0]-1, coords[1]] * self.erosion_level[coords[0], coords[1]-1]
 
     @staticmethod
     def type(erosion_level):
         return np.mod(erosion_level, 3)
 
-    @property
-    def map(self):
-        return self.build_map()
+    def map_lists(self, size=None):
+        if size is None:
+            size = self.target
+        return [[self.map[(i, j)] for i in range(size[0]+1)] for j in range(size[1]+1)]
 
-    @property
+    def render(self, size=None):
+        if size is None:
+            size = self.target
+        lists = self.map_lists(size)
+        mapping = {0: '.', 1: '=', 2: '|'}
+        lists = [[mapping[v] for v in lst] for lst in lists]
+        lists[0][0] = 'M'
+        lists[self.target[0]][self.target[1]] = 'T'
+        return '\n'.join([''.join(i) for i in lists])
+
     def risk_level(self):
-        return np.sum(self.map[:self.target[0], :self.target[1]])
+        return np.sum(np.array(self.map_lists()))
+
+
+def main():
+    depth = 3879
+    target = (8, 713)
+    cave = Cave(depth, target)
+    print('Part 1: ', cave.risk_level())
+
+
+if __name__ == '__main__':
+    main()

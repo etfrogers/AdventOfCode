@@ -6,18 +6,18 @@ TEST_TARGET = (10, 10)
 
 def test_map():
     cave = day22.Cave(depth=TEST_DEPTH, target=TEST_TARGET)
-    assert cave.render() == map1
+    assert cave.render((15, 15)) == map1
 
 
 def test_risk():
     cave = day22.Cave(depth=TEST_DEPTH, target=TEST_TARGET)
-    assert cave.risk_level == 114
+    assert cave.risk_level() == 114
 
 
 def check_indices(cave, coords, geologic_index, erosion_level, type_):
-    assert cave.geologic_index()[coords[0], coords[1]] == geologic_index
-    assert cave.erosion_level()[coords[0], coords[1]] == erosion_level
-    assert cave.map[coords[0], coords[1]] == type_
+    assert cave.geologic_index[coords] == geologic_index
+    assert cave.erosion_level[coords] == erosion_level
+    assert cave.map[coords] == type_
 
 
 def test_coords():
