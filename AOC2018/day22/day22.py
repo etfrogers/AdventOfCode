@@ -63,6 +63,77 @@ class Cave:
     def risk_level(self):
         return np.sum(np.array(self.map_lists()))
 
+    def time_to_target(self):
+        neighbours = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        target = self.target
+        size = tuple(np.round(np.array(target)*1.5).astype(int))
+        times = np.full(size, np.nan)
+        equipment = np.full_like(times, np.nan)  # 0 neither, 1 torch, 2 climbing
+        times[0, 0] = 0
+        equipment[0, 0] = 1  # torch
+        for i in range(sum(size)):
+            for x in range(i+1):
+                y = i - x
+                old_pos = (x, y)
+                curr_type = self.map[old_pos]
+                for dir_ in neighbours:
+                    new_pos = (x + dir_[0], y + dir_[1])
+                    if any([v < 0 for v in new_pos]):
+                        continue
+                    try:
+                        curr_equipment = equipment[flip(old_pos)]
+                    except IndexError:
+                        continue
+                    new_type = self.map[new_pos]
+
+                    if new_type == 0:  # rocky
+                        if curr_equipment in (1, 2):
+                            transit_time = 1
+                        else:
+                            transit_time = 8
+                            if curr_type == 1:
+                                curr_equipment = 2
+                            elif curr_type == 2:
+                                curr_equipment = 1
+                            else:
+                                raise NotImplemented
+                    elif new_type == 1:
+                        if curr_equipment in (0, 2):
+                            transit_time = 1
+                        else:
+                            transit_time = 8
+                            if curr_type == 0:
+                                curr_equipment = 2
+                            elif curr_type == 2:
+                                curr_equipment = 0
+                            else:
+                                raise NotImplemented
+                    elif new_type == 2:
+                        if curr_equipment in (0, 1):
+                            transit_time = 1
+                        else:
+                            transit_time = 8
+                            if curr_type == 0:
+                                curr_equipment = 1
+                            elif curr_type == 1:
+                                curr_equipment = 0
+                            else:
+                                raise NotImplemented
+                    else:
+                        raise NotImplemented
+                    try:
+                        new_time = times[flip(old_pos)] + transit_time
+                        if np.isnan(times[flip(new_pos)]) or new_time < times[flip(new_pos)]:
+                            times[flip(new_pos)] = new_time
+                            equipment[flip(new_pos)] = curr_equipment
+                    except IndexError:
+                        pass
+        return times[flip(self.target)]
+
+
+def flip(a):
+    return a[1], a[0]
+
 
 def main():
     depth = 3879

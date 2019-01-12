@@ -20,6 +20,12 @@ def check_indices(cave, coords, geologic_index, erosion_level, type_):
     assert cave.map[coords] == type_
 
 
+def test_time():
+    cave = day22.Cave(depth=TEST_DEPTH, target=TEST_TARGET)
+    time = cave.time_to_target()
+    assert time == 45
+
+
 def test_coords():
     cave = day22.Cave(depth=TEST_DEPTH, target=TEST_TARGET)
     yield check_indices, cave, (0, 0), 0, 510, 0
