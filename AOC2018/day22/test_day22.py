@@ -33,6 +33,13 @@ def test_part1():
     assert cave.risk_level() == 6323
 
 
+def test_part2():
+    depth = 3879
+    target = (8, 713)
+    cave = day22.Cave(depth, target)
+    assert cave.time_to_target() == 982
+
+
 def test_coords():
     cave = day22.Cave(depth=TEST_DEPTH, target=TEST_TARGET)
     yield check_indices, cave, (0, 0), 0, 510, day22.CaveType.ROCKY
