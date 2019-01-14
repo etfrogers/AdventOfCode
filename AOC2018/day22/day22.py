@@ -85,14 +85,17 @@ class Cave:
         target = self.target
         tree = anytree.AnyNode(coords=(0, 0), equipment=Equipment.TORCH, time=0)
         node_list = [tree]
-
+        visited_nodes = set()
         old_len = 0
-        while min_time_to(tree, target) is None or \
-                not all([l > min_time_to(tree, target) for l in leaf_times(tree)]):
+        while True:
+            # better in the lop condition, but that means too man calls to (expensive) min_time_to
+            min_time = min_time_to(tree, target)
+            if min_time is not None and all([l > min_time for l in leaf_times(tree)]):
+                break
             # print(RenderTree(tree, AsciiStyle()))
             leaves = list(get_leaves(tree))
             for leaf in leaves:
-                if min_time_to(tree, target) is not None and leaf.time > min_time_to(tree, target):
+                if min_time is not None and leaf.time > min_time:
                     continue
                 old_pos = leaf.coords
                 curr_type = self.map[old_pos]
@@ -109,8 +112,12 @@ class Cave:
                         new_time += 7
                         new_equipment = Equipment.TORCH
                     temp_node = anytree.AnyNode(coords=new_pos, equipment=new_equipment, time=new_time)
-                    existing_node = equivalent_node(tree, new_pos, new_equipment)
+                    key = (new_pos, new_equipment)
+                    existing_node = equivalent_node(tree, new_pos, new_equipment) # if key in visited_nodes else None
+                    visited_nodes.add(key)
+
                     if not existing_node or existing_node.time > temp_node.time:
+
                         if existing_node:
                             existing_node.parent = None
                             node_list.remove(existing_node)
@@ -119,7 +126,6 @@ class Cave:
             if len(tree.descendants) == old_len:
                 break
             old_len = len(tree.descendants)
-                # prune_tree(tree)
         return min_time_to(tree, target)
 
 
