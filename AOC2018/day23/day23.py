@@ -29,15 +29,13 @@ def in_range_of_most(bots):
     cost = z3.Int('cost')
     pt = np.array([x, y, z])
     origin = np.array([0, 0, 0])
-    in_range = [z3.If(zdist(pt, bot.pos) < bot.range, 1, 0) for bot in bots]
-    # cost_expr = [z3.If(r, 1, 0) for r in in_range]
+    in_range = [z3.If(zdist(pt, bot.pos) <= bot.range, 1, 0) for bot in bots]
     opt = z3.Optimize()
     opt.add(cost == z3.Sum(in_range))
     opt.maximize(cost)
     opt.minimize(zdist(pt, origin))
     opt.check()
-    print(opt.model())
-    pass
+    return np.array((opt.model()[x].as_long(), opt.model()[y].as_long(), opt.model()[z].as_long()))
 
 
 def zabs(x):
@@ -60,6 +58,9 @@ def main():
     bot = get_strongest_bot(bots)
     bots_in_range = bot.in_range(bots)
     print('Part 1: ', len(bots_in_range))
+
+    point = in_range_of_most(bots)
+    print('Part2: ', distance(point, np.array([0, 0, 0])))
 
 
 if __name__ == '__main__':

@@ -54,3 +54,12 @@ def test_in_range_of_most_and_dist():
     bots = [day23.Nanobot(spec) for spec in part2_test_input.split('\n')]
     point = day23.in_range_of_most(bots)
     assert day23.distance(point, np.array([0, 0, 0])) == 36
+
+
+def test_part2():
+    with open('input.txt') as f:
+        specs = f.readlines()
+    bots = [day23.Nanobot(spec) for spec in specs]
+
+    point = day23.in_range_of_most(bots)
+    assert day23.distance(point, np.array([0, 0, 0])) == 107272899
