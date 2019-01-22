@@ -26,9 +26,17 @@ def get_strongest_bot(bots):
 
 def in_range_of_most(bots):
     x, y, z = z3.Ints('x y z')
+    cost = z3.Int('cost')
     pt = np.array([x, y, z])
-    in_range = [zdist(pt, bot.pos) < bot.range for bot in bots]
-    z3.solve(in_range)
+    origin = np.array([0, 0, 0])
+    in_range = [z3.If(zdist(pt, bot.pos) < bot.range, 1, 0) for bot in bots]
+    # cost_expr = [z3.If(r, 1, 0) for r in in_range]
+    opt = z3.Optimize()
+    opt.add(cost == z3.Sum(in_range))
+    opt.maximize(cost)
+    opt.minimize(zdist(pt, origin))
+    opt.check()
+    print(opt.model())
     pass
 
 
@@ -37,14 +45,12 @@ def zabs(x):
 
 
 def zdist(pos1, pos2):
-    return zabs(pos1[0] - pos2[0]) + zabs(pos1[1] - pos2[1]) + zabs(pos1[2] - pos2[2])
+    pos2_ = pos2.tolist()
+    return zabs(pos1[0] - pos2_[0]) + zabs(pos1[1] - pos2_[1]) + zabs(pos1[2] - pos2_[2])
 
 
 def distance(pos1, pos2):
     return np.sum(np.abs(pos1 - pos2))
-    # return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1]) + abs(pos1[2] - pos2[2])
-    # return sum([abs(p1 - p2) for p1, p2 in zip(pos1, pos2)])
-
 
 
 def main():
