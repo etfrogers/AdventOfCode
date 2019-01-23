@@ -21,6 +21,15 @@ def join_indented_lines(lst):
 
 class Fight:
     def __init__(self, spec):
+        self._initial_spec = spec
+        self.boost = 0
+        self.armies = {}
+        self.create_from_spec(spec)
+
+    def reset(self):
+        self.create_from_spec(self._initial_spec)
+
+    def create_from_spec(self, spec):
         self.armies = {army.name: army for army in parse_fight_spec(spec)}
 
     def get_army(self, name):
@@ -62,8 +71,25 @@ class Fight:
             self.do_round()
 
     def outcome(self):
-        winner = [army for army in self.armies.values() if army.groups][0]
-        return sum([g.units for g in winner.groups.values()])
+        return sum([g.units for g in self.get_winner().groups.values()])
+
+    def get_winner(self):
+        return [army for army in self.armies.values() if army.groups][0]
+
+    def find_min_boost(self):
+        winner_name = ''
+        while winner_name != 'Immune System':
+            self.reset()
+            self.apply_boost()
+            self.run()
+            self.boost += 1
+            winner_name = self.get_winner().name
+        self.boost -= 1  # remove last increment from tail of loop.
+        return self.boost
+
+    def apply_boost(self):
+        for group in self['Immune System'].groups.values():
+            group.attack_damage += self.boost
 
 
 class Army:
@@ -162,6 +188,9 @@ def main():
     fight.run()
 
     print('Part 1: ', fight.outcome())
+
+    min_boost = fight.find_min_boost()
+    print('Part 2: ', min_boost)
 
 
 if __name__ == '__main__':

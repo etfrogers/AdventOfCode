@@ -70,6 +70,27 @@ def test_part1():
     assert fight.outcome() == 33551
 
 
+def test_boost():
+    fight = day24.Fight(test_input)
+    fight.boost = 1570
+    fight.apply_boost()
+    fight.run()
+    assert fight.get_winner().name == 'Immune System'
+    assert fight.outcome() == 51
+
+
+def test_min_boost():
+    fight = day24.Fight(test_input)
+    boost = fight.find_min_boost()
+    assert boost == 1570
+# def test_part2():
+#     with open('input.txt') as f:
+#         specs = f.read()
+#     fight = day24.Fight(specs)
+#     boost = fight.find_min_boost()
+#     assert boost == 33551
+
+
 test_output = '''Immune System:
 Group 1 contains 17 units
 Group 2 contains 989 units
