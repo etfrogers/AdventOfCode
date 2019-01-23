@@ -132,7 +132,7 @@ class Army:
             lst = [(group.damage_dealt_to(target), target.effective_power, target.initiative, id_)
                    for id_, target in other.groups.items() if id_ not in targeted]
             lst.sort(reverse=True)
-            if lst:
+            if lst and lst[0][0] > 0:
                 defender_id = lst[0][3]
                 targets[attacker_id] = defender_id
                 targeted.add(defender_id)

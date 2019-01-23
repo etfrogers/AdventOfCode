@@ -85,12 +85,15 @@ def test_min_boost():
     fight.run_with_boost(boost)
     assert fight.outcome() == 51
 
-# def test_part2():
-#     with open('input.txt') as f:
-#         specs = f.read()
-#     fight = day24.Fight(specs)
-#     boost = fight.find_min_boost()
-#     assert boost == 33551
+
+def test_part2():
+    with open('input.txt') as f:
+        specs = f.read()
+    fight = day24.Fight(specs)
+    boost = fight.find_min_boost()
+    assert boost == 77
+    fight.run_with_boost(boost)
+    assert fight.outcome() == 760
 
 
 test_output = '''Immune System:
