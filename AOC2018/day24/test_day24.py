@@ -82,6 +82,7 @@ def test_min_boost():
     fight = day24.Fight(test_input)
     boost = fight.find_min_boost()
     assert boost == 1570
+    fight.run_with_boost(boost)
     assert fight.outcome() == 51
 
 # def test_part2():

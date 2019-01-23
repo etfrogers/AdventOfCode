@@ -1,3 +1,4 @@
+import math
 import re
 
 
@@ -84,18 +85,26 @@ class Fight:
         self.run()
 
     def find_min_boost(self):
-        winner_name = ''
-        boost = 0
-        while winner_name != 'Immune System':
-            print(f'Trying boost: {boost}')
+        low_boost = 1
+        high_boost = math.inf
+        while high_boost - low_boost > 1:
+            if high_boost == math.inf:
+                test_boost = low_boost * 10
+            else:
+                test_boost = (low_boost + high_boost) // 2
+            print(f'Trying boost: {test_boost}')
             try:
-                self.run_with_boost(boost)
+                self.run_with_boost(test_boost)
                 winner_name = self.get_winner().name
             except DeadlockException:
-                winner_name = 'None'
-            boost += 1
-        boost -= 1  # remove last increment from tail of loop.
-        return boost
+                winner_name = 'Infection'  # if a deadlock then immune system didn't win, which is what we search for
+            if winner_name == 'Immune System':
+                assert test_boost < high_boost
+                high_boost = test_boost
+            if winner_name == 'Infection':
+                assert test_boost > low_boost
+                low_boost = test_boost
+        return high_boost
 
     def apply_boost(self, boost):
         for group in self['Immune System'].groups.values():
@@ -201,6 +210,7 @@ def main():
     print('Part 1: ', fight.outcome())
 
     min_boost = fight.find_min_boost()
+    fight.run_with_boost(min_boost)
     print(f'Part 2:\nMin boost: {min_boost}\nRemaining Units {fight.outcome()}')
 
 
