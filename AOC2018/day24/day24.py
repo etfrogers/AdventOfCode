@@ -22,7 +22,6 @@ def join_indented_lines(lst):
 class Fight:
     def __init__(self, spec):
         self._initial_spec = spec
-        self.boost = 0
         self.armies = {}
         self.create_from_spec(spec)
 
@@ -64,6 +63,9 @@ class Fight:
     def do_round(self):
         targets = self.target_selection()
         result = self.do_attacks(targets)
+        _, _, _, killed_units = zip(*result)
+        if all([k == 0 for k in killed_units]):
+            raise DeadlockException
         return result
 
     def run(self):
@@ -76,20 +78,28 @@ class Fight:
     def get_winner(self):
         return [army for army in self.armies.values() if army.groups][0]
 
+    def run_with_boost(self, boost):
+        self.reset()
+        self.apply_boost(boost)
+        self.run()
+
     def find_min_boost(self):
         winner_name = ''
+        boost = 0
         while winner_name != 'Immune System':
-            self.reset()
-            self.apply_boost()
-            self.run()
-            self.boost += 1
-            winner_name = self.get_winner().name
-        self.boost -= 1  # remove last increment from tail of loop.
-        return self.boost
+            print(f'Trying boost: {boost}')
+            try:
+                self.run_with_boost(boost)
+                winner_name = self.get_winner().name
+            except DeadlockException:
+                winner_name = 'None'
+            boost += 1
+        boost -= 1  # remove last increment from tail of loop.
+        return boost
 
-    def apply_boost(self):
+    def apply_boost(self, boost):
         for group in self['Immune System'].groups.values():
-            group.attack_damage += self.boost
+            group.attack_damage += boost
 
 
 class Army:
@@ -172,12 +182,13 @@ class Group:
         if self._units <= 0:
             self._units = 0
             raise UnitDied
-    # @property
-    # def dead(self):
-    #     return self.units <= 0
 
 
 class UnitDied(Exception):
+    pass
+
+
+class DeadlockException(Exception):
     pass
 
 
@@ -190,7 +201,7 @@ def main():
     print('Part 1: ', fight.outcome())
 
     min_boost = fight.find_min_boost()
-    print('Part 2: ', min_boost)
+    print(f'Part 2:\nMin boost: {min_boost}\nRemaining Units {fight.outcome()}')
 
 
 if __name__ == '__main__':
