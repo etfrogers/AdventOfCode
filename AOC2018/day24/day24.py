@@ -21,7 +21,13 @@ def join_indented_lines(lst):
 
 class Fight:
     def __init__(self, spec):
-        self.army1, self.army2 = parse_fight_spec(spec)
+        self.armies = {army.name: army for army in parse_fight_spec(spec)}
+
+    def get_army(self, name):
+        return self.armies[name]
+
+    def __getitem__(self, item):
+        return self.armies[item]
 
 
 class Army:
@@ -44,7 +50,6 @@ class Group:
     def __init__(self, spec):
         matches = self.PATTERN.match(spec)
         units, hit_points, _, _, immunities, weaknesses, attack_damage, attack_type, initiative = matches.groups()
-        print(matches.groups())
         self.units = int(units)
         self.hit_points = int(hit_points)
         self.attack_damage = int(attack_damage)
@@ -52,3 +57,15 @@ class Group:
         self.initiative = int(initiative)
         self.weaknesses = set('') if weaknesses is None else set(weaknesses.split(', '))
         self.immunities = set('') if immunities is None else set(immunities.split(', '))
+
+    @property
+    def effective_power(self):
+        return self.units * self.attack_damage
+
+    def damage_dealt_to(self, other):
+        modifier = 1
+        if self.attack_type in other.immunities:
+            modifier = 0
+        elif self.attack_type in other.weaknesses:
+            modifier = 2
+        return self.effective_power * modifier
