@@ -16,7 +16,7 @@ Infection:
 
 
 DAMAGE_PATTERN = re.compile(r'([A-za-z ]+) group (\d+) would deal defending group (\d+) (\d+) damage')
-ARMIES = ['Immune System', 'Infection']
+RESULT_PATTERN = re.compile(r'([A-za-z ]+) group (\d+) attacks defending group (\d+), killing (\d+) units')
 
 
 def test_parsing():
@@ -29,11 +29,19 @@ def test_parsing():
     assert fight['Infection'][1].initiative == 1
 
 
-def test_damage():
+def test_fighting():
     fight = day24.Fight(test_input)
     outputs = test_output.split('\n\n\n')
-    _, damage_spec, _ = outputs[0].split('\n\n')
+    _, damage_spec, round_spec = outputs[0].split('\n\n')
     yield check_damage, fight, damage_spec
+    yield check_round, fight, round_spec
+
+
+def check_round(fight, round_spec):
+    results = fight.do_round()
+    for result, line in zip(results, round_spec.split('\n')):
+        matches = RESULT_PATTERN.match(line)
+        assert matches.groups() == tuple(str(i) for i in result)
 
 
 def check_damage(fight: day24.Fight, spec):
@@ -43,8 +51,23 @@ def check_damage(fight: day24.Fight, spec):
         attack_group = int(attack_group)
         defend_group = int(defend_group)
         damage = int(damage)
-        other_army = [a for a in ARMIES if a != army][0]
+        other_army = fight[army].get_other_army(fight.armies).name
         assert fight[army][attack_group].damage_dealt_to(fight[other_army][defend_group]) == damage
+
+
+def test_outcome():
+    fight = day24.Fight(test_input)
+    fight.run()
+    assert fight.outcome() == 5216
+
+
+def test_part1():
+    with open('input.txt') as f:
+        specs = f.read()
+    fight = day24.Fight(specs)
+    fight.run()
+
+    assert fight.outcome() == 33551
 
 
 test_output = '''Immune System:

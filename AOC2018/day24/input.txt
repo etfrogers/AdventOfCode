@@ -7,7 +7,7 @@ Immune System:
 2758 units each with 5199 hit points (immune to slashing, bludgeoning, cold; weak to fire) with an attack that does 18 bludgeoning damage at initiative 15
 643 units each with 9928 hit points (immune to fire; weak to slashing, bludgeoning) with an attack that does 149 fire damage at initiative 14
 219 units each with 8810 hit points with an attack that does 368 cold damage at initiative 3
-9826 units each with 10288 hit points (weak to bludgeoning; immune to cold) with an attack that does 8 cold damage at initiative 18
+9826 units each with 10288 hit points (immune to cold; weak to bludgeoning) with an attack that does 8 cold damage at initiative 18
 2417 units each with 9613 hit points (weak to fire, cold) with an attack that does 36 cold damage at initiative 19
 
 Infection:
