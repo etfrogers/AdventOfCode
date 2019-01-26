@@ -14,15 +14,13 @@ def check_length(regex, length):
 
 def test_bracketed_chunk():
     regex = 'ENWWW(NEEE|SSE(EE|N))'
-    prefix, bracketed_chunk, suffix = day20.get_bracketed_chunk(regex, 5)
-    assert prefix == 'ENWWW'
+    bracketed_chunk, rest = day20.get_bracketed_chunk(regex[5:])
     assert bracketed_chunk == 'NEEE|SSE(EE|N)'
-    assert suffix == ''
+    assert rest == ''
 
-    prefix, bracketed_chunk, suffix = day20.get_bracketed_chunk(regex, 14)
-    assert prefix == 'ENWWW(NEEE|SSE'
+    bracketed_chunk, rest = day20.get_bracketed_chunk(regex[14:])
     assert bracketed_chunk == 'EE|N'
-    assert suffix == ')'
+    assert rest == ')'
 
 
 test_input = '''^WNE$
