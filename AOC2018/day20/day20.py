@@ -2,6 +2,7 @@ from typing import List
 
 # from anytree import RenderTree, AnyNode, PreOrderIter, search
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class Tree:
@@ -12,18 +13,24 @@ class Tree:
         regex = list(regex)
         self.node_id = 0
         self.graph = self.build_graph(regex)
-        for edge in self.graph.edges:
-            self.graph.edges[edge]['weight'] = len(self.graph.nodes[edge[1]]['regex'])
-        # nx.draw(self.graph)
-        # plt.show()
+
+    def render(self):
+        pos = nx.spring_layout(self.graph)
+        node_labels = {node: f'{node}: {regex}' for node, regex in self.graph.nodes(data='regex')}
+        edge_labels = {(e1, e2): str(weight) for e1, e2, weight in self.graph.edges(data='weight')}
+        nx.draw(self.graph, pos)
+        nx.draw_networkx_labels(self.graph, pos, node_labels, font_size=10)
+        nx.draw_networkx_edge_labels(self.graph, pos, edge_labels, font_size=10)
+        plt.show()
 
     def longest_path(self):
+        for id_, root in enumerate(tuple(get_roots(self.graph))):
+            self.graph.add_node(-(id_+1), regex='')
+            self.graph.add_edge(-(id_+1), root)
+        for edge in self.graph.edges:
+            self.graph.edges[edge]['weight'] = len(self.graph.nodes[edge[1]]['regex'])
         assert nx.is_directed_acyclic_graph(self.graph)
-        assert len(tuple(get_roots(self.graph))) == 1
-        branched_graph = convert_to_tree(self.graph)
-        lengths = [get_length_to(leaf, branched_graph) for leaf in get_leaves(branched_graph)]
-        return max(lengths)
-        # return nx.dag_longest_path_length(self.graph)
+        return nx.dag_longest_path_length(self.graph)
 
     def add_node_to(self, graph, regex, parents):
         id_ = self.node_id
@@ -64,30 +71,6 @@ class Tree:
                 parents = get_leaves(subgraph)
                 # TODO add links out from subgraph...
         return graph
-        # first_bracket = regex.find('(')
-        # first_pipe = regex.find('|')
-        # if first_pipe == -1 and first_bracket == -1:
-        #     # if regex:
-        #     nodes = [AnyNode(regex=regex)]
-        #     # else:
-        #     #     return []
-        # else:
-        #     prefix, bracketed_chunk, suffix = get_bracketed_chunk(regex, first_bracket)
-        #     nodes = [AnyNode(regex=chunk) for chunk in prefix.split('|')]
-        #     for node in nodes:
-        #         node.children = build_graph(bracketed_chunk, build_graph(suffix))
-        # if grandchildren:
-        #     for node in nodes:
-        #         for child in node.children:
-        #             child.children = grandchildren
-        # return nodes
-
-
-def convert_to_tree(graph):
-    tree = nx.dag_to_branching(graph)
-    for v, source in tree.nodes(data='source'):
-        tree.nodes[v]['regex'] = graph.nodes[source]['regex']
-    return tree
 
 
 def get_leaves(graph):
@@ -96,21 +79,6 @@ def get_leaves(graph):
 
 def get_roots(graph):
     return (c for c in graph.nodes if graph.in_degree(c) == 0)
-
-
-def get_length_to(leaf, graph):
-    length = 0
-    node = leaf
-    while True:
-        length += len(graph.nodes[node]['regex'])
-        parent = tuple(graph.predecessors(node))
-        if len(parent) == 0:
-            break
-        assert len(parent) == 1
-        node = parent
-    # for node in graph.predecessors(leaf):
-    #     length += len(graph.nodes[node]['regex'])
-    return length
 
 
 def get_bracketed_chunk(regex):
