@@ -12,14 +12,16 @@ class Tree:
         regex = list(regex)
         self.node_id = 0
         self.graph = self.build_graph(regex)
-        assert nx.is_directed_acyclic_graph(self.graph)
         for edge in self.graph.edges:
-            self.graph.edges[edge]['weight'] = len(self.graph[edge[0]])
+            self.graph.edges[edge]['weight'] = len(self.graph.nodes[edge[1]]['regex'])
         # nx.draw(self.graph)
         # plt.show()
 
     def longest_path(self):
-        lengths = [get_length_to(leaf, self.graph) for leaf in get_leaves(self.graph)]
+        assert nx.is_directed_acyclic_graph(self.graph)
+        assert len(tuple(get_roots(self.graph))) == 1
+        branched_graph = convert_to_tree(self.graph)
+        lengths = [get_length_to(leaf, branched_graph) for leaf in get_leaves(branched_graph)]
         return max(lengths)
         # return nx.dag_longest_path_length(self.graph)
 
@@ -81,18 +83,33 @@ class Tree:
         # return nodes
 
 
+def convert_to_tree(graph):
+    tree = nx.dag_to_branching(graph)
+    for v, source in tree.nodes(data='source'):
+        tree.nodes[v]['regex'] = graph.nodes[source]['regex']
+    return tree
+
+
 def get_leaves(graph):
     return (c for c in graph.nodes if graph.out_degree(c) == 0)
 
 
 def get_roots(graph):
-    return (c for c in graph.nodes if graph.out_degree(c) == 0)
+    return (c for c in graph.nodes if graph.in_degree(c) == 0)
 
 
 def get_length_to(leaf, graph):
-    length = len(graph.nodes[leaf]['regex'])
-    for node in graph.predecessors(leaf):
+    length = 0
+    node = leaf
+    while True:
         length += len(graph.nodes[node]['regex'])
+        parent = tuple(graph.predecessors(node))
+        if len(parent) == 0:
+            break
+        assert len(parent) == 1
+        node = parent
+    # for node in graph.predecessors(leaf):
+    #     length += len(graph.nodes[node]['regex'])
     return length
 
 
