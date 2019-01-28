@@ -74,7 +74,6 @@ class Tree:
                     for parent in parents:
                         graph.add_edge(parent, root)
                 parents = get_leaves(subgraph)
-                # TODO add links out from subgraph...
         return graph
 
 
@@ -97,3 +96,15 @@ def get_bracketed_chunk(regex):
             depth -= 1
         end += 1
     return regex[1:end], regex[end+1:]
+
+
+def main():
+    with open('input.txt') as f:
+        regex = f.read()
+    tree = Tree(regex)
+
+    print('Part 1: ', tree.longest_path())
+
+
+if __name__ == '__main__':
+    main()
