@@ -23,37 +23,43 @@ class Tree:
         return max(lengths)
         # return nx.dag_longest_path_length(self.graph)
 
-    def add_node_to(self, graph, regex):
+    def add_node_to(self, graph, regex, parents):
         id_ = self.node_id
         self.node_id += 1
         graph.add_node(id_, regex=regex)
+        for parent in parents:
+            graph.add_edge(parent, id_)
         return id_
 
-    def build_graph(self, regex: List[str], parent=None):
+    def build_graph(self, regex: List[str]):
         chunk = []
         nodes = []
         graph = nx.DiGraph()
+        parents = ()
         while regex:
             char = regex.pop(0)
             if char in ('|', '(') or not regex:
-                if not regex:
+                if char not in ('|', '('):
                     chunk.append(char)
-                new_id = self.add_node_to(graph, regex=''.join(chunk))
-                if parent is not None:
-                    graph.add_edge(parent, new_id)
+                new_parent = self.add_node_to(graph, regex=''.join(chunk), parents=parents)
                 chunk = []
+                if char == '|' and not regex:
+                    new_parent = self.add_node_to(graph, regex='', parents=parents)
             else:
                 chunk.append(char)
                 if not regex:
                     nodes.append('')
                 continue
             if char == '(':
+                parents = (new_parent,)
                 regex.insert(0, char)
                 bracketed_chunk, regex = get_bracketed_chunk(regex)
-                subgraph = self.build_graph(bracketed_chunk, new_id)
+                subgraph = self.build_graph(bracketed_chunk)
                 graph = nx.compose(graph, subgraph)
                 for root in get_roots(subgraph):
-                    graph.add_edge(new_id, root)
+                    for parent in parents:
+                        graph.add_edge(parent, root)
+                parents = get_leaves(subgraph)
                 # TODO add links out from subgraph...
         return graph
         # first_bracket = regex.find('(')
