@@ -24,13 +24,18 @@ class Tree:
         plt.show()
 
     def longest_path(self):
-        for id_, root in enumerate(tuple(get_roots(self.graph))):
+        roots = tuple(get_roots(self.graph))
+        for id_, root in enumerate(roots):
             self.graph.add_node(-(id_+1), regex='')
             self.graph.add_edge(-(id_+1), root)
         for edge in self.graph.edges:
             self.graph.edges[edge]['weight'] = len(self.graph.nodes[edge[1]]['regex'])
         assert nx.is_directed_acyclic_graph(self.graph)
-        return nx.dag_longest_path_length(self.graph)
+
+        roots = tuple(get_roots(self.graph))
+        leaves = get_leaves(self.graph)
+        lengths = (nx.shortest_path_length(self.graph, root, leaf, weight='weight') for root in roots for leaf in leaves)
+        return max(lengths)
 
     def add_node_to(self, graph, regex, parents):
         id_ = self.node_id
