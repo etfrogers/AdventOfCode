@@ -15,13 +15,7 @@ class Tree:
         self.graph = self.build_graph(regex)
 
     def render(self):
-        pos = nx.spring_layout(self.graph)
-        node_labels = {node: f'{node}: {regex}' for node, regex in self.graph.nodes(data='regex')}
-        edge_labels = {(e1, e2): str(weight) for e1, e2, weight in self.graph.edges(data='weight')}
-        nx.draw(self.graph, pos)
-        nx.draw_networkx_labels(self.graph, pos, node_labels, font_size=10)
-        nx.draw_networkx_edge_labels(self.graph, pos, edge_labels, font_size=10)
-        plt.show()
+        render_graph(self.graph)
 
     def longest_path(self):
         roots = tuple(get_roots(self.graph))
@@ -75,6 +69,25 @@ class Tree:
                         graph.add_edge(parent, root)
                 parents = get_leaves(subgraph)
         return graph
+
+
+def convert_to_tree(graph: nx.DiGraph):
+    if len(graph.nodes) == 1:
+        return graph.copy()
+    tree = nx.dag_to_branching(graph)
+    for v, source in tree.nodes(data='source'):
+        tree.nodes[v]['regex'] = graph.nodes[source]['regex']
+    return tree
+
+
+def render_graph(graph):
+    pos = nx.spring_layout(graph)
+    node_labels = {node: f'{node}: {regex}' for node, regex in graph.nodes(data='regex')}
+    edge_labels = {(e1, e2): str(weight) for e1, e2, weight in graph.edges(data='weight')}
+    nx.draw(graph, pos)
+    nx.draw_networkx_labels(graph, pos, node_labels, font_size=10)
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels, font_size=10)
+    plt.show()
 
 
 def get_leaves(graph):
