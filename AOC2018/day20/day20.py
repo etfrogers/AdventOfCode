@@ -76,11 +76,11 @@ class Tree:
 
 
 def get_leaves(graph):
-    return [c for c in graph.nodes if graph.out_degree(c) == 0]
+    return (c for c in graph.nodes if graph.out_degree(c) == 0)
 
 
 def get_roots(graph):
-    return [c for c in graph.nodes if graph.out_degree(c) == 0]
+    return (c for c in graph.nodes if graph.out_degree(c) == 0)
 
 
 def get_length_to(leaf, graph):
