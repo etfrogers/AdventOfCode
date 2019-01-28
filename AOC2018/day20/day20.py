@@ -18,17 +18,19 @@ class Tree:
         render_graph(self.graph)
 
     def longest_path(self):
-        roots = tuple(get_roots(self.graph))
+        tree = convert_to_tree(self.graph)
+        tree = nx.convert_node_labels_to_integers(tree)
+        roots = tuple(get_roots(tree))
         for id_, root in enumerate(roots):
-            self.graph.add_node(-(id_+1), regex='')
-            self.graph.add_edge(-(id_+1), root)
-        for edge in self.graph.edges:
-            self.graph.edges[edge]['weight'] = len(self.graph.nodes[edge[1]]['regex'])
-        assert nx.is_directed_acyclic_graph(self.graph)
+            tree.add_node(-(id_+1), regex='')
+            tree.add_edge(-(id_+1), root)
+        for edge in tree.edges:
+            tree.edges[edge]['weight'] = len(tree.nodes[edge[1]]['regex'])
+        # assert nx.is_directed_acyclic_graph(tree)
 
-        roots = tuple(get_roots(self.graph))
-        leaves = get_leaves(self.graph)
-        lengths = (nx.shortest_path_length(self.graph, root, leaf, weight='weight') for root in roots for leaf in leaves)
+        roots = tuple(get_roots(tree))
+        leaves = get_leaves(tree)
+        lengths = (nx.shortest_path_length(tree, root, leaf, weight='weight') for root in roots for leaf in leaves)
         return max(lengths)
 
     def add_node_to(self, graph, regex, parents):
