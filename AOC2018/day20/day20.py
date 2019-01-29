@@ -82,6 +82,10 @@ class Tree:
         lengths = nx.shortest_path_length(self.map, (0, 0))
         return max(lengths.values())
 
+    def paths_longer_than(self, n):
+        lengths = nx.shortest_path_length(self.map, (0, 0))
+        return sum(1 for v in lengths.values() if v >= n)
+
     def add_node_to(self, graph, regex, parents):
         id_ = self.node_id
         self.node_id += 1
@@ -175,6 +179,8 @@ def main():
 
     print('Finding paths')
     print('Part 1: ', tree.longest_path())
+
+    print('Part 2: ', tree.paths_longer_than(1000))
 
 
 if __name__ == '__main__':
