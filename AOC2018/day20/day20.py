@@ -66,7 +66,7 @@ class Tree:
         pos = [Point((0, 0))]
         nodes = [(root, pos) for root in roots]
         while nodes:
-            next_nodes = []
+            next_nodes = set()
             for node, pos in nodes:
                 regex = self.graph.nodes[node]['regex']
                 for char in regex:
@@ -74,7 +74,7 @@ class Tree:
                     map_.add_edges_from(zip(Point.tuples(pos), Point.tuples(new_pos)))
                     pos = new_pos
                 children = list(self.graph.successors(node))
-                next_nodes.extend([(c, tuple(pos)) for c in children])
+                next_nodes.update({(c, tuple(pos)) for c in children})
             nodes = next_nodes
         return map_
 
