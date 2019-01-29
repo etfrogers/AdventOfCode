@@ -1,37 +1,86 @@
 from typing import List
 
-# from anytree import RenderTree, AnyNode, PreOrderIter, search
 import networkx as nx
 import matplotlib.pyplot as plt
 
 
+class Point:
+    __slots__ = ('x', 'y')
+
+    def __init__(self, coords):
+        # Use super to set around __setattr__ definition
+        super().__setattr__('x', coords[0])
+        super().__setattr__('y', coords[1])
+
+    def __add__(self, other):
+        return Point((self.x + other.x, self.y + other.y))
+
+    # def __iadd__(self, other):
+    #     self.x += other.x
+    #     self.y += other.y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __setattr__(self, name, value):
+        """Prevent modification of attributes."""
+        raise AttributeError('Persons cannot be modified')
+
+    def __hash__(self):
+        return self.x * 100000 + self.y
+
+    @property
+    def tuple(self):
+        return self.x, self.y
+
+    @staticmethod
+    def tuples(lst):
+        return [p.tuple for p in lst]
+
+
+dirs = {'N': Point((0, 1)),
+        'E': Point((-1, 0)),
+        'S': Point((0, -1)),
+        'W': Point((1, 0)),
+        }
+
+
 class Tree:
     def __init__(self, regex):
+        self._input_regex = regex
         assert regex[0] == '^'
         assert regex[-1] == '$'
         regex = regex[1:-1]
         regex = list(regex)
         self.node_id = 0
         self.graph = self.build_graph(regex)
+        self.map = self.build_map()
 
     def render(self):
         render_graph(self.graph)
 
-    def longest_path(self):
-        tree = convert_to_tree(self.graph)
-        tree = nx.convert_node_labels_to_integers(tree)
-        roots = tuple(get_roots(tree))
-        for id_, root in enumerate(roots):
-            tree.add_node(-(id_+1), regex='')
-            tree.add_edge(-(id_+1), root)
-        for edge in tree.edges:
-            tree.edges[edge]['weight'] = len(tree.nodes[edge[1]]['regex'])
-        # assert nx.is_directed_acyclic_graph(tree)
+    def build_map(self):
+        map_ = nx.Graph()
+        roots = tuple(get_roots(self.graph))
 
-        roots = tuple(get_roots(tree))
-        leaves = get_leaves(tree)
-        lengths = (nx.shortest_path_length(tree, root, leaf, weight='weight') for root in roots for leaf in leaves)
-        return max(lengths)
+        pos = [Point((0, 0))]
+        nodes = [(root, pos) for root in roots]
+        while nodes:
+            next_nodes = []
+            for node, pos in nodes:
+                regex = self.graph.nodes[node]['regex']
+                for char in regex:
+                    new_pos = [p + dirs[char] for p in pos]
+                    map_.add_edges_from(zip(Point.tuples(pos), Point.tuples(new_pos)))
+                    pos = new_pos
+                children = list(self.graph.successors(node))
+                next_nodes.extend([(c, tuple(pos)) for c in children])
+            nodes = set(next_nodes)
+        return map_
+
+    def longest_path(self):
+        lengths = nx.shortest_path_length(self.map, (0, 0))
+        return max(lengths.values())
 
     def add_node_to(self, graph, regex, parents):
         id_ = self.node_id
@@ -48,8 +97,8 @@ class Tree:
         parents = ()
         while regex:
             char = regex.pop(0)
-            if char in ('|', '(') or not regex:
-                if char not in ('|', '('):
+            if char in '|(' or not regex:
+                if char not in '|(':
                     chunk.append(char)
                 new_parent = self.add_node_to(graph, regex=''.join(chunk), parents=parents)
                 chunk = []
@@ -82,13 +131,17 @@ def convert_to_tree(graph: nx.DiGraph):
     return tree
 
 
-def render_graph(graph):
+def render_graph(graph, draw_labels=True):
     pos = nx.spring_layout(graph)
-    node_labels = {node: f'{node}: {regex}' for node, regex in graph.nodes(data='regex')}
+    if draw_labels:
+        node_labels = {node: f'{node}: {regex}' for node, regex in graph.nodes(data='regex')}
+    else:
+        node_labels = {node: f'{node}' for node, regex in graph.nodes(data='regex')}
     edge_labels = {(e1, e2): str(weight) for e1, e2, weight in graph.edges(data='weight')}
     nx.draw(graph, pos)
     nx.draw_networkx_labels(graph, pos, node_labels, font_size=10)
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels, font_size=10)
+    if draw_labels:
+        nx.draw_networkx_edge_labels(graph, pos, edge_labels, font_size=10)
     plt.show()
 
 
@@ -116,8 +169,11 @@ def get_bracketed_chunk(regex):
 def main():
     with open('input.txt') as f:
         regex = f.read()
+    print('Building tree')
     tree = Tree(regex)
+    print('Tree built')
 
+    print('Finding paths')
     print('Part 1: ', tree.longest_path())
 
 
