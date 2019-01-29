@@ -75,7 +75,7 @@ class Tree:
                     pos = new_pos
                 children = list(self.graph.successors(node))
                 next_nodes.extend([(c, tuple(pos)) for c in children])
-            nodes = set(next_nodes)
+            nodes = next_nodes
         return map_
 
     def longest_path(self):
