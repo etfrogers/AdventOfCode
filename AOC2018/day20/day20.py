@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 
 class Point:
+    """Immutable point class"""
     __slots__ = ('x', 'y')
 
     def __init__(self, coords):
@@ -15,10 +16,6 @@ class Point:
     def __add__(self, other):
         return Point((self.x + other.x, self.y + other.y))
 
-    # def __iadd__(self, other):
-    #     self.x += other.x
-    #     self.y += other.y
-
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
@@ -27,7 +24,7 @@ class Point:
         raise AttributeError('Persons cannot be modified')
 
     def __hash__(self):
-        return self.x * 100000 + self.y
+        return hash(self.tuple)
 
     @property
     def tuple(self):

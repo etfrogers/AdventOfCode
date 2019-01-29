@@ -23,6 +23,19 @@ def test_bracketed_chunk():
     assert rest == ')'
 
 
+with open('input.txt') as f:
+    regex = f.read()
+tree = day20.Tree(regex)
+
+
+def test_part1():
+    assert tree.longest_path() == 4121
+
+
+def test_part2():
+    assert tree.paths_longer_than(1000) == 8636
+
+
 test_input = '''^WNE$
 3
 
