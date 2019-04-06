@@ -21,7 +21,7 @@ class Point:
 
     def __setattr__(self, name, value):
         """Prevent modification of attributes."""
-        raise AttributeError('Persons cannot be modified')
+        raise AttributeError('Points cannot be modified')
 
     def __hash__(self):
         return hash(self.tuple)
