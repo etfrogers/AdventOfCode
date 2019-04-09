@@ -94,7 +94,6 @@ class Cart:
             self.direction = self.direction_changes[(self.direction, current_symbol)]
 
 
-
 class Track:
     def __init__(self, input_map: List[str]):
         self.map, self.carts = self.extract_carts(input_map)
@@ -134,8 +133,32 @@ class Track:
                 self.collision = cart.numpy_coords
                 raise CollisionException(cart.coords)
 
+    def evolve(self):
+
+        while True:
+            try:
+                self.tick()
+            except CollisionException:
+                return self.collision
+
+    @property
+    def collision_string(self):
+        return f'{self.collision[1]},{self.collision[0]}'
+
 
 class CollisionException(Exception):
     def __init__(self, coords, *args):
         super().__init__(*args)
         self.coords = coords
+
+
+def main():
+    with open('input.txt') as file:
+        input_ = file.readlines()
+    track = Track(input_)
+    track.evolve()
+    print(track.collision_string)
+
+
+if __name__ == '__main__':
+    main()
