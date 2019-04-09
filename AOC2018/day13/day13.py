@@ -24,6 +24,20 @@ class Direction(Enum):
     def coords(self):
         return np.array(self.value)
 
+    def direction_after_turn(self, turn_direction):
+        list_of_dirs = list(Direction)
+        curr_index = list_of_dirs.index(self)
+        if turn_direction == CartTurnDir.LEFT:
+            curr_index -= 1
+        elif turn_direction == CartTurnDir.RIGHT:
+            curr_index += 1
+            curr_index %= len(list_of_dirs)
+        elif turn_direction == CartTurnDir.STRAIGHT:
+            pass
+        else:
+            raise ValueError
+        return list_of_dirs[curr_index]
+
 
 class Cart:
     symbols = {'^': (Direction.NORTH, '|'),
@@ -50,6 +64,7 @@ class Cart:
     def __init__(self, coords, symbol):
         self.coords = coords
         self.direction = self.symbols[symbol][0]
+        self.turn_direction = CartTurnDir.LEFT
 
     @property
     def symbol(self):
@@ -71,7 +86,13 @@ class Cart:
         return tuple(self.coords)
 
     def update_direction(self, map_):
-        self.direction = self.direction_changes[(self.direction, map_[self.numpy_coords])]
+        current_symbol = map_[self.numpy_coords]
+        if current_symbol == '+':
+            self.direction = self.direction.direction_after_turn(self.turn_direction)
+            self.turn_direction = self.turn_direction.next()
+        else:
+            self.direction = self.direction_changes[(self.direction, current_symbol)]
+
 
 
 class Track:
@@ -80,7 +101,7 @@ class Track:
         self.collision = None
 
     def render_map(self):
-        return [''.join(line) for line in self.map.tolist()]
+        return '\n'.join([''.join(line) for line in self.map.tolist()])
 
     def render(self):
         map_ = self.map.copy()
@@ -88,11 +109,11 @@ class Track:
             map_[cart.numpy_coords] = cart.symbol
         if self.collision:
             map_[self.collision] = 'X'
-        return [''.join(line) for line in map_]
+        return '\n'.join([''.join(line) for line in map_])
 
     @staticmethod
     def extract_carts(input_map: List[str]) -> Tuple[np.ndarray, List[Cart]]:
-        map_ = np.array([line.split() for line in input_map])
+        map_ = np.array([list(line) for line in input_map])
         coord_arrays = tuple(map_ == symbol for symbol in Cart.symbols.keys())
         cart_coords = np.transpose(np.logical_or.reduce(coord_arrays).nonzero())
         cart_coords = [tuple(coords) for coords in cart_coords]

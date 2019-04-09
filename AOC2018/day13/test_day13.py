@@ -22,7 +22,7 @@ simple_input = ['|',
 
 def test_simple_parse():
     track = Track(simple_input)
-    assert track.render_map() == ['|']*7
+    assert track.render_map() == '|\n' * 6 + '|'
     assert len(track.carts) == 2
     assert track.carts[0].coords == (1, 0)
     assert track.carts[0].direction == Direction.SOUTH
@@ -40,7 +40,7 @@ v  |  |  |  |
 
 
 def render_matches(track, strings):
-    return all([e == t for e, t in zip(track.render(), strings)])
+    return track.render() == strings
 
 
 def test_simple_evolution():
@@ -48,10 +48,128 @@ def test_simple_evolution():
     simple_evolution_list = [re.split(r'\s{2,}', line) for line in lines]
     initial_state, *states = list(zip(*simple_evolution_list))
     track = Track(initial_state)
-    assert render_matches(track, initial_state)
+    assert render_matches(track, '\n'.join(initial_state))
     for state in states[1::2]:
         try:
             track.tick()
         except CollisionException:
             pass
+        assert render_matches(track, '\n'.join(state))
+
+
+def test_complex_evolution():
+    initial_state, *states = complex_example.split('\n\n')
+    track = Track(initial_state.split('\n'))
+    assert render_matches(track, initial_state)
+    for state in states:
+        try:
+            track.tick()
+        except CollisionException:
+            pass
         assert render_matches(track, state)
+
+
+complex_example = r'''/->-\        
+|   |  /----\
+| /-+--+-\  |
+| | |  | v  |
+\-+-/  \-+--/
+  \------/   
+
+/-->\        
+|   |  /----\
+| /-+--+-\  |
+| | |  | |  |
+\-+-/  \->--/
+  \------/   
+
+/---v        
+|   |  /----\
+| /-+--+-\  |
+| | |  | |  |
+\-+-/  \-+>-/
+  \------/   
+
+/---\        
+|   v  /----\
+| /-+--+-\  |
+| | |  | |  |
+\-+-/  \-+->/
+  \------/   
+
+/---\        
+|   |  /----\
+| /->--+-\  |
+| | |  | |  |
+\-+-/  \-+--^
+  \------/   
+
+/---\        
+|   |  /----\
+| /-+>-+-\  |
+| | |  | |  ^
+\-+-/  \-+--/
+  \------/   
+
+/---\        
+|   |  /----\
+| /-+->+-\  ^
+| | |  | |  |
+\-+-/  \-+--/
+  \------/   
+
+/---\        
+|   |  /----<
+| /-+-->-\  |
+| | |  | |  |
+\-+-/  \-+--/
+  \------/   
+
+/---\        
+|   |  /---<\
+| /-+--+>\  |
+| | |  | |  |
+\-+-/  \-+--/
+  \------/   
+
+/---\        
+|   |  /--<-\
+| /-+--+-v  |
+| | |  | |  |
+\-+-/  \-+--/
+  \------/   
+
+/---\        
+|   |  /-<--\
+| /-+--+-\  |
+| | |  | v  |
+\-+-/  \-+--/
+  \------/   
+
+/---\        
+|   |  /<---\
+| /-+--+-\  |
+| | |  | |  |
+\-+-/  \-<--/
+  \------/   
+
+/---\        
+|   |  v----\
+| /-+--+-\  |
+| | |  | |  |
+\-+-/  \<+--/
+  \------/   
+
+/---\        
+|   |  /----\
+| /-+--v-\  |
+| | |  | |  |
+\-+-/  ^-+--/
+  \------/   
+
+/---\        
+|   |  /----\
+| /-+--+-\  |
+| | |  X |  |
+\-+-/  \-+--/
+  \------/   '''
