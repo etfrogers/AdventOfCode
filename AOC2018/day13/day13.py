@@ -93,6 +93,10 @@ class Cart:
         else:
             self.direction = self.direction_changes[(self.direction, current_symbol)]
 
+    @property
+    def state(self):
+        return self.numpy_coords, self.direction, self.turn_direction
+
 
 class Track:
     def __init__(self, input_map: List[str]):
@@ -122,10 +126,16 @@ class Track:
         return map_, carts
 
     def tick(self):
-        sorted_carts = sorted(self.carts, key=lambda x: x.reading_order)
+        sorted_carts = self.get_sorted_carts()
         for cart in sorted_carts:
             cart.tick(self.map)
             self.check_for_collisions(cart)
+
+    def get_sorted_carts(self):
+        return sorted(self.carts, key=lambda x: x.reading_order)
+
+    def get_state(self):
+        return tuple(cart.state for cart in self.get_sorted_carts())
 
     def check_for_collisions(self, other):
         for cart in self.carts:
@@ -134,10 +144,18 @@ class Track:
                 raise CollisionException(cart.coords)
 
     def evolve(self):
-
+        counter = 0
+        states = set()
         while True:
             try:
                 self.tick()
+                state = self.get_state()
+                if state in states:
+                    print("Loop found")
+                    return
+                states.add(state)
+                counter += 1
+                print(counter)
             except CollisionException:
                 return self.collision
 
