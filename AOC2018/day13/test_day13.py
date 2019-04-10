@@ -73,8 +73,9 @@ def test_collision():
     initial_state, *states = complex_example.split('\n\n')
     track = Track(initial_state.split('\n'))
     collision = track.evolve()
-    print(track.collision_string)
     assert tuple(collision) == (3, 7)
+    assert track.format_coords(collision) == '7,3'
+
 
 
 complex_example = r'''/->-\        

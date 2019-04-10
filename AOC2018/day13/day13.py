@@ -141,9 +141,9 @@ class Track:
             except CollisionException:
                 return self.collision
 
-    @property
-    def collision_string(self):
-        return f'{self.collision[1]},{self.collision[0]}'
+    @staticmethod
+    def format_coords(coords):
+        return f'{coords[1]},{coords[0]}'
 
 
 class CollisionException(Exception):
@@ -157,8 +157,8 @@ def main():
         input_ = file.readlines()
     input_ = [line.replace('\n', '') for line in input_]
     track = Track(input_)
-    track.evolve()
-    print(track.collision_string)
+    collision = track.evolve()
+    print(track.format_coords(collision))
 
 
 if __name__ == '__main__':
