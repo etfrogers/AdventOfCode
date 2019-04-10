@@ -95,9 +95,10 @@ class Cart:
 
 
 class Track:
-    def __init__(self, input_map: List[str]):
+    def __init__(self, input_map: List[str], crash_removal: bool=False):
         self.map, self.carts = self.extract_carts(input_map)
         self.collision = None
+        self.crash_removal = crash_removal
 
     def render_map(self):
         return '\n'.join([''.join(line) for line in self.map.tolist()])
@@ -106,7 +107,7 @@ class Track:
         map_ = self.map.copy()
         for cart in self.carts:
             map_[cart.numpy_coords] = cart.symbol
-        if self.collision:
+        if self.collision and not self.crash_removal:
             map_[self.collision] = 'X'
         return '\n'.join([''.join(line) for line in map_])
 
@@ -126,30 +127,44 @@ class Track:
         for cart in sorted_carts:
             cart.tick(self.map)
             self.check_for_collisions(cart)
+        if len(self.carts) == 1:
+            raise LastCartException(self.carts[0].numpy_coords)
 
     def check_for_collisions(self, other):
-        for cart in self.carts:
+        for cart in self.carts.copy():
             if np.all(cart.coords == other.coords) and cart is not other:
                 self.collision = cart.numpy_coords
-                raise CollisionException(cart.coords)
+                if self.crash_removal:
+                    self.carts.remove(cart)
+                    self.carts.remove(other)
+                    assert len(self.carts) > 0
+                else:
+                    raise CollisionException(cart.numpy_coords)
 
     def evolve(self):
-
         while True:
             try:
                 self.tick()
-            except CollisionException:
-                return self.collision
+            except (CollisionException, LastCartException) as err:
+                return err.coords
 
     @staticmethod
     def format_coords(coords):
         return f'{coords[1]},{coords[0]}'
 
 
-class CollisionException(Exception):
+class TrackException(Exception):
     def __init__(self, coords, *args):
         super().__init__(*args)
         self.coords = coords
+
+
+class CollisionException(TrackException):
+    pass
+
+
+class LastCartException(TrackException):
+    pass
 
 
 def main():
@@ -158,7 +173,11 @@ def main():
     input_ = [line.replace('\n', '') for line in input_]
     track = Track(input_)
     collision = track.evolve()
-    print(track.format_coords(collision))
+    print(f'Part 1: {track.format_coords(collision)}')
+
+    track = Track(input_, crash_removal=True)
+    last_cart = track.evolve()
+    print(f'Part 2: {track.format_coords(last_cart)}')
 
 
 if __name__ == '__main__':

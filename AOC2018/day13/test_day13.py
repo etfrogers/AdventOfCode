@@ -1,6 +1,6 @@
 import re
 
-from AOC2018.day13.day13 import CartTurnDir, Track, Direction, CollisionException
+from AOC2018.day13.day13 import CartTurnDir, Track, Direction, CollisionException, LastCartException
 
 
 def test_dir_increment():
@@ -85,6 +85,36 @@ def test_part1():
     collision = track.evolve()
     assert collision == (103, 63)
     assert track.format_coords(collision) == '63,103'
+
+
+def test_crash_removal_evolution():
+    initial_state, *states = crash_removal_example.split('\n\n')
+    track = Track(initial_state.split('\n'), crash_removal=True)
+    assert render_matches(track, initial_state)
+    for state in states:
+        try:
+            track.tick()
+        except (CollisionException, LastCartException):
+            pass
+        assert render_matches(track, state)
+
+
+def test_crash_removal():
+    initial_state, *states = crash_removal_example.split('\n\n')
+    track = Track(initial_state.split('\n'), crash_removal=True)
+    last_cart = track.evolve()
+    assert tuple(last_cart) == (4, 6)
+    assert track.format_coords(last_cart) == '6,4'
+
+
+def test_part2():
+    with open('input.txt') as file:
+        input_ = file.readlines()
+    input_ = [line.replace('\n', '') for line in input_]
+    track = Track(input_, crash_removal=True)
+    last_cart = track.evolve()
+    assert last_cart == (134, 16)
+    assert track.format_coords(last_cart) == '16,134'
 
 
 complex_example = r'''/->-\        
@@ -191,3 +221,35 @@ complex_example = r'''/->-\
 | | |  X |  |
 \-+-/  \-+--/
   \------/   '''
+
+crash_removal_example = r'''/>-<\  
+|   |  
+| /<+-\
+| | | v
+\>+</ |
+  |   ^
+  \<->/
+
+/---\  
+|   |  
+| v-+-\
+| | | |
+\-+-/ |
+  |   |
+  ^---^
+
+/---\  
+|   |  
+| /-+-\
+| v | |
+\-+-/ |
+  ^   ^
+  \---/
+
+/---\  
+|   |  
+| /-+-\
+| | | |
+\-+-/ ^
+  |   |
+  \---/'''
