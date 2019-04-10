@@ -155,6 +155,7 @@ class CollisionException(Exception):
 def main():
     with open('input.txt') as file:
         input_ = file.readlines()
+    input_ = [line.replace('\n', '') for line in input_]
     track = Track(input_)
     track.evolve()
     print(track.collision_string)
