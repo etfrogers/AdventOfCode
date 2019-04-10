@@ -77,6 +77,15 @@ def test_collision():
     assert track.format_coords(collision) == '7,3'
 
 
+def test_part1():
+    with open('input.txt') as file:
+        input_ = file.readlines()
+    input_ = [line.replace('\n', '') for line in input_]
+    track = Track(input_)
+    collision = track.evolve()
+    assert collision == (103, 63)
+    assert track.format_coords(collision) == '63,103'
+
 
 complex_example = r'''/->-\        
 |   |  /----\
