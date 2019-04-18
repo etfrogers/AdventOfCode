@@ -132,20 +132,24 @@ class Stream:
 
     def flow(self):
         new_streams = []
+        # set start point to flow
         self.ground[self.coords] = FLOW
+
+        # go down until you hit clay, water or the bottom
         while (self.coords + self.DOWN)[0] <= np.max(self.ground.y) and self.ground[self.coords + self.DOWN] == SAND:
             self.coords += self.DOWN
             self.ground[self.coords] = FLOW
-        # self.ground[self.coords] = WATER
 
-        if (self.coords + self.DOWN)[0] > np.max(self.ground.y):
+        # if at the bottom,or have hit water, stop and
+        if (self.coords + self.DOWN)[0] > np.max(self.ground.y) or \
+                self.ground[self.coords + self.DOWN] == FLOW:
             return []
 
         while True:
             stopping_point = self.coords.copy()
             cache = [tuple(self.coords)]
             cache_type = WATER
-            while self.ground[self.coords + self.RIGHT] == SAND:
+            while self.ground[self.coords + self.RIGHT] != CLAY:
                 self.coords += self.RIGHT
                 cache.append(tuple(self.coords))
                 if self.ground[self.coords + self.DOWN] == SAND:
@@ -154,7 +158,7 @@ class Stream:
                     new_streams.append(Stream(self.ground, self.coords))
                     break
             self.coords = stopping_point.copy()
-            while self.ground[self.coords + self.LEFT] == SAND:
+            while self.ground[self.coords + self.LEFT] != CLAY:
                 self.coords += self.LEFT
                 cache.append(tuple(self.coords))
                 if self.ground[self.coords + self.DOWN] == SAND:
@@ -174,8 +178,10 @@ def main():
     with open('input.txt') as file:
         specs = file.readlines()
     ground = Ground(specs)
-    print(ground.render())
+    # print(ground.render())
+    # print()
     ground.flow_water()
+    print(ground.render())
     print(f'Part 1: {ground.amount_of_water}')
 
 
