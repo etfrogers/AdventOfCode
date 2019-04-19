@@ -167,6 +167,8 @@ class Stream:
                     elif self.ground[self.coords + self.DOWN] == FLOW:
                         # need to exit if we have flow below (but without creating a stream)
                         # without this section, it progresses beyond the flow, creating two parallel flows
+                        cache.append(self.coords)
+                        cache_type = FLOW
                         break
                 self.coords = stopping_point.copy()
             # set points in current layer to correct type
