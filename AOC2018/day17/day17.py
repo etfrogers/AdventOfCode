@@ -119,6 +119,10 @@ class Ground:
     def amount_of_water(self):
         return np.count_nonzero(np.logical_or(self.map_ == FLOW, self.map_ == WATER))
 
+    @property
+    def retained_water(self):
+        return np.count_nonzero(self.map_ == WATER)
+
 
 class Stream:
     DOWN = np.array([1, 0])
@@ -190,8 +194,10 @@ def main():
     # print(ground.render())
     # print()
     ground.flow_water()
-    print(ground.render())
+    # print(ground.render())
     print(f'Part 1: {ground.amount_of_water}')
+
+    print(f'Part 2: {ground.retained_water}')
 
 
 if __name__ == '__main__':

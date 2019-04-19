@@ -72,6 +72,21 @@ def test_part1():
     assert ground.amount_of_water == 39649
 
 
+def test_retained_water():
+    input_list = test_input.split('\n')
+    ground = Ground(input_list)
+    ground.flow_water()
+    assert ground.retained_water == 29
+
+
+def test_part2():
+    with open('input.txt') as file:
+        specs = file.readlines()
+    ground = Ground(specs)
+    ground.flow_water()
+    assert ground.retained_water == 28872
+
+
 anti_loop_input = '''y=6, x=499..501
 x=499, y=3..6
 x=501, y=5..6
