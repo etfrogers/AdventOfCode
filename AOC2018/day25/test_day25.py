@@ -20,6 +20,14 @@ def test_dist():
     assert dist == 3
 
 
+def test_part1():
+    with open('input.txt') as file:
+        points = file.readlines()
+    points = [Point(line) for line in points]
+    constellations = find_constellations(points)
+    assert len(constellations) == 305
+
+
 test_input = '''2            
 0,0,0,0
 3,0,0,0

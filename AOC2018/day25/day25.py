@@ -50,3 +50,15 @@ def find_constellations(points: List[Point]):
         else:
             constellations.append(Constellation([point]))
     return constellations
+
+
+def main():
+    with open('input.txt') as file:
+        points = file.readlines()
+    points = [Point(line) for line in points]
+    constellations = find_constellations(points)
+    print('Part 1: ', len(constellations))
+
+
+if __name__ == '__main__':
+    main()
