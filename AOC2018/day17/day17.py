@@ -145,6 +145,7 @@ class Stream:
                 self.ground[self.coords + self.DOWN] == FLOW:
             return []
 
+        flow_found = False
         # fill up a basin
         while True:
             # record where we stopped so we can go back there
@@ -160,14 +161,15 @@ class Stream:
                     cache.append(tuple(self.coords))
                     # if we are on an open square, set layer type to water and create a new stream point.
                     if self.ground[self.coords + self.DOWN] == SAND:
-                        cache.append(self.coords)
+                        cache.append(tuple(self.coords))
                         cache_type = FLOW
-                        new_streams.append(Stream(self.ground, self.coords))
+                        new_streams.append(Stream(self.ground, self.coords.copy()))
                         break
                     elif self.ground[self.coords + self.DOWN] == FLOW:
                         # need to exit if we have flow below (but without creating a stream)
                         # without this section, it progresses beyond the flow, creating two parallel flows
-                        cache.append(self.coords)
+                        flow_found = True
+                        cache.append(tuple(self.coords))
                         cache_type = FLOW
                         break
                 self.coords = stopping_point.copy()
@@ -175,7 +177,7 @@ class Stream:
             for point in cache:
                 self.ground[point] = cache_type
             # if we made any new streams we have finished this stream, so break out
-            if new_streams:
+            if new_streams or flow_found:
                 break
             self.coords = stopping_point + self.UP
         return new_streams
