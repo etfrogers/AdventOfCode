@@ -64,6 +64,14 @@ def test_parallel_flows2():
     assert render == parallel_flow_result2
 
 
+def test_part1():
+    with open('input.txt') as file:
+        specs = file.readlines()
+    ground = Ground(specs)
+    ground.flow_water()
+    assert ground.amount_of_water == 39649
+
+
 anti_loop_input = '''y=6, x=499..501
 x=499, y=3..6
 x=501, y=5..6
