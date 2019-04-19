@@ -140,37 +140,42 @@ class Stream:
             self.coords += self.DOWN
             self.ground[self.coords] = FLOW
 
-        # if at the bottom,or have hit water, stop and
+        # if at the bottom,or have hit flowing water, stop and and do not create streams
         if (self.coords + self.DOWN)[0] > np.max(self.ground.y) or \
                 self.ground[self.coords + self.DOWN] == FLOW:
             return []
 
+        # fill up a basin
         while True:
+            # record where we stopped so we can go back there
             stopping_point = self.coords.copy()
+            # cache collects the current layer, which will be set to WATER (if static) or FLOW if not.
             cache = [tuple(self.coords)]
             cache_type = WATER
-            while self.ground[self.coords + self.RIGHT] != CLAY:
-                self.coords += self.RIGHT
-                cache.append(tuple(self.coords))
-                if self.ground[self.coords + self.DOWN] == SAND:
-                    cache.append(self.coords)
-                    cache_type = FLOW
-                    new_streams.append(Stream(self.ground, self.coords))
-                    break
-            self.coords = stopping_point.copy()
-            while self.ground[self.coords + self.LEFT] != CLAY:
-                self.coords += self.LEFT
-                cache.append(tuple(self.coords))
-                if self.ground[self.coords + self.DOWN] == SAND:
-                    cache.append(self.coords)
-                    cache_type = FLOW
-                    new_streams.append(Stream(self.ground, self.coords))
-                    break
+
+            # go left/right until you hit clay or an open square to drop over
+            for direction in self.LEFT, self.RIGHT:
+                while self.ground[self.coords + direction] != CLAY:
+                    self.coords += direction
+                    cache.append(tuple(self.coords))
+                    # if we are on an open square, set layer type to water and create a new stream point.
+                    if self.ground[self.coords + self.DOWN] == SAND:
+                        cache.append(self.coords)
+                        cache_type = FLOW
+                        new_streams.append(Stream(self.ground, self.coords))
+                        break
+                    elif self.ground[self.coords + self.DOWN] == FLOW:
+                        # need to exit if we have flow below (but without creating a stream)
+                        # without this section, it progresses beyond the flow, creating two parallel flows
+                        break
+                self.coords = stopping_point.copy()
+            # set points in current layer to correct type
             for point in cache:
                 self.ground[point] = cache_type
+            # if we made any new streams we have finished this stream, so break out
             if new_streams:
                 break
-            self.coords = (stopping_point + self.UP).copy()
+            self.coords = stopping_point + self.UP
         return new_streams
 
 

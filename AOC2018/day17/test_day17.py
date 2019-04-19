@@ -48,6 +48,14 @@ def test_anti_loop():
     assert render == anti_loop_result
 
 
+def test_parallel_flows():
+    input_list = parallel_flow_input.split('\n')
+    ground = Ground(input_list)
+    ground.flow_water()
+    render = ground.render()
+    assert render == parallel_flow_result
+
+
 anti_loop_input = '''y=6, x=499..501
 x=499, y=3..6
 x=501, y=5..6
@@ -61,6 +69,14 @@ loop_input = '''y=4, x=499..501
 x=499, y=3..4
 x=501, y=3..4
 x=505, y=1..2
+x=505, y=7..9
+x=495, y=7..9
+y=9, x=495..505'''
+
+parallel_flow_input = '''y=4, x=499..505
+x=499, y=3..4
+x=505, y=3..4
+x=508, y=1..2
 x=505, y=7..9
 x=495, y=7..9
 y=9, x=495..505'''
@@ -87,6 +103,17 @@ anti_loop_result = '''......+......
 |#~~~~~~~~~#.
 |#~~~~~~~~~#.
 |###########.'''
+
+parallel_flow_result = '''......+.........
+......|.......#.
+....|||||||||.#.
+....|#~~~~~#|...
+....|#######|...
+....|.......|...
+|||||||||||||...
+|#~~~~~~~~~#|...
+|#~~~~~~~~~#|...
+|###########|...'''
 
 blank_test_ground = '''......+.......
 ............#.
