@@ -1,5 +1,6 @@
 INPUT = '00111101111101000'
 DISK_LENGTH = 272
+DISK_LENGTH_2 = 35651584
 
 
 def expand(data: str) -> str:
@@ -33,6 +34,10 @@ def main():
     cs = checksum(disk)
 
     print('Part 1: ', cs)
+
+    disk = fill_disk(INPUT, DISK_LENGTH_2)
+    cs = checksum(disk)
+    print('Part 2: ', cs)
 
 
 if __name__ == '__main__':

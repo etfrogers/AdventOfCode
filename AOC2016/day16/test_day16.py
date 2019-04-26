@@ -1,4 +1,4 @@
-from AOC2016.day16.day16 import expand, fill_disk, checksum, DISK_LENGTH, INPUT
+from AOC2016.day16.day16 import expand, fill_disk, checksum, DISK_LENGTH, INPUT, DISK_LENGTH_2
 
 expand_tests = [('1', '100'),
                 ('0', '001'),
@@ -40,3 +40,9 @@ def test_part1():
     disk = fill_disk(INPUT, DISK_LENGTH)
     cs = checksum(disk)
     assert cs == '10011010010010010'
+
+
+def test_part2():
+    disk = fill_disk(INPUT, DISK_LENGTH_2)
+    cs = checksum(disk)
+    assert cs == '10101011110100011'
