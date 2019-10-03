@@ -41,5 +41,12 @@ def main():
     start_time = discs.find_path_start_time()
     print('Part 1: time = ', start_time)
 
+    discs2 = Discs()
+    discs2.parse_specs(specs)
+    discs2[len(discs)+1] = Disc(11, 0)
+    start_time = discs2.find_path_start_time()
+    print('Part 2: time = ', start_time)
+
+
 if __name__ == '__main__':
     main()
