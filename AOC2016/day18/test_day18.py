@@ -28,4 +28,4 @@ def test_2():
 
     room = Room(first_row, n_rows)
     assert room.render() == output
-    assert room.n_safe_squares == 38
+    assert room.n_safe_squares() == 38

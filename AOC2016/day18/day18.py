@@ -9,8 +9,10 @@ class Room:
         for i in range(1, n_rows):
             self.rows.append(self.build_row(self.rows[i-1]))
 
-    def render(self) -> str:
-        return '\n'.join(self.rows)
+    def render(self, n=None) -> str:
+        if n is None:
+            n = len(self.rows)
+        return '\n'.join(self.rows[:n])
 
     @staticmethod
     def build_row(old_row: str) -> str:
@@ -23,9 +25,8 @@ class Room:
 
         return ''.join(new_row)
 
-    @property
-    def n_safe_squares(self):
-        return sum([1 for c in self.render() if c == SAFE])
+    def n_safe_squares(self, n=None):
+        return sum([1 for c in self.render(n) if c == SAFE])
 
 
 def main():
@@ -33,12 +34,12 @@ def main():
     n_rows = 40
 
     room = Room(first_row, n_rows)
-    print('Part 1: Number of safe squares = ', room.n_safe_squares)
+    print('Part 1: Number of safe squares = ', room.n_safe_squares())
 
-    n_rows2 = 40000
+    n_rows2 = 400000
 
     room2 = Room(first_row, n_rows2)
-    print('Part 2: Number of safe squares = ', room2.n_safe_squares)
+    print('Part 2: Number of safe squares = ', room2.n_safe_squares())
 
 
 if __name__ == '__main__':
