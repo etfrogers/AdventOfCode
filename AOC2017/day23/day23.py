@@ -1,8 +1,8 @@
 from collections import defaultdict
-from AOC2017.day18 import day18
+from assembly_interpreter import AssemblyInterpreter
 
 
-class CoProc(day18.SoundCard):
+class CoProc(AssemblyInterpreter):
     def __init__(self, instruction_list):
         self.mul_count = 0
         self.instruction_dict = {'set': self.set,
@@ -10,18 +10,17 @@ class CoProc(day18.SoundCard):
                                  'mul': self.multiply,
                                  'jnz': self.jump_nz,
                                  }
-        self.registers = defaultdict(lambda: 0)
-        self.instructions = [self.parse_instruction(i) for i in instruction_list]
-        self.finished = False
-        self.pointer = 0
-        self.jumped = False
+        super().__init__(instruction_list)
+
+    def set(self, register, value):
+        self.registers[register] = self.get_value(value)
 
     def subtract(self, register, value):
         self.registers[register] -= self.get_value(value)
 
     def multiply(self, register, value):
         self.mul_count += 1
-        super().multiply(register, value)
+        self.registers[register] *= self.get_value(value)
 
     def jump_nz(self, register, value):
         if self.get_value(register) != 0:
