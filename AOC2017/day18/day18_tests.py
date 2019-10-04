@@ -1,4 +1,4 @@
-import day18
+from AOC2017.day18 import day18
 
 
 def test_rcv1():

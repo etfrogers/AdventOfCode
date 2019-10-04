@@ -1,11 +1,11 @@
-from collections import defaultdict, deque
+from collections import deque
+from assembly_interpreter import AssemblyInterpreter
 
 
-class SoundCard:
+class SoundCard(AssemblyInterpreter):
 
     def __init__(self, instruction_list):
         self.last_played = None
-        self.registers = defaultdict(lambda: 0)
         self.instruction_dict = {'snd': self.snd,
                                  'set': self.set,
                                  'add': self.add,
@@ -14,35 +14,7 @@ class SoundCard:
                                  'rcv': self.rcv,
                                  'jgz': self.jump,
                                  }
-        self.instructions = [self.parse_instruction(i) for i in instruction_list]
-        self.finished = False
-        self.pointer = 0
-        self.jumped = False
-
-    def execute(self, show_status=False):
-        self.finished = False
-        retval = None
-        if show_status:
-            print(self.register_string)
-        while retval is None and self.pointer < len(self.instructions):
-
-            instruction = self.instructions[self.pointer]
-            if show_status:
-                print(instruction_to_string(instruction))
-            retval = instruction['func'](*instruction['args'])
-            if not self.jumped:
-                self.pointer += 1
-            self.jumped = False
-            if show_status:
-                print(self.register_string)
-        return retval
-
-    def get_value(self, value):
-        try:
-            val = int(value)
-        except ValueError:
-            val = self.registers[value]
-        return val
+        super().__init__(instruction_list)
 
     def snd(self, value):
         val = self.get_value(value)
@@ -70,26 +42,6 @@ class SoundCard:
         if self.get_value(register) > 0:
             self.pointer += self.get_value(value)
             self.jumped = True
-
-    def parse_instruction(self, instruction_text):
-        tokens = instruction_text.split()
-        # print(tokens)
-        args = tuple(tokens[1:])
-        instruction = {'func': self.instruction_dict[tokens[0]], 'args': args}
-        return instruction
-
-    @property
-    def register_string(self):
-        labels = []
-        values = []
-        for entry in sorted(self.registers.items()):
-            labels.append('{:>3}'.format(entry[0]))
-            values.append('{:>3}'.format(entry[1]))
-        return ' '.join(labels) + '\n' + ' '.join(values)
-
-
-def instruction_to_string(instruction):
-    return instruction['func'].__name__ + '(' + str(instruction['args']) + ')'
 
 
 class Program(SoundCard):

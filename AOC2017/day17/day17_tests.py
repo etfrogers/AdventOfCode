@@ -1,4 +1,4 @@
-import day17
+from AOC2017.day17 import day17
 
 
 def test_spinlock1():
