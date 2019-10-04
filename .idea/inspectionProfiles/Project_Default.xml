@@ -5,6 +5,7 @@
       <option name="ignoredIdentifiers">
         <list>
           <option value="day3" />
+          <option value="assembly_interpreter.AssemblyInterpreter.instruction_dict" />
         </list>
       </option>
     </inspection_tool>
