@@ -40,8 +40,7 @@ class SoundCard(AssemblyInterpreter):
 
     def jump(self, register, value):
         if self.get_value(register) > 0:
-            self.pointer += self.get_value(value)
-            self.jumped = True
+            self.pointer += self.get_value(value) - 1
 
 
 class Program(SoundCard):
@@ -64,7 +63,7 @@ class Program(SoundCard):
         if self.queue:
             self.registers[register] = self.queue.popleft()
         else:
-            self.jumped = True  # prevent pointer increment, as instruction halted before execution
+            self.pointer -= 1  # prevent pointer increment, as instruction halted before execution
             return True  # returning anything other than None breaks out of execute loop
 
 

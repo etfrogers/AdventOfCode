@@ -1,4 +1,3 @@
-from collections import defaultdict
 from assembly_interpreter import AssemblyInterpreter
 
 
@@ -24,8 +23,7 @@ class CoProc(AssemblyInterpreter):
 
     def jump_nz(self, register, value):
         if self.get_value(register) != 0:
-            self.pointer += self.get_value(value)
-            self.jumped = True
+            self.pointer += self.get_value(value) - 1
 
 
 def rawcode():

@@ -13,7 +13,6 @@ class AssemblyInterpreter:
         self.instructions = [self.parse_instruction(i) for i in instruction_list]
         self.finished = False
         self.pointer = 0
-        self.jumped = False
 
     def execute(self, show_status=False):
         self.finished = False
@@ -26,9 +25,8 @@ class AssemblyInterpreter:
             if show_status:
                 print(instruction_to_string(instruction))
             retval = instruction['func'](*instruction['args'])
-            if not self.jumped:
-                self.pointer += 1
-            self.jumped = False
+            self.pointer += 1
+
             if show_status:
                 print(self.register_string)
         return retval
