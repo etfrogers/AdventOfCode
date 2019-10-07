@@ -2,34 +2,50 @@ import time
 from collections import deque, namedtuple
 from datetime import datetime
 
-Elf = namedtuple('Elf', ['id', 'presents'])
+
+class Elf:
+    def __init__(self, id_, presents, prev=None, next_=None):
+        self.id = id_
+        self.presents = presents
+        self.prev = prev
+        self.next = next_
+        self.deleted = False
+
+    def delete(self):
+        self.prev.next = self.next
+        self.next.prev = self.prev
+        self.deleted = True
+
+    def __repr__(self):
+        if not self.deleted:
+            return f'{self.id}:{self.presents}, next->{self.next.id}, prev->{self.prev.id}'
+        else:
+            return f"{self.id}:[deleted]"
 
 
 def run_white_elephant(n, part2=False):
-    elves = deque([Elf(i+1, 1) for i in range(n)])
-    time1 = datetime.now()
-    while len(elves) > 1:
-        if len(elves) % 10000 == 0:
-            # print(len(elves))
-            time2 = datetime.now()
-            elapsed = time2 - time1
-            print(f'Time elapsed between {len(elves)} and {len(elves)+10000} is {elapsed.total_seconds()}')
-            time1 = datetime.now()
+    elves = [Elf(i+1, 1) for i in range(n)]
+    for i, elf in enumerate(elves):
+        elf.prev = elves[(i-1) % n]
+        elf.next = elves[(i+1) % n]
+    start_elf = elves[0]
+    if part2:
+        next_elf = elves[len(elves) // 2]
+    else:
+        next_elf = elves[1]
+    for i in range(n-1):
+        start_elf.presents += next_elf.presents
+        next_elf.delete()
+        start_elf = start_elf.next
         if part2:
-            next_pos = len(elves) // 2
+            next_elf = next_elf.next
+            if (n-i) % 2 == 1:
+                next_elf = next_elf.next
         else:
-            next_pos = 1
-        elves.rotate(-next_pos)
-        next_elf = elves.popleft()
-        elves.rotate(next_pos)
-        id_ = elves[0].id
-        presents = elves[0].presents + next_elf.presents
-        elves[0] = Elf(id_, presents)
-        elves.rotate(-1)
+            next_elf = start_elf.next
 
-    remaining_elf = elves[0][0]
-    assert elves[0][1] == n
-    return remaining_elf
+    assert start_elf.presents == n
+    return start_elf.id
 
 
 def main():
