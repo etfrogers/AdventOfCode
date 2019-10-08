@@ -17,7 +17,11 @@ class IPList:
         self.list.sort()
 
     def min_valid_ip(self):
+        return self.count_ips(min_value=True)
+
+    def count_ips(self, min_value):
         off_counter = 1  # equals 1 to account for first element (-1, True) reducing it by one.
+        ip_counter = 0
         for i, entry in enumerate(self.list):
             if not entry[1]:
                 off_counter += 1
@@ -28,9 +32,21 @@ class IPList:
                     continue
                 candidate = entry[0] + 1
                 if candidate > self.high_ip:
-                    return None
-                if i == len(self.list)-1 or self.list[i+1][0] > candidate or self.list[i+1][1]:
-                    return candidate
+                    return None if min_value else ip_counter
+                next_entry = self.list[i+1] if i < len(self.list)-1 else (self.high_ip, True)
+                if (next_entry == (self.high_ip, True) or
+                        next_entry[0] > candidate or
+                        next_entry[1]):
+                    if min_value:
+                        return candidate
+                    new_ips = next_entry[0] - candidate
+                    if next_entry[1]:
+                        new_ips += 1
+                    ip_counter += new_ips
+        return ip_counter
+
+    def n_valid_ips(self):
+        return self.count_ips(min_value=False)
 
 
 def main():
@@ -40,6 +56,8 @@ def main():
     ip_list = IPList(max_ip, spec_list)
     # assert IPList.valid_ips == [3, 9]
     print('Part 1: Min IP is ', ip_list.min_valid_ip())
+
+    print('Part 2: Number of valid IPs is ', ip_list.n_valid_ips())
 
 
 if __name__ == '__main__':
