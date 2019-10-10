@@ -1,4 +1,4 @@
-from AOC2016.day23.day23 import AssemBunnyInterpreter23
+from AOC2016.day23.day23 import AssemBunnyInterpreter23, python_translation
 
 
 def test_1():
@@ -21,3 +21,8 @@ def test_part_1():
     interp.registers['a'] = 7
     interp.execute(show_status=False)
     assert interp.registers['a'] == 12775
+
+
+def test_part_1_python():
+    a = python_translation(7)
+    assert a == 12775
