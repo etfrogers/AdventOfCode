@@ -1,3 +1,5 @@
+from math import factorial
+
 from AOC2016.day12.day12 import AssemBunnyInterpreter
 
 
@@ -13,10 +15,9 @@ class AssemBunnyInterpreter23(AssemBunnyInterpreter):
         super(AssemBunnyInterpreter, self).__init__(instruction_list)
 
     def copy(self, value, register):
-        if value == '91' or value == '85':
-            # print(f'Comparator {comparator}, jump size {jump_size}')
-            print(f'Copying value {value} to {register}')
-            print(self.register_string)
+        # if value == '91' or value == '85':
+        #     print(f'Copying value {value} to {register}')
+        #     print(self.register_string)
         if self.is_valid_register(register):
             super().copy(value, register)
 
@@ -29,8 +30,8 @@ class AssemBunnyInterpreter23(AssemBunnyInterpreter):
             super().dec(register)
 
     def jnz(self, comparator, jump_size):
-        if comparator == 91 or comparator == 1:
-            print(f'Comparator {comparator}, jump size {jump_size}')
+        # if comparator == 91 or comparator == 1:
+        #     print(f'Comparator {comparator}, jump size {jump_size}')
         super().jnz(comparator, jump_size)
 
     def toggle(self, offset):
@@ -58,6 +59,9 @@ class AssemBunnyInterpreter23(AssemBunnyInterpreter):
 
 
 def python_translation(a):
+    if a < 5:
+        raise NotImplementedError('a must be at least 5')
+    a_in = a
     b = a  # cpy a b
     b -= 1  # dec b
     i = 0
@@ -82,7 +86,7 @@ def python_translation(a):
         i += 1  # tgl c
         # cpy -16 c
         # jnz 1 c # offset 2
-        if i >= 5:
+        if i >= a_in-2:  # this condition worked out by inspection of output...
             c = 1
             break
     c = 85  # cpy 85 c
@@ -102,18 +106,29 @@ def python_translation(a):
     return a
 
 
+def python_translation_optimised(a):
+    a = factorial(a)
+    c = 85  # cpy 85 c
+    d = 91  # jnz 91 d # offset 4
+    a += c*d
+    return a
+
+
 def main():
     with open('input.txt') as file:
         prog = file.readlines()
     interp = AssemBunnyInterpreter23(prog)
-    interp.registers['a'] = 7
+    interp.registers['a'] = 3
     interp.execute(show_status=False)
     print('Part 1: Value of a is ', interp.registers['a'])
 
-    interp2 = AssemBunnyInterpreter23(prog)
-    interp2.registers['a'] = 12
-    interp2.execute(show_status=True)
-    print('Part 2: Value of a is ', interp2.registers['a'])
+    print('Part 2: Python value of a is ', python_translation(12))
+    print('Part 2: Optimised Python value of a is ', python_translation_optimised(12))
+
+    # interp2 = AssemBunnyInterpreter23(prog)
+    # interp2.registers['a'] = 12
+    # interp2.execute(show_status=True)
+    # print('Part 2: Value of a is ', interp2.registers['a'])
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from AOC2016.day23.day23 import AssemBunnyInterpreter23, python_translation
+from AOC2016.day23.day23 import AssemBunnyInterpreter23, python_translation, python_translation_optimised
 
 
 def test_1():
@@ -26,3 +26,27 @@ def test_part_1():
 def test_part_1_python():
     a = python_translation(7)
     assert a == 12775
+
+
+def test_part_1_python_opt():
+    a = python_translation_optimised(7)
+    assert a == 12775
+
+
+def test_python_vs_opt():
+    for i in [5, 6, 7, 8, 9]:#range(1, 7):
+        yield check_python_vs_opt, i
+
+
+def check_python_vs_opt(i):
+    assert python_translation(i) == python_translation_optimised(i)
+
+
+# def test_part_2_python():
+#     a = python_translation(12)
+#     assert a == 479009335
+
+
+def test_part_2_python_opt():
+    a = python_translation_optimised(12)
+    assert a == 479009335
