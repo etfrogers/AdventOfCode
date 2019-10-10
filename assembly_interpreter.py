@@ -8,7 +8,6 @@ class AssemblyInterpreter:
             self.__dict__['instruction_dict']
         except KeyError:
             raise AttributeError('self.instruction_dict must be set before this constructor is called.')
-        self.last_played = None
         self.registers = defaultdict(lambda: 0)
         self.instructions = [self.parse_instruction(i) for i in instruction_list]
         self.finished = False
