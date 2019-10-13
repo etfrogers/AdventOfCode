@@ -8031,7 +8031,7 @@ def _probe_or(args, ctx):
     return _probe_nary(Z3_probe_or, args, ctx)
 
 def FailIf(p, ctx=None):
-    """Return a tactic that fails if the probe `p` evaluates to true. Otherwise, it returns the input goal unmodified.
+    """Return a tactic that fails if the probe `p` evaluates to true. Otherwise, it returns the input_ goal unmodified.
 
     In the following example, the tactic applies 'simplify' if and only if there are more than 2 constraints in the goal.
 
@@ -8050,7 +8050,7 @@ def FailIf(p, ctx=None):
     return Tactic(Z3_tactic_fail_if(p.ctx.ref(), p.probe), p.ctx)
 
 def When(p, t, ctx=None):
-    """Return a tactic that applies tactic `t` only if probe `p` evaluates to true. Otherwise, it returns the input goal unmodified.
+    """Return a tactic that applies tactic `t` only if probe `p` evaluates to true. Otherwise, it returns the input_ goal unmodified.
 
     >>> t = When(Probe('size') > 2, Tactic('simplify'))
     >>> x, y = Ints('x y')
