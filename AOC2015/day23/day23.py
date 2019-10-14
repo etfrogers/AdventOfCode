@@ -43,6 +43,11 @@ def main():
     interp.execute()
     print(f'Part 1: Value in register b is {interp.registers["b"]}')
 
+    interp2 = Interpreter2015(instructions)
+    interp2.registers['a'] = 1
+    interp2.execute()
+    print(f'Part 2: Value in register b is {interp2.registers["b"]}')
+
 
 if __name__ == '__main__':
     main()
