@@ -1,23 +1,7 @@
 import collections
 
 from AOC2017.day19 import day19
-
-
-class Point(day19.Point):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-    @property
-    def tuple(self):
-        return self.x, self.y
-
-    def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
-
-    def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
-        return self
+from utils import Point
 
 
 # noinspection PyAttributeOutsideInit

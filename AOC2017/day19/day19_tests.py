@@ -1,4 +1,4 @@
-import day19
+from AOC2017.day19 import day19
 
 
 def test1():
