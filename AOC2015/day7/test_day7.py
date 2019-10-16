@@ -44,3 +44,11 @@ NOT b -> a"""
     for wire, value in output:
         # print(wire)
         assert circuit.value_on(wire) == value
+
+
+def test_part_1():
+    with open('input.txt') as f:
+        specs = f.readlines()
+    specs = [line.strip() for line in specs]
+    circuit = Circuit(specs)
+    assert circuit.value_on("a") == 956
