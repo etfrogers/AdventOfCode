@@ -13,6 +13,16 @@ test_cases = [('ugknbfddgicrmopn', True),  # is nice because it has at least thr
              ]
 
 
+test_cases2 = [('qjhvhtzxzqqjkmpb', True),  # is nice because is has a pair that appears twice (qj) and a letter that
+               # repeats with exactly one letter between them (zxz).
+               ('xxyxx', True),  # is nice because it has a pair that appears twice and a letter that repeats with
+               # one between, even though the letters used by each rule overlap.
+               ('uurcxstgmygtbstg', False),  # is naughty because it has a pair (tg) but no repeat with a single
+               # letter between them.
+               ('ieodomkazucvgmuy', False),  # is naughty because it has a repeating letter with one between (odo), but
+               # no pair that appears twice.
+               ]
+
 # code from reddit
 # count = sum(1 for s in strings
 #                 if len([x for x in s if x in "aeiou"]) > 2
@@ -21,8 +31,13 @@ test_cases = [('ugknbfddgicrmopn', True),  # is nice because it has at least thr
 #                 )
 #     print(count)
 
+
 def check_is_nice(case):
     assert is_nice(case[0]) == case[1]
+
+
+def check_is_nice_2(case):
+    assert is_nice(case[0], part2=True) == case[1]
 
 
 def test_1():
@@ -60,3 +75,8 @@ def test_against_reddit():
         yield check_reddit_tv, s
         yield check_reddit_fs, s
         yield check_reddit_dl, s
+
+
+def test_part_2():
+    for case in test_cases2:
+        yield check_is_nice_2, case
