@@ -18,6 +18,12 @@ def main():
 
     print(f'Part 1: length of iterated string is {len(string)}')
 
+    string = '1321131112'
+    for _ in range(50):
+        string = look_and_say(string)
+
+    print(f'Part 2: length of iterated string is {len(string)}')
+
 
 if __name__ == '__main__':
     main()
