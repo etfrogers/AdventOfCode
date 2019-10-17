@@ -32,10 +32,19 @@ class Connection:
 
 class Circuit:
     def __init__(self, specs):
-        self.connections = {}
+        self._connections = {}
         for spec in specs:
             connection = Connection(spec)
-            self.connections[connection.output] = connection
+            self._connections[connection.output] = connection
+
+    @property
+    def connections(self):
+        return self._connections
+
+    @connections.setter
+    def connections(self, value):
+        self.value_on.cache_clear()
+        self.connections = value
 
     @lru_cache(maxsize=None)
     def value_on(self, wire) -> int:

@@ -52,3 +52,15 @@ def test_part_1():
     specs = [line.strip() for line in specs]
     circuit = Circuit(specs)
     assert circuit.value_on("a") == 956
+
+
+def test_part_2():
+    with open('input.txt') as f:
+        specs = f.readlines()
+    specs = [line.strip() for line in specs]
+    circuit = Circuit(specs)
+    part_1 = circuit.value_on("a")
+
+    circuit = Circuit(specs)
+    circuit._connections['b'].inputs = (part_1,)
+    assert circuit.value_on("a") == 40149
