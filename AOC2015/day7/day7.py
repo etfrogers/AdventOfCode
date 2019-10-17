@@ -56,6 +56,11 @@ def main():
     circuit = Circuit(specs)
     print(f'Part 1: Value on Wire a {circuit.value_on("a")}')
 
+    part_1 = circuit.value_on("a")
+    circuit = Circuit(specs)
+    circuit.connections['b'].inputs = (part_1, )
+    print(f'Part 2: Value on Wire a {circuit.value_on("a")}')
+
 
 if __name__ == '__main__':
     main()
