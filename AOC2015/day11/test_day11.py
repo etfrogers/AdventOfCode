@@ -67,3 +67,15 @@ def test_increment_string():
     increment(list_)
     output = to_string(list_)
     assert output == expected_output
+
+
+def test_part_1():
+    old_password = 'vzbxkghb'
+    new_password = get_next_password(old_password)
+    assert new_password == 'vzbxxyzz'
+
+
+def test_part_2():
+    old_password = 'vzbxxyzz'
+    new_password = get_next_password(old_password)
+    assert new_password == 'vzcaabcc'

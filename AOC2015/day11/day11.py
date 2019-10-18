@@ -36,12 +36,11 @@ def to_string(list_):
 
 def increment(list_):
     list_[-1] += 1
-    for i in range(-1, -len(list_), -1):
-        if list_[i] == 26:
-            list_[i] = 0
-            list_[i-1] += 1
-        else:
-            break
+    i = -1
+    while list_[i] == 26:
+        list_[i] = 0
+        list_[i-1] += 1
+        i -= 1
 
 
 def get_next_password(old_password):
@@ -56,6 +55,9 @@ def main():
     old_password = 'vzbxkghb'
     new_password = get_next_password(old_password)
     print(f'Part 1: Next password is {new_password}')
+
+    new_password = get_next_password(new_password)
+    print(f'Part 2: Next password is {new_password}')
 
 
 if __name__ == '__main__':
