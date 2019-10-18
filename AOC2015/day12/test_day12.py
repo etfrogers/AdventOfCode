@@ -11,8 +11,15 @@ tests = [('[1,2,3]', 6),
          ]
 
 
-def check_sum_string(string, sum_):
-    assert sum_numbers(string) == sum_
+tests_red = [('[1,2,3]', 6),
+         ('[1,{"c":"red","b":2},3]', 4),
+         ('{"d":"red","e":[1,2,3,4],"f":5}', 0),
+         ('[1,"red",5]', 6),
+         ]
+
+
+def check_sum_string(string, sum_, remove_red=False):
+    assert sum_numbers(string, remove_red) == sum_
 
 
 def test_1():
@@ -25,3 +32,8 @@ def test_part_1():
         json_data = f.read()
     sum_ = sum_numbers(json_data)
     assert sum_ == 156366
+
+
+def test_2():
+    for string, sum_ in tests_red:
+        yield check_sum_string, string, sum_, True
