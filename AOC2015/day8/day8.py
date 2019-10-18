@@ -27,8 +27,11 @@ def calculate_path(data, data_dict, get_max=False):
     all_points = set([item for d in data for item in d.ends])
     routes = itertools.permutations(all_points)
     distances = {get_distance(route, data_dict): route for route in routes}
-    min_distance = min(distances.keys())
-    return min_distance, distances[min_distance]
+    if get_max:
+        tgt_distance = max(distances.keys())
+    else:
+        tgt_distance = min(distances.keys())
+    return tgt_distance, distances[tgt_distance]
 
 
 def main():
@@ -37,6 +40,9 @@ def main():
     data, data_dict = parse_distances(distances)
     distance, path = calculate_path(data, data_dict)
     print(f'Part 1: Minimum distance {distance}')
+
+    distance, path = calculate_path(data, data_dict, get_max=True)
+    print(f'Part 2: Maximum distance {distance}')
 
 
 if __name__ == '__main__':

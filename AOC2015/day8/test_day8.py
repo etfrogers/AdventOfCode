@@ -16,7 +16,8 @@ test_distances = [(('Dublin', 'London', 'Belfast'), 982),
 def test_1():
     data, data_dict = parse_distances(test_input.split('\n'))
     distance, path = calculate_path(data, data_dict)
-    assert path == ('London', 'Dublin', 'Belfast')
+    expected_path = ('London', 'Dublin', 'Belfast')
+    assert path == expected_path or path == tuple(reversed(expected_path))  # reversed path is same length
     assert distance == 605
 
 
@@ -47,3 +48,10 @@ def test_part_1():
     distance, path = calculate_path(data, data_dict)
     assert distance == 207
 
+
+def test_part_2():
+    with open('input.txt') as f:
+        distances = f.readlines()
+    data, data_dict = parse_distances(distances)
+    distance, path = calculate_path(data, data_dict, get_max=True)
+    assert distance == 804
