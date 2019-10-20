@@ -2,9 +2,8 @@ import itertools
 
 
 def get_combos(sizes, target_size):
-    combos = []
-    for i in range(1, len(sizes)):
-        combos.extend((tuple(c) for c in itertools.combinations(sizes, i) if sum(c) == target_size))
+    iterator = itertools.chain.from_iterable((itertools.combinations(sizes, i) for i in range(1, len(sizes))))
+    combos = [tuple(c) for c in iterator if sum(c) == target_size]
     return combos
 
 
