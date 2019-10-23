@@ -15,11 +15,35 @@ def test_1():
     assert reindeer[1].position == 1056
 
 
+def test_2():
+    specs = test_input.split('\n')
+    reindeer = [Reindeer(s) for s in specs]
+    Reindeer.race(reindeer, 1000)
+    assert reindeer[0].name == 'Comet'
+    assert reindeer[0].points == 312
+    assert reindeer[1].name == 'Dancer'
+    assert reindeer[1].points == 689
+
+
 def test_part_1():
     with open('input.txt') as f:
         specs = f.readlines()
     reindeer = [Reindeer(s) for s in specs]
     Reindeer.race(reindeer, 2503)
-    winner = Reindeer.get_winner(reindeer)
+    winners = Reindeer.get_winner(reindeer)
+    assert len(winners) == 1, 'We have a draw!'
+    winner = winners[0]
     assert winner.name == 'Donner'
     assert winner.position == 2655
+
+
+def test_part_2():
+    with open('input.txt') as f:
+        specs = f.readlines()
+    reindeer = [Reindeer(s) for s in specs]
+    Reindeer.race(reindeer, 2503)
+    winners = Reindeer.get_winner(reindeer, on_points=True)
+    assert len(winners) == 1, 'We have a draw!'
+    winner = winners[0]
+    assert winner.name == 'Vixen'
+    assert winner.points == 1059

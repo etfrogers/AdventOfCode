@@ -20,6 +20,7 @@ class Reindeer:
         self.been_running = 0
         self.been_resting = 0
         self.state = None
+        self.points = 0
         self.start_running()
 
     def start_running(self):
@@ -46,13 +47,18 @@ class Reindeer:
         for _ in range(time):
             for r in reindeer:
                 r.step()
+            for r in Reindeer.get_winner(reindeer):
+                r.points += 1
 
     @staticmethod
-    def get_winner(reindeer):
-        max_distance = max([r.position for r in reindeer])
-        winners = [r for r in reindeer if r.position == max_distance]
-        assert len(winners) == 1, 'We have a draw!'
-        return winners[0]
+    def get_winner(reindeer, on_points=False):
+        if not on_points:
+            max_distance = max([r.position for r in reindeer])
+            winners = [r for r in reindeer if r.position == max_distance]
+        else:
+            max_points = max([r.points for r in reindeer])
+            winners = [r for r in reindeer if r.points == max_points]
+        return winners
 
 
 def main():
@@ -60,8 +66,15 @@ def main():
         specs = f.readlines()
     reindeer = [Reindeer(s) for s in specs]
     Reindeer.race(reindeer, 2503)
-    winner = Reindeer.get_winner(reindeer)
+    winners = Reindeer.get_winner(reindeer)
+    assert len(winners) == 1, 'We have a draw!'
+    winner = winners[0]
     print(f'Part 1: Winner is {winner.name} with a distance of {winner.position}')
+
+    winners = Reindeer.get_winner(reindeer, on_points=True)
+    assert len(winners) == 1, 'We have a draw!'
+    winner = winners[0]
+    print(f'Part 2: Winner is {winner.name} with {winner.points} points')
 
 
 if __name__ == '__main__':
