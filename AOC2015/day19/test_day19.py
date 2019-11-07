@@ -1,4 +1,4 @@
-from AOC2015.day19.day19 import parse_input, do_replacements
+from AOC2015.day19.day19 import parse_input, do_replacements, build_molecule
 
 test_input_1 = '''H => HO
 H => OH
@@ -54,3 +54,36 @@ def test_part_1():
     replacements, molecule = parse_input(specs)
     generated_molecules = do_replacements(molecule, replacements)
     assert len(generated_molecules) == 535
+
+
+build_replacements = '''e => H
+e => O
+H => HO
+H => OH
+O => HH
+
+dummy'''
+
+
+def test_build_1():
+    replacements, _ = parse_input(build_replacements)
+    n_steps = build_molecule(replacements, 'HOH')
+    assert n_steps == 3
+
+
+def test_build_2():
+    replacements, _ = parse_input(build_replacements)
+    n_steps = build_molecule(replacements, 'HOHOHO')
+    assert n_steps == 6
+
+
+def test_build_1_reverse():
+    replacements, _ = parse_input(build_replacements)
+    n_steps = build_molecule(replacements, 'HOH', reverse=True)
+    assert n_steps == 3
+
+
+def test_build_2_reverse():
+    replacements, _ = parse_input(build_replacements)
+    n_steps = build_molecule(replacements, 'HOHOHO', reverse=True)
+    assert n_steps == 6
