@@ -31,7 +31,7 @@ def do_replacements(molecule, replacements):
     return molecules
 
 
-def build_molecule(replacements, target, reverse=False):
+def build_molecule(replacements, target, reverse=False, greedy=False):
     start = 'e'
     if reverse:
         start, target = target, start
@@ -39,18 +39,37 @@ def build_molecule(replacements, target, reverse=False):
         molecule_filter = lambda x: len(x) > 0 and ('e' not in x or x == 'e')
     else:
         molecule_filter = lambda x: len(x) <= len(target)
-    molecules = {start}
-    latest_molecules = molecules.copy()
+
     n_steps = 0
-    while target not in molecules:
-        n_steps += 1
-        new_molecules = set()
-        for molecule in latest_molecules:
-            new_molecules.update(do_replacements(molecule, replacements))
-        new_molecules = {mol for mol in new_molecules if molecule_filter(mol)}
-        molecules.update(new_molecules)
-        latest_molecules = new_molecules
-        print(f'{n_steps}: {len(molecules)}')
+    if greedy:
+        if not reverse:
+            raise ValueError('Greedy cannot be true if reverse is false')
+        replacements.sort(key=lambda x: len(x[0]), reverse=True)
+        old_molecule = ''
+        molecule = start
+        while target != molecule and molecule != old_molecule:
+            old_molecule = molecule
+            n_steps += 1
+            for from_, to in replacements:
+                if from_ in molecule:
+                    start = molecule.index(from_)
+                    end = start + len(from_)
+                    molecule = molecule[:start] + to + molecule[end:]
+                    break
+        if target != molecule:
+            raise ValueError('Not found target')
+    else:
+        molecules = {start}
+        latest_molecules = molecules.copy()
+        while target not in molecules:
+            n_steps += 1
+            new_molecules = set()
+            for molecule in latest_molecules:
+                new_molecules.update(do_replacements(molecule, replacements))
+            new_molecules = {mol for mol in new_molecules if molecule_filter(mol)}
+            molecules.update(new_molecules)
+            latest_molecules = new_molecules
+            print(f'{n_steps}: {len(molecules)}')
     return n_steps
 
 
@@ -61,7 +80,7 @@ def main():
     generated_molecules = do_replacements(molecule, replacements)
     print(f'Part 1: Number of distinct molecules is {len(generated_molecules)}')
 
-    n_steps = build_molecule(replacements, target=molecule)
+    n_steps = build_molecule(replacements, target=molecule, reverse=True, greedy=True)
     print(f'Part 2: Number of steps is {n_steps}')
 
 

@@ -87,3 +87,23 @@ def test_build_2_reverse():
     replacements, _ = parse_input(build_replacements)
     n_steps = build_molecule(replacements, 'HOHOHO', reverse=True)
     assert n_steps == 6
+
+
+def test_build_1_greedy():
+    replacements, _ = parse_input(build_replacements)
+    n_steps = build_molecule(replacements, 'HOH', reverse=True, greedy=True)
+    assert n_steps == 3
+
+
+def test_build_2_greedy():
+    replacements, _ = parse_input(build_replacements)
+    n_steps = build_molecule(replacements, 'HOHOHO', reverse=True, greedy=True)
+    assert n_steps == 6
+
+
+def test_part_2():
+    with open('input.txt') as f:
+        specs = f.read()
+    replacements, molecule = parse_input(specs)
+    n_steps = build_molecule(replacements, target=molecule, reverse=True, greedy=True)
+    assert n_steps == 212
