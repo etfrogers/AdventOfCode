@@ -1,3 +1,5 @@
+import pytest
+
 from AOC2015.day20.day20 import how_many_presents, min_house
 
 tests = [(1, 10),
@@ -12,13 +14,9 @@ tests = [(1, 10),
          ]
 
 
-def check_presents(n, presents):
+@pytest.mark.parametrize("n, presents", tests)
+def test_1(n, presents):
     assert presents == how_many_presents(n)
-
-
-def test_1():
-    for n, presents in tests:
-        yield check_presents, n, presents
 
 
 def test_part1():
