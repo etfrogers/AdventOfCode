@@ -86,6 +86,31 @@ def kit_cost(kit_list):
     return sum([item.cost for item in kit_list])
 
 
+def optimise_gold_for_result(kit_list, player, boss, min_to_lose=False):
+    # 1 weapon, 0-1 armour, 0-2 rings
+    kit_options = []
+    for weapon in kit_list['Weapons']:
+        for armour in kit_list['Armor'] + [None]:
+            for ring1 in kit_list['Rings'] + [None]:
+                for ring2 in kit_list['Rings'] + [None]:
+                    if ring2 is ring1:
+                        break
+                    option = [weapon, armour, ring1, ring2]
+                    option = [o for o in option if o is not None]
+                    kit_options.append(option)
+    kit_options.sort(key=kit_cost, reverse=min_to_lose)
+    for kit in kit_options:
+        player.reset()
+        boss.reset()
+        player.kit = kit
+        winner = Character.fight(player, boss)
+        if ((not min_to_lose and winner == player) or
+                (min_to_lose and winner == boss)):
+            break
+    winning_kit = player.kit
+    return kit_cost(winning_kit)
+
+
 def main():
     kit_list = load_kit_list()
     player = Character(100, 0, 0)
@@ -93,31 +118,12 @@ def main():
         boss_spec = file.read()
     match = BOSS_PATTERN.match(boss_spec)
     boss = Character(*(int(v) for v in match.groups()))
-    winning_cost = find_min_gold_to_win(kit_list, player, boss)
+    winning_cost = optimise_gold_for_result(kit_list, player, boss)
 
     print(f'{winning_cost=}')
 
-
-def find_min_gold_to_win(kit_list, player, boss):
-    # 1 weapon, 0-1 armour, 0-2 rings
-    kit_options = []
-    for weapon in kit_list['Weapons']:
-        for armour in kit_list['Armor'] + [None]:
-            for ring1 in kit_list['Rings'] + [None]:
-                for ring2 in kit_list['Rings'] + [None]:
-                    option = [weapon, armour, ring1, ring2]
-                    option = [o for o in option if o is not None]
-                    kit_options.append(option)
-    kit_options.sort(key=kit_cost)
-    for kit in kit_options:
-        player.reset()
-        boss.reset()
-        player.kit = kit
-        winner = Character.fight(player, boss)
-        if winner == player:
-            break
-    winning_kit = player.kit
-    return kit_cost(winning_kit)
+    losing_cost = optimise_gold_for_result(kit_list, player, boss, min_to_lose=True)
+    print(f'{losing_cost=}')
 
 
 if __name__ == '__main__':
