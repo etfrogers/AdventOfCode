@@ -1,6 +1,6 @@
 import pytest
 
-from AOC2015.day20.day20 import how_many_presents, min_house
+from AOC2015.day20.day20 import how_many_presents, min_house, how_many_presents_iter
 
 tests = [(1, 10),
          (2, 30),
@@ -17,6 +17,11 @@ tests = [(1, 10),
 @pytest.mark.parametrize("n, presents", tests)
 def test_1(n, presents):
     assert presents == how_many_presents(n)
+
+
+def test_iter():
+    for n, p in enumerate(how_many_presents_iter(10000)):
+        assert p == how_many_presents(n)
 
 
 def test_part1():
