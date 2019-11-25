@@ -1,9 +1,10 @@
-from collections import defaultdict
 from enum import Enum
 from heapq import heappop, heappush
 from typing import Tuple
 
 import numpy as np
+
+from utils import KeyDefaultDict
 
 
 class Equipment(Enum):
@@ -19,15 +20,6 @@ class CaveType(Enum):
     ROCKY = 0
     WET = 1
     NARROW = 2
-
-
-class KeyDefaultDict(defaultdict):
-    def __missing__(self, key):
-        if self.default_factory is None:
-            raise KeyError(key)
-        else:
-            ret = self[key] = self.default_factory(key)
-            return ret
 
 
 class Cave:

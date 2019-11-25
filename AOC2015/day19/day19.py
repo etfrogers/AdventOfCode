@@ -1,5 +1,5 @@
 import re
-from collections import defaultdict
+from utils import KeyDefaultDict
 
 
 def parse_input(specs):
@@ -9,16 +9,7 @@ def parse_input(specs):
     return replacements, molecule
 
 
-class RegexDict(defaultdict):
-    def __missing__(self, key):
-        if self.default_factory is None:
-            raise KeyError(key)
-        else:
-            ret = self[key] = self.default_factory(key)
-            return ret
-
-
-REGEXES = RegexDict(re.compile)
+REGEXES = KeyDefaultDict(re.compile)
 
 
 def do_replacements(molecule, replacements):

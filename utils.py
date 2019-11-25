@@ -1,3 +1,4 @@
+from collections import defaultdict
 
 
 class Point:
@@ -16,3 +17,12 @@ class Point:
         self.x += other.x
         self.y += other.y
         return self
+
+
+class KeyDefaultDict(defaultdict):
+    def __missing__(self, key):
+        if self.default_factory is None:
+            raise KeyError(key)
+        else:
+            ret = self[key] = self.default_factory(key)
+            return ret
