@@ -27,3 +27,21 @@ def test_part1():
     comp.instructions[2] = 2
     comp.execute()
     assert comp.instructions[0] == 5482655
+
+
+def test_part2():
+    with open('input.txt') as f:
+        instructions = f.readline()
+    found = False
+    for noun in range(100):
+        for verb in range(100):
+            comp = IntCodeComputer(instructions)
+            comp.instructions[1] = noun
+            comp.instructions[2] = verb
+            comp.execute()
+            if comp.instructions[0] == 19690720:
+                found = True
+                assert noun == 49
+                assert verb == 67
+
+    assert found

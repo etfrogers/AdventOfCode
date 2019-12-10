@@ -62,6 +62,21 @@ def main():
     comp.execute()
     print(f'Value at 0 is {comp.instructions[0]}')
 
+    found = False
+    for noun in range(100):
+        for verb in range(100):
+            comp = IntCodeComputer(instructions)
+            comp.instructions[1] = noun
+            comp.instructions[2] = verb
+            comp.execute()
+            if comp.instructions[0] == 19690720:
+                found = True
+                print(f'Noun is {noun}, verb is {verb},')
+                print(f'Checksum is {noun * 100 + verb}')
+
+    if not found:
+        print('Not found')
+
 
 if __name__ == '__main__':
     main()
