@@ -30,25 +30,27 @@ class IntCodeComputer:
         self.finished = False
         self.cursor = 0
         while not self.finished:
-            opcode_ = self.get_opcode()
-            opcode_()
+            opcode_, modes = self.get_opcode()
+            opcode_(modes)
 
     def get_opcode(self):
-        return self.opcodes[self.instructions[self.cursor]]
+        return self.opcodes[self.instructions[self.cursor]], None
+
+    def get(self, index):
+        return self.instructions[self.instructions[index]]
+
+    def set(self, index, value):
+        self.instructions[self.instructions[index]] = value
 
     @opcode(3)
-    def add(self):
-        self.instructions[self.instructions[self.cursor + 3]] = \
-            self.instructions[self.instructions[self.cursor + 1]] + \
-            self.instructions[self.instructions[self.cursor + 2]]
+    def add(self, _):
+        self.set(self.cursor + 3, self.get(self.cursor + 1) + self.get(self.cursor + 2))
 
     @opcode(3)
-    def multiply(self):
-        self.instructions[self.instructions[self.cursor + 3]] = \
-            self.instructions[self.instructions[self.cursor + 1]] * \
-            self.instructions[self.instructions[self.cursor + 2]]
+    def multiply(self, _):
+        self.set(self.cursor + 3, self.get(self.cursor + 1) * self.get(self.cursor + 2))
 
-    def halt(self):
+    def halt(self, _):
         self.finished = True
 
 
