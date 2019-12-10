@@ -12,3 +12,14 @@ def test_1(input_, output):
     comp.execute()
     test_output = ','.join([str(v) for v in comp.instructions])
     assert test_output == output
+
+
+def test_part1():
+    with open('input.txt') as f:
+        instructions = f.readline()
+
+    comp = IntCodeComputer2(instructions, [1])
+    comp.execute()
+    assert all([v == 0 for v in comp.output_data[1:]])
+    assert comp.output_data[0] == 3122865
+
