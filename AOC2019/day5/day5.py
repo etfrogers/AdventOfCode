@@ -9,6 +9,10 @@ class IntCodeComputer2(IntCodeComputer):
                         99: self.halt,
                         3: self.input,
                         4: self.output,
+                        5: self.jump_if_true,
+                        6: self.jump_if_false,
+                        7: self.less_than,
+                        8: self.equals,
                         }
         self.input_data = input_
         self.output_data = []
@@ -55,19 +59,46 @@ class IntCodeComputer2(IntCodeComputer):
     def multiply(self, modes):
         self.set(self.cursor + 3, self.get(self.cursor + 1, modes[0]) * self.get(self.cursor + 2, modes[1]), modes[2])
 
+    @opcode(2)
+    def jump_if_true(self, modes):
+        if self.get(self.cursor + 1, modes[0]) != 0:
+            self.cursor = self.get(self.cursor + 2, modes[1])
+            self.cursor -= 3  # to undo the increment that happens automatically due to the opcode decorator
+
+    @opcode(2)
+    def jump_if_false(self, modes):
+        if self.get(self.cursor + 1, modes[0]) == 0:
+            self.cursor = self.get(self.cursor + 2, modes[1])
+            self.cursor -= 3  # to undo the increment that happens automatically due to the opcode decorator
+
+    @opcode(3)
+    def less_than(self, modes):
+        self.set(self.cursor + 3,
+                 int(self.get(self.cursor + 1, modes[0]) < self.get(self.cursor + 2, modes[1])),
+                 modes[2])
+
+    @opcode(3)
+    def equals(self, modes):
+        self.set(self.cursor + 3,
+                 int(self.get(self.cursor + 1, modes[0]) == self.get(self.cursor + 2, modes[1])),
+                 modes[2])
+
 
 def main():
     with open('input.txt') as f:
         instructions = f.readline()
 
     comp = IntCodeComputer2(instructions, [1])
-    # comp.input_data = [1]
     comp.execute()
     if all([v == 0 for v in comp.output_data[1:]]):
         print('All tests succeeded')
     else:
         raise ValueError
-    print(f'Diagnostic code is {comp.output_data[0]}')
+    print(f'Diagnostic code for system 1 is {comp.output_data[0]}')
+
+    comp = IntCodeComputer2(instructions, [5])
+    comp.execute()
+    print(f'Diagnostic code for system 5 is {comp.output_data[0]}')
 
 
 if __name__ == '__main__':
