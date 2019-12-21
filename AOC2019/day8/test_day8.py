@@ -1,4 +1,4 @@
-from AOC2019.day8.day8 import build_image, find_densest_layer, calc_checksum
+from AOC2019.day8.day8 import build_image, find_densest_layer, calc_checksum, flatten, image_to_string
 import numpy as np
 
 
@@ -35,3 +35,26 @@ def test_part1():
     checksum = calc_checksum(image, layer)
     assert checksum == 1677
 
+
+def test_flatten():
+    image = build_image('0222112222120000', x=2, y=2)
+    render = flatten(image)
+    expected = np.array([[0, 1], [1, 0]])
+    assert np.all(render == expected)
+
+
+part2_output = '''#  # ###  #  # #### ###  
+#  # #  # #  # #    #  # 
+#  # ###  #  # ###  #  # 
+#  # #  # #  # #    ###  
+#  # #  # #  # #    #    
+ ##  ###   ##  #    #    '''
+
+
+def test_part2():
+    with open('input.txt') as f:
+        pixels = f.read()
+    image = build_image(pixels, x=25, y=6)
+
+    render = flatten(image)
+    assert image_to_string(render) == part2_output

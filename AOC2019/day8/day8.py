@@ -22,6 +22,23 @@ def calc_checksum(image, layer):
     return n_ones * n_twos
 
 
+def flatten(image):
+    transparent = 2
+    render = np.full_like(image[0, :, :], transparent)
+    for layer in image:
+        roi = render == transparent
+        render[roi] = layer[roi]
+    return render
+
+
+def image_to_string(image):
+    lines = []
+    pixels = {0: ' ', 1: '#'}
+    for line in image:
+        lines.append(''.join([pixels[v] for v in line]))
+    return '\n'.join(lines)
+
+
 def main():
     with open('input.txt') as f:
         pixels = f.read()
@@ -30,6 +47,10 @@ def main():
     print('Layer with fewest zeros is ', layer)
     checksum = calc_checksum(image, layer)
     print('Checksum is ', checksum)
+
+    render = flatten(image)
+    print('Message is:')
+    print(image_to_string(render))
 
 
 if __name__ == '__main__':
