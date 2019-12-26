@@ -1,51 +1,6 @@
 import collections
 
-from AOC2017.day19 import day19
-from utils import Point
-
-
-# noinspection PyAttributeOutsideInit
-class Direction(day19.Direction):
-
-    NORTH = (0, -1)
-    EAST = (1, 0)
-    SOUTH = (0, 1)
-    WEST = (-1, 0)
-
-    def __init__(self, *args):
-        super().__init__(*args)
-
-    def turn_left(self):
-        curr = (self.x, self.y)
-        if curr == self.NORTH:
-            new = self.WEST
-        elif curr == self.WEST:
-            new = self.SOUTH
-        elif curr == self.SOUTH:
-            new = self.EAST
-        elif curr == self.EAST:
-            new = self.NORTH
-        else:
-            raise ValueError
-        self.x, self.y = new
-
-    def turn_right(self):
-        curr = (self.x, self.y)
-        if curr == self.NORTH:
-            new = self.EAST
-        elif curr == self.EAST:
-            new = self.SOUTH
-        elif curr == self.SOUTH:
-            new = self.WEST
-        elif curr == self.WEST:
-            new = self.NORTH
-        else:
-            raise ValueError
-        self.x, self.y = new
-
-    def reverse(self):
-        self.x = -self.x
-        self.y = -self.y
+from utils import Point, DirectionsNP
 
 
 class VirusMap:
@@ -58,7 +13,7 @@ class VirusMap:
     def __init__(self, map_string_list, evolved=False):
         self.map = self.parse_map_string(map_string_list)
         self.pos = Point(0, 0)
-        self.dir = Direction(*Direction.NORTH)
+        self.dir = DirectionsNP.NORTH
         self.infection_counter = 0
         self.evolved = evolved
 

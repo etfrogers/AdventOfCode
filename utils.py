@@ -47,7 +47,6 @@ class KeyDefaultDict(defaultdict):
 
 
 class Direction(Point):
-
     def __init__(self, x, y):
         assert abs(x) + abs(y) == 1
         assert x == 0 or y == 0
@@ -103,7 +102,7 @@ class Direction(Point):
 
 
 class CopyAttribute(object):
-    """You can initialize my value but not change it."""
+    """You can initialize my value but not change it. Any access to the variable returns a copy"""
     def __init__(self, value):
         self.value = value
 
@@ -114,11 +113,41 @@ class CopyAttribute(object):
         pass
 
 
+class DirectionNP(Direction):
+    def turn_left(self):
+        curr = self
+        if curr == DirectionsNP.NORTH:
+            new = DirectionsNP.WEST
+        elif curr == DirectionsNP.WEST:
+            new = DirectionsNP.SOUTH
+        elif curr == DirectionsNP.SOUTH:
+            new = DirectionsNP.EAST
+        elif curr == DirectionsNP.EAST:
+            new = DirectionsNP.NORTH
+        else:
+            raise ValueError
+        self.x, self.y = new.x, new.y
+
+    def turn_right(self):
+        curr = self
+        if curr == DirectionsNP.NORTH:
+            new = DirectionsNP.EAST
+        elif curr == DirectionsNP.EAST:
+            new = DirectionsNP.SOUTH
+        elif curr == DirectionsNP.SOUTH:
+            new = DirectionsNP.WEST
+        elif curr == DirectionsNP.WEST:
+            new = DirectionsNP.NORTH
+        else:
+            raise ValueError
+        self.x, self.y = new.x, new.y
+
+
 class DirectionsNP:
-    NORTH = CopyAttribute(Direction(0, -1))
-    EAST = CopyAttribute(Direction(1, 0))
-    SOUTH = CopyAttribute(Direction(0, 1))
-    WEST = CopyAttribute(Direction(-1, 0))
+    NORTH = CopyAttribute(DirectionNP(0, -1))
+    EAST = CopyAttribute(DirectionNP(1, 0))
+    SOUTH = CopyAttribute(DirectionNP(0, 1))
+    WEST = CopyAttribute(DirectionNP(-1, 0))
 
 
 class Directions:
