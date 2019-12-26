@@ -1,17 +1,7 @@
 # from nose.tools import *
 import day3
 
-
-def test_manhattan_dist1():
-    assert day3.manhattan_dist((0, 0), (0, 0)) == 0
-
-
-def test_manhattan_dist2():
-    assert day3.manhattan_dist((2, 1), (0, 0)) == 3
-
-
-def test_manhattan_dist3():
-    assert day3.manhattan_dist((0, -2), (0, 0)) == 2
+from AOC2017.day3.day3 import stress_test
 
 
 def test_spiral_distance1():
@@ -46,10 +36,13 @@ def test_spiral_distance8():
     assert day3.spiral_distance(1024, True) == 31
 
 
-def test_spiral_distance9():
+def test_part1():
     assert day3.spiral_distance(368078, False) == 371
 
 
-def test_spiral_distance9():
-    assert day3.spiral_distance(368078, True) == 371
+def test_part2():
+    input_n = 368078
+    dist = stress_test(input_n)
+    assert dist == 369601
+
 

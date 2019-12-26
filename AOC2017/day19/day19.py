@@ -1,17 +1,4 @@
-from utils import Point
-
-
-class Direction(Point):
-    def __init__(self, x, y):
-        assert abs(x) + abs(y) == 1
-        assert x == 0 or y == 0
-        super().__init__(x, y)
-
-    def get_hv(self):
-        if self.x == 0:
-            return 'v'
-        elif self.y == 0:
-            return 'h'
+from utils import Point, Direction
 
 
 class Diagram:
