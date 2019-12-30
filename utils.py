@@ -1,5 +1,10 @@
 import copy
 from collections import defaultdict
+from typing import List, Tuple
+
+import numpy as np
+
+from AOC2019.day9.day9 import RelativeIntCodeComputer
 
 
 class Point:
@@ -12,21 +17,41 @@ class Point:
         return self.x, self.y
 
     def __add__(self, other):
-        return Point(self.x + other.x, self.y + other.y)
+        return Point(*[v1 + v2 for v1, v2 in zip(self, other)])
+
+    def __sub__(self, other):
+        return Point(*[v1 - v2 for v1, v2 in zip(self, other)])
 
     def __iadd__(self, other):
         self.x += other.x
         self.y += other.y
         return self
 
+    def __isub__(self, other):
+        self.x -= other.x
+        self.y -= other.y
+        return self
+
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return all([v1 == v2 for v1, v2 in zip(self, other)])
+
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
+    def __repr__(self):
+        return f'<Point({self.x}, {self.y})>'
+
+    def norm(self, order=2):
+        return sum([abs(v)**order for v in self])
 
     @staticmethod
     def manhattan_dist(pt1, pt2) -> int:
-        diff = [pt1.x - pt2.x, pt1.y - pt2.y]
-        abs_diff = [abs(n) for n in diff]
-        return sum(abs_diff)
+        return (pt2 - pt1).norm(order=1)
+
+    @staticmethod
+    def dist(pt1, pt2) -> int:
+        return (pt2 - pt1).norm(order=2)
 
     def move(self, pos):
         self += pos
@@ -156,3 +181,25 @@ class Directions:
     SOUTH = CopyAttribute(Direction(0, -1))
     WEST = CopyAttribute(Direction(-1, 0))
 
+
+class IntCodeComputer(RelativeIntCodeComputer):
+    def __init__(self, instructions, input_=None):
+        try:
+            with open(instructions) as file:
+                instructions = file.read().strip()
+        except FileNotFoundError:
+            pass
+        super().__init__(instructions, input_)
+
+
+def array_to_string(array: np.ndarray, map_: dict = None, overrides: List[Tuple[Tuple[int, int], str]] = None) -> str:
+    str_array = np.full_like(array, '', dtype=str)
+    if map_:
+        for key, value in map_.items():
+            str_array[array == key] = value
+
+    if overrides:
+        for loc, value in overrides:
+            str_array[loc] = value
+    lines = [''.join([str(v) for v in line]) for line in np.flipud(str_array)]
+    return '\n'.join(lines)
