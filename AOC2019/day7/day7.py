@@ -55,9 +55,9 @@ def run_feedback_amplifiers(instructions, phases):
     current_thrust = 0
     while not all([amp.finished for amp in amps]):
         for amp in amps:
-            amp.input_data.append(current_thrust)
+            amp.input_data.push(current_thrust)
             amp.resume()
-            current_thrust = amp.output_data[0]
+            current_thrust = amp.output_data.pop()
     return current_thrust
 
 

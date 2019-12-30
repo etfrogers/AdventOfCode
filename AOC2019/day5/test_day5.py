@@ -20,8 +20,9 @@ def test_part1():
 
     comp = IntCodeComputer2(instructions, [1])
     comp.execute()
-    assert all([v == 0 for v in comp.output_data[1:]])
-    assert comp.output_data[0] == 3122865
+    *checks, diagnostic_code = comp.output_data
+    assert diagnostic_code == 3122865
+    assert all([v == 0 for v in checks])
 
 
 @pytest.mark.parametrize('comparator', range(20))
@@ -101,5 +102,4 @@ def test_part2():
 
     comp = IntCodeComputer2(instructions, [5])
     comp.execute()
-    assert all([v == 0 for v in comp.output_data[1:]])
-    assert comp.output_data[0] == 773660
+    assert comp.output_data.pop() == 773660

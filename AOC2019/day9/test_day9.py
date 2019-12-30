@@ -16,7 +16,7 @@ def test_1(instructions, input_, expected_output):
     if expected_output == 'len_16':
         assert len(str(comp.output_data[0])) == 16
     else:
-        assert tuple(reversed(comp.output_data)) == tuple(expected_output)
+        assert tuple(comp.output_data) == tuple(expected_output)
 
 
 def test_simple_relative_base():

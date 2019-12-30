@@ -41,7 +41,7 @@ class PaintBot:
         while (self.comp and not self.comp.finished) or self.fake_data:
             input_ = self.panels[self.location.tuple]
             if self.comp:
-                self.comp.input_data.append(input_)
+                self.comp.input_data.push(input_)
                 self.comp.resume()
                 data = (self.comp.output_data.pop(), self.comp.output_data.pop())
                 assert len(self.comp.output_data) == 0
