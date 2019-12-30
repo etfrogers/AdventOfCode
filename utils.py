@@ -1,10 +1,8 @@
 import copy
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import List, Tuple
 
 import numpy as np
-
-from AOC2019.day9.day9 import RelativeIntCodeComputer
 
 
 class Point:
@@ -182,16 +180,6 @@ class Directions:
     WEST = CopyAttribute(Direction(-1, 0))
 
 
-class IntCodeComputer(RelativeIntCodeComputer):
-    def __init__(self, instructions, input_=None):
-        try:
-            with open(instructions) as file:
-                instructions = file.read().strip()
-        except FileNotFoundError:
-            pass
-        super().__init__(instructions, input_)
-
-
 def array_to_string(array: np.ndarray, map_: dict = None, overrides: List[Tuple[Tuple[int, int], str]] = None) -> str:
     str_array = np.full_like(array, '', dtype=str)
     if map_:
@@ -203,3 +191,25 @@ def array_to_string(array: np.ndarray, map_: dict = None, overrides: List[Tuple[
             str_array[loc] = value
     lines = [''.join([str(v) for v in line]) for line in np.flipud(str_array)]
     return '\n'.join(lines)
+
+
+class FIFOQueue:
+    def __init__(self, initial_data=None):
+        if initial_data is None:
+            initial_data = []
+        self._data = deque(initial_data)
+
+    def push(self, value):
+        self._data.append(value)
+
+    def pop(self):
+        return self._data.popleft()
+
+    def __iter__(self):
+        return self._data.__iter__()
+
+    def __len__(self):
+        return len(self._data)
+
+    def __getitem__(self, item):
+        return self._data[item]

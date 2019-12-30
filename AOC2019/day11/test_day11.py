@@ -1,6 +1,7 @@
 import pytest
 
-from AOC2019.day11.day11 import IntCodeComputer, PaintBot
+from AOC2019.day11.day11 import PaintBot
+from intcode import IntCodeComputer
 
 test_data = [(1, 0), (0, 0), (1, 0), (1, 0), (0, 1), (1, 0), (1, 0)]
 cases = [(0, 0, '''.....

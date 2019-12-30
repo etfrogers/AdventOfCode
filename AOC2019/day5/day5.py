@@ -1,28 +1,6 @@
-from collections import deque
-
 from AOC2019.day2.day2 import IntCodeComputer, opcode
+from utils import FIFOQueue
 
-
-class FIFOQueue:
-    def __init__(self, initial_data=None):
-        if initial_data is None:
-            initial_data = []
-        self._data = deque(initial_data)
-
-    def push(self, value):
-        self._data.append(value)
-
-    def pop(self):
-        return self._data.popleft()
-
-    def __iter__(self):
-        return self._data.__iter__()
-
-    def __len__(self):
-        return len(self._data)
-
-    def __getitem__(self, item):
-        return self._data[item]
 
 class IntCodeComputer2(IntCodeComputer):
     def __init__(self, instructions, input_=None):

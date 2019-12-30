@@ -3,7 +3,8 @@ from collections import defaultdict
 from typing import List, Tuple, Union
 import numpy as np
 
-from utils import IntCodeComputer, Point, Directions, Direction, array_to_string
+from utils import Point, Directions, Direction, array_to_string
+from intcode import IntCodeComputer
 
 
 def main():
