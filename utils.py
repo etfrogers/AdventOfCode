@@ -10,9 +10,13 @@ class Point:
         self.x = x
         self.y = y
 
+    def __iter__(self):
+        yield self.x
+        yield self.y
+
     @property
     def tuple(self):
-        return self.x, self.y
+        return tuple(self)
 
     def __add__(self, other):
         return Point(*[v1 + v2 for v1, v2 in zip(self, other)])
@@ -21,24 +25,20 @@ class Point:
         return Point(*[v1 - v2 for v1, v2 in zip(self, other)])
 
     def __iadd__(self, other):
-        self.x += other.x
-        self.y += other.y
+        for key in self.__dict__.keys():
+            self.__dict__[key] += other.__dict__[key]
         return self
 
     def __isub__(self, other):
-        self.x -= other.x
-        self.y -= other.y
+        for key in self.__dict__.keys():
+            self.__dict__[key] -= other.__dict__[key]
         return self
 
     def __eq__(self, other):
         return all([v1 == v2 for v1, v2 in zip(self, other)])
 
-    def __iter__(self):
-        yield self.x
-        yield self.y
-
     def __repr__(self):
-        return f'<Point({self.x}, {self.y})>'
+        return f'<Point(' + ', '.join([str(v) for v in self]) + ')>'
 
     def norm(self, order=2):
         return sum([abs(v)**order for v in self])
