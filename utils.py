@@ -205,13 +205,15 @@ def coord_map_to_array(map_: Dict[Tuple[int, int], int], override_size:int = Non
     return array
 
 
-def array_to_string(array: np.ndarray, map_: dict = None) -> str:
+def array_to_string(array: np.ndarray, map_: dict = None, flip=True) -> str:
     str_array = np.full_like(array, '', dtype=str)
     if map_:
         for key, value in map_.items():
             str_array[array == key] = value
 
-    lines = [''.join([str(v) for v in line]) for line in np.flipud(str_array)]
+    if flip:
+        str_array = np.flipud(str_array)
+    lines = [''.join([str(v) for v in line]) for line in str_array]
     return '\n'.join(lines)
 
 
