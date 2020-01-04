@@ -1,9 +1,7 @@
-import math
 from collections import defaultdict
-from typing import List, Tuple, Union
-import numpy as np
+from typing import List, Tuple
 
-from utils import Point, Directions, Direction, array_to_string
+from utils import Point, Directions, Direction, array_to_string, coord_map_to_array
 from intcode import IntCodeComputer
 
 
@@ -72,30 +70,11 @@ class PaintBot:
             raise ValueError
 
     def render(self, override_size=None) -> str:
-        if override_size:
-            corner = math.floor(override_size/2)
-            bottom_left = Point(-corner, -corner)
-            top_right = Point(corner, corner)
-        else:
-            xs, ys = zip(*self.panels.keys())
-            xs += (self.location.x, )
-            ys += (self.location.y, )
-            bottom_left = Point(min(xs), min(ys))
-            top_right = Point(max(xs), max(ys))
-
-        def _to_np_coords(pt: Union[Point, Tuple[int, int]]):
-            try:
-                out = pt - bottom_left
-            except TypeError:
-                out = Point(*pt) - bottom_left
-            return tuple(reversed(out.tuple))
-        size = _to_np_coords(top_right + Point(1, 1))
-        map_ = np.zeros(size, dtype=int)
-        for key, value in self.panels.items():
-            map_[_to_np_coords(key)] = value
-        render_map = {0: '.', 1: '#'}
-        string = array_to_string(map_, render_map,
-                                 overrides=[(_to_np_coords(self.location), self.bot_chars[self.direction.tuple])])
+        coord_map = self.panels.copy()
+        coord_map[self.location.tuple] = 2
+        map_ = coord_map_to_array(coord_map, override_size)
+        render_map = {0: '.', 1: '#', 2: self.bot_chars[self.direction.tuple]}
+        string = array_to_string(map_, render_map)
         return string
 
 

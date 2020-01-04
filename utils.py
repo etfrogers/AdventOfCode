@@ -1,6 +1,7 @@
 import copy
+import math
 from collections import defaultdict, deque
-from typing import List, Tuple
+from typing import Tuple, Dict, Union
 
 import numpy as np
 
@@ -180,15 +181,36 @@ class Directions:
     WEST = CopyAttribute(Direction(-1, 0))
 
 
-def array_to_string(array: np.ndarray, map_: dict = None, overrides: List[Tuple[Tuple[int, int], str]] = None) -> str:
+def coord_map_to_array(map_: Dict[Tuple[int, int], int], override_size:int = None, dtype=int):
+    if override_size:
+        corner = math.floor(override_size / 2)
+        bottom_left = Point(-corner, -corner)
+        top_right = Point(corner, corner)
+    else:
+        xs, ys = zip(*map_.keys())
+        bottom_left = Point(min(xs), min(ys))
+        top_right = Point(max(xs), max(ys))
+
+    def _to_np_coords(pt: Union[Point, Tuple[int, int]]):
+        try:
+            out = pt - bottom_left
+        except TypeError:
+            out = Point(*pt) - bottom_left
+        return tuple(reversed(out.tuple))
+
+    size = _to_np_coords(top_right + Point(1, 1))
+    array = np.zeros(size, dtype=dtype)
+    for key, value in map_.items():
+        array[_to_np_coords(key)] = value
+    return array
+
+
+def array_to_string(array: np.ndarray, map_: dict = None) -> str:
     str_array = np.full_like(array, '', dtype=str)
     if map_:
         for key, value in map_.items():
             str_array[array == key] = value
 
-    if overrides:
-        for loc, value in overrides:
-            str_array[loc] = value
     lines = [''.join([str(v) for v in line]) for line in np.flipud(str_array)]
     return '\n'.join(lines)
 
