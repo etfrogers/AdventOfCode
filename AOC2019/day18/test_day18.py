@@ -46,14 +46,6 @@ long_cases = ['''#########
               ]
 
 
-# @pytest.mark.parametrize('case', long_cases)
-# def test1(case):
-#     start, *expected_states = case.split('\n\n')
-#     vault = Vault(start)
-#     for exp_state, state in zip(expected_states, vault.solve(test_mode=True)):
-#         assert state == exp_state
-
-
 @pytest.mark.parametrize('case', long_cases)
 def test1(case):
     start, *expected_states = case.split('\n\n')
@@ -67,6 +59,7 @@ def test1(case):
 path_length_cases = """#########
 #b.A.@.a#
 #########
+a, b
 8
 
 ########################
@@ -74,6 +67,7 @@ path_length_cases = """#########
 ######################.#
 #d.....................#
 ########################
+a, b, c, d, e, f
 86
 
 ########################
@@ -81,6 +75,7 @@ path_length_cases = """#########
 #.######################
 #.....@.a.B.c.d.A.e.F.g#
 ########################
+b, a, c, d, f, e, g
 132
 
 #################
@@ -92,6 +87,7 @@ path_length_cases = """#########
 ########.########
 #l.F..d...h..C.m#
 #################
+a, f, b, j, g, n, h, d, l, o, e, p, c, i, k, m
 136
 
 ########################
@@ -100,6 +96,7 @@ path_length_cases = """#########
 ###A#B#C################
 ###g#h#i################
 ########################
+a, c, f, i, d, g, b, e, h
 81"""
 
 
@@ -107,7 +104,10 @@ path_length_cases = """#########
 def test_path_length(case):
     lines = case.split('\n')
     length = int(lines.pop())
+    expected_path_str = lines.pop()
+    expected_path = tuple(expected_path_str.split(', '))
     map_ = '\n'.join(lines)
     vault = Vault(map_)
     vault.solve()
     assert vault.shortest_path() == length
+    assert expected_path in vault.all_shortest_paths()
