@@ -180,6 +180,11 @@ class Directions:
     SOUTH = CopyAttribute(Direction(0, -1))
     WEST = CopyAttribute(Direction(-1, 0))
 
+    def __iter__(self):
+        for direction in [self.NORTH, self.SOUTH, self.EAST, self.WEST]:
+            yield direction
+
+
 
 def coord_map_to_array(map_: Dict[Tuple[int, int], int], override_size:int = None, dtype=int):
     if override_size:
@@ -206,15 +211,30 @@ def coord_map_to_array(map_: Dict[Tuple[int, int], int], override_size:int = Non
 
 
 def array_to_string(array: np.ndarray, map_: dict = None, flip=True) -> str:
-    str_array = np.full_like(array, '', dtype=str)
     if map_:
+        str_array = np.full_like(array, '', dtype=str)
         for key, value in map_.items():
             str_array[array == key] = value
-
+    else:
+        str_array = array
     if flip:
         str_array = np.flipud(str_array)
     lines = [''.join([str(v) for v in line]) for line in str_array]
     return '\n'.join(lines)
+
+
+def string_to_array(string: str, map_: dict = None, flip=True, dtype=int) -> np.ndarray:
+    list_ = [list(line) for line in string.split('\n')]
+    str_array = np.array(list_, dtype=str)
+    if map_:
+        output = np.zeros_like(str_array, dtype=dtype)
+        for key, value in map_.items():
+            output[str_array == key] = value
+    else:
+        output = str_array
+    if flip:
+        output = np.flipud(output)
+    return output
 
 
 class FIFOQueue:
