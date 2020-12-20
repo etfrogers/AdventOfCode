@@ -34,7 +34,8 @@ def main():
 
     answers = search_report_3(report)
     print(answers)
-    print(f'Day 1, Part 1: {answers[0] * answers[1] * answers[2]}')
+    product = answers[0] * answers[1] * answers[2]
+    print(f'Day 1, Part 1: {product}')
 
 
 if __name__ == '__main__':
