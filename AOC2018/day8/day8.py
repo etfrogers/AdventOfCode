@@ -1,6 +1,4 @@
-import collections
-import itertools
-from collections import Iterable
+from collections.abc import Iterable
 
 
 class Node:

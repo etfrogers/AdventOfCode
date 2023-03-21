@@ -23,7 +23,7 @@ def test_bracketed_chunk():
     assert rest == ')'
 
 
-with open('input.txt') as f:
+with open('day20/input.txt') as f:
     regex = f.read()
 tree = day20.Tree(regex)
 

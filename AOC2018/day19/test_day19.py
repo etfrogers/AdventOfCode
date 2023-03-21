@@ -1,5 +1,4 @@
 from AOC2018.day19 import day19, assembly
-import nose
 
 long_tests = False
 

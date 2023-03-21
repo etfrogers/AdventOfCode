@@ -10,7 +10,7 @@ After:  [3, 2, 2, 1]'''
 test_sample = day16.Sample(test_input.split('\n'))
 device = day16.Device()
 
-with open('input.txt') as f:
+with open('day16/input.txt') as f:
     input_ = f.read()
 input_ = input_.split('\n\n\n\n')
 
