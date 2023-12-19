@@ -1,3 +1,3 @@
 module github.com/etfrogers/AdventOfCode.git
 
-go 1.20
+go 1.21
