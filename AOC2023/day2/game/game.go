@@ -42,7 +42,7 @@ func (g *Game) NPhases() int {
 	return len(g.Phases)
 }
 
-func (g *Game) IsValid(bag Phase) bool {
+func (g *Game) IsValid(bag Bag) bool {
 	for _, phase := range g.Phases {
 		for key, val := range bag {
 			if phase[key] > val {
@@ -53,7 +53,24 @@ func (g *Game) IsValid(bag Phase) bool {
 	return true
 }
 
+func (g *Game) MinBag() Bag {
+	bag := Bag{}
+	for _, phase := range g.Phases {
+		for key, val := range phase {
+			if val > bag[key] {
+				bag[key] = val
+			}
+		}
+	}
+	return bag
+}
+
+func (g *Game) MinBagPower() int {
+	return g.MinBag().Power()
+}
+
 type Phase map[Color]int
+type Bag Phase
 
 func PhasesFromString(data string) []Phase {
 	tokens := strings.Split(data, ";")
@@ -72,6 +89,10 @@ func PhaseFromString(str string) Phase {
 		phase[color] = number
 	}
 	return phase
+}
+
+func (b Bag) Power() int {
+	return b[Red] * b[Green] * b[Blue]
 }
 
 type Color int
