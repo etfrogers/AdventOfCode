@@ -1,3 +1,4 @@
 go 1.21.5
 
 use ./AOC2023/day1
+use ./AOC2023/day2
