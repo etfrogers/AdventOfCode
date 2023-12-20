@@ -6,16 +6,16 @@ import (
 )
 
 type Match struct {
-	start int
-	len   int
-	text  string
+	Start int
+	Len   int
+	Text  string
 }
 
 func NewFromInds(str string, inds []int) Match {
 	return Match{
-		start: inds[0],
-		len:   inds[1] - inds[0],
-		text:  str[inds[0]:inds[1]],
+		Start: inds[0],
+		Len:   inds[1] - inds[0],
+		Text:  str[inds[0]:inds[1]],
 	}
 }
 
@@ -29,9 +29,9 @@ func NewFromRegexp(str string, re regexp.Regexp) []Match {
 }
 
 func (m *Match) Digit() int {
-	return digits.DIGIT_MAPPING[m.text]
+	return digits.DIGIT_MAPPING[m.Text]
 }
 
 func (m *Match) LessThan(other Match) bool {
-	return m.start < other.start
+	return m.Start < other.Start
 }
