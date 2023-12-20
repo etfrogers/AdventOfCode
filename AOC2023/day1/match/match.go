@@ -7,14 +7,14 @@ import (
 
 type Match struct {
 	Start int
-	Len   int
+	End   int
 	Text  string
 }
 
 func NewFromInds(str string, inds []int) Match {
 	return Match{
 		Start: inds[0],
-		Len:   inds[1] - inds[0],
+		End:   inds[1],
 		Text:  str[inds[0]:inds[1]],
 	}
 }
@@ -34,4 +34,8 @@ func (m *Match) Digit() int {
 
 func (m *Match) LessThan(other Match) bool {
 	return m.Start < other.Start
+}
+
+func (m *Match) Len() int {
+	return m.End - m.Start
 }

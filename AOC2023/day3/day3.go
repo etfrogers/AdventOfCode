@@ -12,6 +12,7 @@ import (
 
 var digit_regexp *regexp.Regexp = regexp.MustCompile(`\d+`)
 var symbol_regexp *regexp.Regexp = regexp.MustCompile(`[^.\d]`)
+var gear_rexexp *regexp.Regexp = regexp.MustCompile(`\*`)
 
 func check(e error) {
 	if e != nil {
@@ -19,11 +20,19 @@ func check(e error) {
 	}
 }
 
-func FindPartNumbers(lines []string) []int {
-
-	partNumbers := []int{}
+func numberLocations(lines []string) [][]match.Match {
+	locations := make([][]match.Match, len(lines))
 	for row, line := range lines {
 		matches := match.NewFromRegexp(line, *digit_regexp)
+		locations[row] = matches
+	}
+	return locations
+}
+
+func FindPartNumbers(lines []string) []int {
+	partNumbers := []int{}
+	numberLocations := numberLocations(lines)
+	for row, matches := range numberLocations {
 		for _, match := range matches {
 			if TouchingSymbol(match, row, lines) {
 				number, err := strconv.Atoi(match.Text)
@@ -33,6 +42,61 @@ func FindPartNumbers(lines []string) []int {
 		}
 	}
 	return partNumbers
+}
+
+func FindGearRatios(lines []string) []int {
+	ratios := []int{}
+	numberLocations := numberLocations(lines)
+	for row, line := range lines {
+		matches := match.NewFromRegexp(line, *gear_rexexp)
+		for _, match := range matches {
+			touchingNumbers := FindTouchingNumbers(match, row, numberLocations)
+			nTouching := len(touchingNumbers)
+			if nTouching > 2 {
+				panic("Too many touching numbers")
+			} else if nTouching == 2 {
+				ratio := touchingNumbers[0] * touchingNumbers[1]
+				ratios = append(ratios, ratio)
+			}
+			// If one or zero touching numbers, do nothing
+		}
+	}
+	return ratios
+}
+
+func FindTouchingNumbers(match match.Match, row int, numberLocations [][]match.Match) []int {
+	numbers := []int{}
+	gearCol := match.Start
+	// same row
+	// for _, numberMatch := range(numberLocations[row]) {
+	// 	if numberMatch.End == gearCol - 1  || numberMatch.Start == gearCol + 1 {
+	// 		val, err := strconv.Atoi(numberMatch.Text)
+	// 		check(err)
+	// 		numbers = append(numbers, val)
+	// 	}
+	// 	// Could short circuit here if needed
+	// }
+	rows := []int{row}
+	// row above
+	if row > 0 {
+		rows = append(rows, row-1)
+	}
+	if row < len(numberLocations)-1 {
+		rows = append(rows, row+1)
+	}
+	for _, row := range rows {
+		for _, numberMatch := range numberLocations[row] {
+			for i := numberMatch.Start; i < numberMatch.End; i++ {
+				if i >= gearCol-1 && i <= gearCol+1 {
+					val, err := strconv.Atoi(numberMatch.Text)
+					check(err)
+					numbers = append(numbers, val)
+					break
+				}
+			}
+		}
+	}
+	return numbers
 }
 
 func TouchingSymbol(match match.Match, row int, lines []string) bool {
@@ -48,7 +112,7 @@ func TouchingSymbol(match match.Match, row int, lines []string) bool {
 	if first_col > 0 {
 		first_col--
 	}
-	last_col := match.Start + match.Len
+	last_col := match.End
 	if last_col < len(lines[0])-1 {
 		last_col++
 	}
@@ -66,6 +130,11 @@ func TouchingSymbol(match match.Match, row int, lines []string) bool {
 func SumPartNumbers(lines []string) int {
 	return sum(FindPartNumbers(lines))
 }
+
+func SumGearRatios(lines []string) int {
+	return sum(FindGearRatios(lines))
+}
+
 func sum(data []int) int {
 	total := 0
 	for _, val := range data {
@@ -80,4 +149,5 @@ func main() {
 	lines := strings.Split(string(doc), "\n")
 
 	fmt.Printf("Day 3, Part 1 answer: %d\n", SumPartNumbers(lines))
+	fmt.Printf("Day 3, Part 2 answer: %d\n", SumGearRatios(lines))
 }

@@ -38,6 +38,25 @@ func TestPart1(t *testing.T) {
 	doc, err := os.ReadFile("input.txt")
 	check(err)
 	lines := strings.Split(string(doc), "\n")
-
 	assert.Equal(t, SumPartNumbers(lines), expected)
+}
+
+func TestGearRatios(t *testing.T) {
+	expected := []int{16345, 451490}
+	ratios := FindGearRatios(testLines)
+	assert.Equal(t, ratios, expected)
+}
+
+func TestSumGearRatios(t *testing.T) {
+	expected := 467835
+	answer := SumGearRatios(testLines)
+	assert.Equal(t, answer, expected)
+}
+
+func TestPart2(t *testing.T) {
+	expected := 81463996
+	doc, err := os.ReadFile("input.txt")
+	check(err)
+	lines := strings.Split(string(doc), "\n")
+	assert.Equal(t, SumGearRatios(lines), expected)
 }
