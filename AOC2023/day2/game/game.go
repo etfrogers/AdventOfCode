@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"utils"
 )
 
 type Game struct {
@@ -14,12 +15,6 @@ type Game struct {
 var header_regexp *regexp.Regexp = regexp.MustCompile(`(Game )(\d+)`)
 var event_regexp *regexp.Regexp = regexp.MustCompile(`(\d+) (\w+)`)
 
-func Check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func GameFromLine(line string) Game {
 	tokens := strings.Split(line, ":")
 	header := tokens[0]
@@ -29,13 +24,13 @@ func GameFromLine(line string) Game {
 		panic("Unexpected header")
 	}
 	id, err := strconv.Atoi(matches[2])
-	Check(err)
+	utils.Check(err)
 	phases := PhasesFromString(data)
 	return Game{ID: id, Phases: phases}
 }
 
 func GameSliceFromLines(lines []string) []Game {
-	return Map(lines, GameFromLine)
+	return utils.Map(lines, GameFromLine)
 }
 
 func (g *Game) NPhases() int {
@@ -74,7 +69,7 @@ type Bag Phase
 
 func PhasesFromString(data string) []Phase {
 	tokens := strings.Split(data, ";")
-	phases := Map(tokens, PhaseFromString)
+	phases := utils.Map(tokens, PhaseFromString)
 	return phases
 }
 
@@ -84,7 +79,7 @@ func PhaseFromString(str string) Phase {
 	for _, token := range tokens {
 		matches := event_regexp.FindStringSubmatch(token)
 		number, ok := strconv.Atoi(matches[1])
-		Check(ok)
+		utils.Check(ok)
 		color := ColorFromString(matches[2])
 		phase[color] = number
 	}
@@ -115,12 +110,4 @@ func ColorFromString(str string) Color {
 		panic("Invalid value passed to ColorFromString")
 	}
 	return val
-}
-
-func Map[T, V any](ts []T, fn func(T) V) []V {
-	result := make([]V, len(ts))
-	for i, t := range ts {
-		result[i] = fn(t)
-	}
-	return result
 }

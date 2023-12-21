@@ -6,9 +6,10 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"utils"
 
 	"day1/digits"
-	"day1/match"
+	"utils/match"
 )
 
 func DigitsInLine(line string, convertWords bool) []int {
@@ -51,16 +52,10 @@ func GetCalibration(data string, convertWords bool) int {
 	return total
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
 func main() {
 	doc_bytes, err := os.ReadFile("input.txt")
 	var document string = string(doc_bytes[:])
-	check(err)
+	utils.Check(err)
 	calibration_code := GetCalibration(document, false)
 	fmt.Printf("Day 1, Part 1: %d\n", calibration_code)
 

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"utils"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -63,7 +64,7 @@ func TestChecksum(t *testing.T) {
 
 func TestPart1(t *testing.T) {
 	doc, err := os.ReadFile("input.txt")
-	game.Check(err)
+	utils.Check(err)
 	lines := strings.Split(string(doc), "\n")
 	bag := game.Bag{game.Red: 12, game.Green: 13, game.Blue: 14}
 
@@ -105,7 +106,7 @@ func TestPowerChecksum(t *testing.T) {
 
 func TestPart2(t *testing.T) {
 	doc, err := os.ReadFile("input.txt")
-	game.Check(err)
+	utils.Check(err)
 	lines := strings.Split(string(doc), "\n")
 
 	checksum := PowerChecksum(lines)

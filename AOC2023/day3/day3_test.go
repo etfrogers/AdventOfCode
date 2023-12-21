@@ -4,6 +4,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"utils"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -36,7 +37,7 @@ func TestSumPartNumbers(t *testing.T) {
 func TestPart1(t *testing.T) {
 	expected := 527144
 	doc, err := os.ReadFile("input.txt")
-	check(err)
+	utils.Check(err)
 	lines := strings.Split(string(doc), "\n")
 	assert.Equal(t, SumPartNumbers(lines), expected)
 }
@@ -56,7 +57,7 @@ func TestSumGearRatios(t *testing.T) {
 func TestPart2(t *testing.T) {
 	expected := 81463996
 	doc, err := os.ReadFile("input.txt")
-	check(err)
+	utils.Check(err)
 	lines := strings.Split(string(doc), "\n")
 	assert.Equal(t, SumGearRatios(lines), expected)
 }

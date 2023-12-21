@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"testing"
+	"utils"
 )
 
 // Test the first test case give the part 1 result
@@ -21,7 +22,7 @@ func TestPart1TestCase(t *testing.T) {
 func TestPart1(t *testing.T) {
 	doc_bytes, err := os.ReadFile("input.txt")
 	var document string = string(doc_bytes[:])
-	check(err)
+	utils.Check(err)
 	calibration_code := GetCalibration(document, false)
 	expected := 53651
 	if calibration_code != expected {
@@ -73,7 +74,7 @@ func TestPart2CaseSeparate(t *testing.T) {
 func TestPart2(t *testing.T) {
 	doc_bytes, err := os.ReadFile("input.txt")
 	var document string = string(doc_bytes[:])
-	check(err)
+	utils.Check(err)
 	calibration_code := GetCalibration(document, true)
 	expected := 53894
 	if calibration_code != expected {

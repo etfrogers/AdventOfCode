@@ -6,19 +6,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"utils"
 
-	"day1/match"
+	"utils/match"
 )
 
 var digit_regexp *regexp.Regexp = regexp.MustCompile(`\d+`)
 var symbol_regexp *regexp.Regexp = regexp.MustCompile(`[^.\d]`)
 var gear_rexexp *regexp.Regexp = regexp.MustCompile(`\*`)
-
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
 
 func numberLocations(lines []string) [][]match.Match {
 	locations := make([][]match.Match, len(lines))
@@ -36,7 +31,7 @@ func FindPartNumbers(lines []string) []int {
 		for _, match := range matches {
 			if TouchingSymbol(match, row, lines) {
 				number, err := strconv.Atoi(match.Text)
-				check(err)
+				utils.Check(err)
 				partNumbers = append(partNumbers, number)
 			}
 		}
@@ -67,17 +62,7 @@ func FindGearRatios(lines []string) []int {
 func FindTouchingNumbers(match match.Match, row int, numberLocations [][]match.Match) []int {
 	numbers := []int{}
 	gearCol := match.Start
-	// same row
-	// for _, numberMatch := range(numberLocations[row]) {
-	// 	if numberMatch.End == gearCol - 1  || numberMatch.Start == gearCol + 1 {
-	// 		val, err := strconv.Atoi(numberMatch.Text)
-	// 		check(err)
-	// 		numbers = append(numbers, val)
-	// 	}
-	// 	// Could short circuit here if needed
-	// }
 	rows := []int{row}
-	// row above
 	if row > 0 {
 		rows = append(rows, row-1)
 	}
@@ -89,7 +74,7 @@ func FindTouchingNumbers(match match.Match, row int, numberLocations [][]match.M
 			for i := numberMatch.Start; i < numberMatch.End; i++ {
 				if i >= gearCol-1 && i <= gearCol+1 {
 					val, err := strconv.Atoi(numberMatch.Text)
-					check(err)
+					utils.Check(err)
 					numbers = append(numbers, val)
 					break
 				}
@@ -145,7 +130,7 @@ func sum(data []int) int {
 
 func main() {
 	doc, err := os.ReadFile("input.txt")
-	check(err)
+	utils.Check(err)
 	lines := strings.Split(string(doc), "\n")
 
 	fmt.Printf("Day 3, Part 1 answer: %d\n", SumPartNumbers(lines))

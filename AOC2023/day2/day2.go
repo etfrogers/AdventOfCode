@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"utils"
 )
 
 func Checksum(lines []string, bag game.Bag) int {
@@ -29,7 +30,7 @@ func PowerChecksum(lines []string) int {
 
 func main() {
 	doc, err := os.ReadFile("input.txt")
-	game.Check(err)
+	utils.Check(err)
 	lines := strings.Split(string(doc), "\n")
 	bag := game.Bag{game.Red: 12, game.Green: 13, game.Blue: 14}
 
