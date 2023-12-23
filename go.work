@@ -4,3 +4,4 @@ use ./AOC2023/utils
 use ./AOC2023/day1
 use ./AOC2023/day2
 use ./AOC2023/day3
+use ./AOC2023/day4
