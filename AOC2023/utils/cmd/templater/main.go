@@ -46,6 +46,7 @@ func main() {
 const mainText string = `package main
 
 import (
+	"fmt"
 	"utils"
 )
 
