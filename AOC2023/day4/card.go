@@ -69,3 +69,18 @@ func TotalScore(cards []Card) int {
 	}
 	return total
 }
+
+func ProcessCopies(cards []Card) (int, []int) {
+	copies := make([]int, len(cards))
+	for i := range copies {
+		copies[i] = 1
+	}
+
+	for i, card := range cards {
+		extra_cards := card.NWinners()
+		for j := 1; j <= extra_cards && j < len(cards); j++ {
+			copies[j+i] += copies[i]
+		}
+	}
+	return utils.Sum(copies), copies
+}

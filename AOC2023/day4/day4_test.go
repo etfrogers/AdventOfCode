@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	"testing"
+	"utils"
 	"utils/set"
 
 	"github.com/stretchr/testify/assert"
@@ -47,4 +48,18 @@ func TestScores(t *testing.T) {
 func TestTotalScore(t *testing.T) {
 	cards := NewCardSlice(testLines)
 	assert.Equal(t, 13, TotalScore(cards))
+}
+
+func TestPart1(t *testing.T) {
+	lines := utils.ReadInput()
+	cards := NewCardSlice(lines)
+	assert.Equal(t, 21568, TotalScore(cards))
+}
+
+func TestProcessCopies(t *testing.T) {
+	cards := NewCardSlice(testLines)
+	nCopies, copies := ProcessCopies(cards)
+	expected_copies := []int{1, 2, 4, 8, 14, 1}
+	assert.Equal(t, 30, nCopies)
+	assert.Equal(t, expected_copies, copies)
 }

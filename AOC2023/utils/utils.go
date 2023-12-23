@@ -14,6 +14,14 @@ func Map[T, V any](ts []T, fn func(T) V) []V {
 	return result
 }
 
+func Sum(data []int) int {
+	total := 0
+	for _, val := range data {
+		total += val
+	}
+	return total
+}
+
 func Check(e error) {
 	if e != nil {
 		panic(e)

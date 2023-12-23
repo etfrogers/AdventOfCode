@@ -113,19 +113,11 @@ func TouchingSymbol(match match.Match, row int, lines []string) bool {
 }
 
 func SumPartNumbers(lines []string) int {
-	return sum(FindPartNumbers(lines))
+	return utils.Sum(FindPartNumbers(lines))
 }
 
 func SumGearRatios(lines []string) int {
-	return sum(FindGearRatios(lines))
-}
-
-func sum(data []int) int {
-	total := 0
-	for _, val := range data {
-		total += val
-	}
-	return total
+	return utils.Sum(FindGearRatios(lines))
 }
 
 func main() {
