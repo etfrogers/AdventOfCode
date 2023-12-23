@@ -6,8 +6,6 @@ import (
 	"utils"
 )
 
-var package_line_temp string = "package day%s\n"
-
 func main() {
 	args := os.Args
 	if len(args) != 2 {
