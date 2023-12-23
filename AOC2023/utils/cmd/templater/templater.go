@@ -58,12 +58,18 @@ func main() {
 
 const testText string = `package main
 
-import "strings"
+import (
+	"strings"
+	"testing"
+)
 
 var testCase string = ` + "`...`" + `
 
 var testLines []string = strings.Split(testCase, "\n")
 
+func TestPart1(t *testing.T) {
+	assert.Fail(t, "not implemented")
+}
 `
 
 const modText string = `module day%s
