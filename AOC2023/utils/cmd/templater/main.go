@@ -6,7 +6,7 @@ import (
 	"utils"
 )
 
-var package_line_temp string = "package day%s"
+var package_line_temp string = "package day%s\n"
 
 func main() {
 	args := os.Args
@@ -26,15 +26,57 @@ func main() {
 	test_name := dirname + "_test.go"
 	os.Mkdir(dirname, 0777)
 
-	package_line := fmt.Sprintf(package_line_temp, day)
-	package_bytes := []byte(package_line)
-	err = os.WriteFile(dirname+string(os.PathSeparator)+fname, package_bytes, 0644)
+	modCode := fmt.Sprintf(modText, day)
+	mainCode := fmt.Sprintf(mainText, day, "%d")
+
+	err = os.WriteFile(dirname+string(os.PathSeparator)+fname, []byte(mainCode), 0644)
 	utils.Check(err)
 
-	err = os.WriteFile(dirname+string(os.PathSeparator)+test_name, package_bytes, 0644)
+	err = os.WriteFile(dirname+string(os.PathSeparator)+test_name, []byte(testText), 0644)
+	utils.Check(err)
+
+	err = os.WriteFile(dirname+string(os.PathSeparator)+"go.mode", []byte(modCode), 0644)
 	utils.Check(err)
 
 	err = os.WriteFile(dirname+string(os.PathSeparator)+"input.txt", []byte(""), 0644)
 	utils.Check(err)
 
 }
+
+const mainText string = `package main
+
+import (
+	"utils"
+)
+
+func main() {
+	lines := utils.ReadInput()
+	fmt.Println(lines)
+	part1Answer := 0
+	fmt.Printf("Day %s, Part 1 answer: %s\n", part1Answer)
+}
+`
+
+const testText string = `package main
+
+import "strings"
+
+var testCase string = ` + "`..." + `
+
+var testLines []string = strings.Split(testCase, "\n")
+
+`
+
+const modText string = `module day%s
+
+go 1.21
+
+require github.com/stretchr/testify v1.8.4
+
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
+
+`
