@@ -35,7 +35,7 @@ func main() {
 	err = os.WriteFile(dirname+string(os.PathSeparator)+test_name, []byte(testText), 0644)
 	utils.Check(err)
 
-	err = os.WriteFile(dirname+string(os.PathSeparator)+"go.mode", []byte(modCode), 0644)
+	err = os.WriteFile(dirname+string(os.PathSeparator)+"go.mod", []byte(modCode), 0644)
 	utils.Check(err)
 
 	err = os.WriteFile(dirname+string(os.PathSeparator)+"input.txt", []byte(""), 0644)
