@@ -63,3 +63,10 @@ func TestProcessCopies(t *testing.T) {
 	assert.Equal(t, 30, nCopies)
 	assert.Equal(t, expected_copies, copies)
 }
+
+func TestPart2(t *testing.T) {
+	lines := utils.ReadInput()
+	cards := NewCardSlice(lines)
+	copies, _ := ProcessCopies(cards)
+	assert.Equal(t, 11827296, copies)
+}
