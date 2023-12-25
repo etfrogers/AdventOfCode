@@ -35,19 +35,41 @@ func ReadInput() []string {
 	return lines
 }
 
-func PowInts(x, n int) int {
+func PowInts(x, n int) (int, error) {
+	var err error = nil
 	if n < 0 {
-		panic(fmt.Errorf("n must be >= 0"))
+		err = fmt.Errorf("n must be >= 0")
+		return 0, err
 	}
 	if n == 0 {
-		return 1
+		return 1, err
 	}
 	if n == 1 {
-		return x
+		return x, err
 	}
-	y := PowInts(x, n/2)
+	y, err := PowInts(x, n/2)
 	if n%2 == 0 {
-		return y * y
+		return y * y, err
 	}
-	return x * y * y
+	return x * y * y, err
+}
+
+func SplitSplice[T comparable](s []T, sep T) [][]T {
+	output := [][]T{}
+	current_ind := 0
+	output = append(output, []T{})
+	for _, val := range s {
+		if val == sep {
+			if len(output[current_ind]) > 0 {
+				current_ind++
+				output = append(output, []T{})
+			}
+		} else {
+			output[current_ind] = append(output[current_ind], val)
+		}
+	}
+	if len(output[current_ind]) == 0 {
+		output = output[:len(output)-1]
+	}
+	return output
 }

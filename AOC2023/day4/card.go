@@ -58,7 +58,9 @@ func (c *Card) Score() int {
 	if n == 0 {
 		return 0
 	} else {
-		return utils.PowInts(2, n-1)
+		val, err := utils.PowInts(2, n-1)
+		utils.Check(err)
+		return val
 	}
 }
 
