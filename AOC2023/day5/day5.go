@@ -28,9 +28,27 @@ func (m *Mapping) OutputEnd() int {
 	return m.OutputStart + m.Length
 }
 
-type MapSet struct {
+type MapSetRanges struct {
+	SeedRanges [][2]int
+	maps       []LocationMap
+}
+
+type MapSetInts struct {
 	SeedNumbers set.Set[int]
-	Maps        []LocationMap
+	maps        []LocationMap
+}
+
+type MapSet interface {
+	Maps() []LocationMap
+	// MapThroughSet(MapSet, int) int
+}
+
+func (m MapSetInts) Maps() []LocationMap {
+	return m.maps
+}
+
+func (m MapSetRanges) Maps() []LocationMap {
+	return m.maps
 }
 
 func AtoiError(x string) int {
@@ -39,7 +57,7 @@ func AtoiError(x string) int {
 	return v
 }
 
-func NewMapSet(data []string) MapSet {
+func NewMapSet(data []string, withRanges bool) MapSet {
 	tokens := utils.SplitSplice(data, "")
 	seeds_slice := tokens[0]
 	seeds_str := seeds_slice[0]
@@ -49,11 +67,22 @@ func NewMapSet(data []string) MapSet {
 	}
 	seed_tokens := utils.DropEmpty(strings.Split(seeds_str, " "))
 	seed_slice := utils.Map[string, int](seed_tokens, AtoiError)
-	seeds := set.New(seed_slice...)
 
 	map_tokens := tokens[1:]
 	maps := utils.Map[[]string, LocationMap](map_tokens, NewLocationMap)
-	return MapSet{SeedNumbers: seeds, Maps: maps}
+	if withRanges {
+		seeds := make([][2]int, len(seed_slice)/2)
+
+		for i := 0; i < len(seed_slice)/2; i++ {
+			j := i * 2
+			seeds[i] = [2]int{seed_slice[j], seed_slice[j+1]}
+		}
+		return MapSetRanges{SeedRanges: seeds, maps: maps}
+	} else {
+		seeds := set.New(seed_slice...)
+		return MapSetInts{SeedNumbers: seeds, maps: maps}
+	}
+
 }
 
 func NewLocationMap(data []string) LocationMap {
@@ -85,23 +114,42 @@ func (m LocationMap) DoMapping(input int) int {
 	return output
 }
 
-func (m MapSet) MapThroughSet(input int) int {
+func MapThroughSet(m MapSet, input int) int {
 	val := input
-	for _, map_ := range m.Maps {
+	for _, map_ := range m.Maps() {
 		val = map_.DoMapping(val)
 	}
 	return val
 }
 
 func FindLocations(maps MapSet) set.Set[int] {
-	slice := utils.Map[int, int](maps.SeedNumbers.Items(), maps.MapThroughSet)
-	return set.New(slice...)
+	var slice []int
+	switch m := maps.(type) {
+	case MapSetInts:
+		slice = utils.Map[int, int](m.SeedNumbers.Items(), func(x int) int { return MapThroughSet(m, x) })
+	case MapSetRanges:
+		slice = []int{}
+		for pair_number, seed_pair := range m.SeedRanges {
+			fmt.Println(pair_number)
+			for i := 0; i < seed_pair[1]; i++ {
+				input := seed_pair[0] + i
+				loc := MapThroughSet(m, input)
+				slice = append(slice, loc)
+			}
+		}
+	}
+	return set.New[int](slice...)
 }
 
 func main() {
 	lines := utils.ReadInput()
-	maps := NewMapSet(lines)
+	maps := NewMapSet(lines, false)
 	locs := FindLocations(maps)
 	part1Answer := slices.Min(locs.Items())
 	fmt.Printf("Day 5, Part 1 answer: %d\n", part1Answer)
+
+	maps2 := NewMapSet(lines, true)
+	locs2 := FindLocations(maps2)
+	part2Answer := slices.Min(locs2.Items())
+	fmt.Printf("Day 5, Part 2 answer: %d\n", part2Answer)
 }
