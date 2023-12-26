@@ -73,3 +73,13 @@ func SplitSplice[T comparable](s []T, sep T) [][]T {
 	}
 	return output
 }
+
+func DropEmpty[T string | []any](s []T) []T {
+	new := []T{}
+	for _, val := range s {
+		if len(val) != 0 {
+			new = append(new, val)
+		}
+	}
+	return new
+}
