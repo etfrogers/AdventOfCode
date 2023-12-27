@@ -174,9 +174,9 @@ func TestRemoveMissingElement(t *testing.T) {
 
 func TestUnion(t *testing.T) {
 	testCases := []struct {
-		s1          Set[int]
-		s2          Set[int]
-		expectedSet Set[int]
+		s1          *Set[int]
+		s2          *Set[int]
+		expectedSet *Set[int]
 	}{
 		{New[int](1, 2, 3), New[int](4, 5, 6), New[int](1, 2, 3, 4, 5, 6)},
 		{New[int](), New[int](4, 5, 6), New[int](4, 5, 6)},
@@ -194,9 +194,9 @@ func TestUnion(t *testing.T) {
 
 func TestDifference(t *testing.T) {
 	testCases := []struct {
-		s1          Set[int]
-		s2          Set[int]
-		expectedSet Set[int]
+		s1          *Set[int]
+		s2          *Set[int]
+		expectedSet *Set[int]
 	}{
 		{New[int](1, 2, 3), New[int](4, 5, 6), New[int](1, 2, 3)},
 		{New[int](), New[int](4, 5, 6), New[int]()},
@@ -214,9 +214,9 @@ func TestDifference(t *testing.T) {
 
 func TestIntersection(t *testing.T) {
 	testCases := []struct {
-		s1          Set[int]
-		s2          Set[int]
-		expectedSet Set[int]
+		s1          *Set[int]
+		s2          *Set[int]
+		expectedSet *Set[int]
 	}{
 		{New[int](1, 2, 3), New[int](4, 5, 6), New[int]()},
 		{New[int](), New[int](4, 5, 6), New[int]()},

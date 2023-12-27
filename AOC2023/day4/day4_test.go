@@ -19,7 +19,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11`
 var testLines []string = strings.Split(testCase, "\n")
 
 func TestWinningSet(t *testing.T) {
-	testCases := []set.Set[string]{
+	testCases := []*set.Set[string]{
 		set.New("48", "83", "17", "86"),
 		set.New("32", "61"),
 		set.New("1", "21"),
@@ -30,7 +30,8 @@ func TestWinningSet(t *testing.T) {
 	for tc_i, tc := range testCases {
 		t.Run(string(testLines[tc_i]), func(t *testing.T) {
 			card := NewCard(testLines[tc_i])
-			assert.True(t, card.WinningNumbers().Equals(tc))
+			winners := card.WinningNumbers()
+			assert.True(t, winners.Equals(tc))
 		})
 	}
 }

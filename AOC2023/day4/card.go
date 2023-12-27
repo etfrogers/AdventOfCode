@@ -25,8 +25,8 @@ func NewCard(line string) Card {
 	winners := dropEmpty(strings.Split(winner_str, " "))
 	return Card{
 		Id:      id,
-		numbers: set.New[string](numbers...),
-		winners: set.New[string](winners...),
+		numbers: *set.New[string](numbers...),
+		winners: *set.New[string](winners...),
 	}
 }
 
@@ -45,7 +45,7 @@ func NewCardSlice(lines []string) []Card {
 }
 
 func (c *Card) WinningNumbers() set.Set[string] {
-	return set.Intersection(c.numbers, c.winners)
+	return *set.Intersection(&c.numbers, &c.winners)
 }
 
 func (c *Card) NWinners() int {
