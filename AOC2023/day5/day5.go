@@ -122,34 +122,43 @@ func MapThroughSet(m MapSet, input int) int {
 	return val
 }
 
-func FindLocations(maps MapSet) set.Set[int] {
-	var slice []int
+func FindLocations(maps MapSetInts) set.Set[int] {
+	slice := utils.Map[int, int](maps.SeedNumbers.Items(), func(x int) int { return MapThroughSet(maps, x) })
+	return set.New[int](slice...)
+}
+
+const MaxInt = int(^uint(0) >> 1)
+
+func MinLoc(maps MapSet) int {
+	var loc int
 	switch m := maps.(type) {
 	case MapSetInts:
-		slice = utils.Map[int, int](m.SeedNumbers.Items(), func(x int) int { return MapThroughSet(m, x) })
+		locs := FindLocations(m)
+		loc = slices.Min(locs.Items())
 	case MapSetRanges:
-		slice = []int{}
+		minLoc := MaxInt
 		for pair_number, seed_pair := range m.SeedRanges {
 			fmt.Println(pair_number)
 			for i := 0; i < seed_pair[1]; i++ {
 				input := seed_pair[0] + i
 				loc := MapThroughSet(m, input)
-				slice = append(slice, loc)
+				if loc < minLoc {
+					minLoc = loc
+				}
 			}
+			loc = minLoc
 		}
 	}
-	return set.New[int](slice...)
+	return loc
 }
 
 func main() {
 	lines := utils.ReadInput()
 	maps := NewMapSet(lines, false)
-	locs := FindLocations(maps)
-	part1Answer := slices.Min(locs.Items())
+	part1Answer := MinLoc(maps)
 	fmt.Printf("Day 5, Part 1 answer: %d\n", part1Answer)
 
 	maps2 := NewMapSet(lines, true)
-	locs2 := FindLocations(maps2)
-	part2Answer := slices.Min(locs2.Items())
+	part2Answer := MinLoc(maps2)
 	fmt.Printf("Day 5, Part 2 answer: %d\n", part2Answer)
 }

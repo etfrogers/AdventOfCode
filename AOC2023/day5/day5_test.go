@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 	"testing"
 	"utils"
@@ -50,7 +49,7 @@ var testLines []string = strings.Split(testCase, "\n")
 func TestTestLocationFinder(t *testing.T) {
 	expectedLocations := set.New([]int{82, 43, 86, 35}...)
 	mapSet := NewMapSet(testLines, false)
-	assert.True(t, expectedLocations.Equals(FindLocations(mapSet)))
+	assert.True(t, expectedLocations.Equals(FindLocations(mapSet.(MapSetInts))))
 }
 
 func TestSingleMapping(t *testing.T) {
@@ -79,9 +78,8 @@ func TestPart1(t *testing.T) {
 	expected := 382895070
 	lines := utils.ReadInput()
 	maps := NewMapSet(lines, false)
-	locs := FindLocations(maps)
-	part1Answer := slices.Min(locs.Items())
-	assert.Equal(t, expected, part1Answer)
+	loc := MinLoc(maps)
+	assert.Equal(t, expected, loc)
 }
 
 type entry struct {
@@ -124,7 +122,14 @@ func TestPart2TestCase(t *testing.T) {
 func TestPart2MinTestCase(t *testing.T) {
 	mapSet := NewMapSet(testLines, true)
 	expected := 46
-	locs := FindLocations(mapSet)
-	loc := slices.Min(locs.Items())
+	loc := MinLoc(mapSet)
+	assert.Equal(t, expected, loc)
+}
+
+func TestPart2(t *testing.T) {
+	expected := 17729182
+	lines := utils.ReadInput()
+	maps := NewMapSet(lines, true)
+	loc := MinLoc(maps)
 	assert.Equal(t, expected, loc)
 }
