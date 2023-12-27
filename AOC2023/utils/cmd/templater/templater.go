@@ -61,6 +61,8 @@ const testText string = `package main
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var testCase string = ` + "`...`" + `
@@ -68,6 +70,7 @@ var testCase string = ` + "`...`" + `
 var testLines []string = strings.Split(testCase, "\n")
 
 func TestPart1(t *testing.T) {
+	t.Skip("not implemented")
 	assert.Fail(t, "not implemented")
 }
 `
