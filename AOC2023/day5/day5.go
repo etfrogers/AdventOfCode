@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"utils"
 	"utils/set"
 )
@@ -34,7 +35,7 @@ type MapSetRanges struct {
 }
 
 type MapSetInts struct {
-	SeedNumbers set.Set[int]
+	SeedNumbers *set.Set[int]
 	maps        []LocationMap
 }
 
@@ -122,34 +123,43 @@ func MapThroughSet(m MapSet, input int) int {
 	return val
 }
 
-func FindLocations(maps MapSetInts) set.Set[int] {
+func FindLocations(maps MapSetInts) *set.Set[int] {
 	slice := utils.Map[int, int](maps.SeedNumbers.Items(), func(x int) int { return MapThroughSet(maps, x) })
 	return set.New[int](slice...)
 }
 
 const MaxInt = int(^uint(0) >> 1)
 
-func MinLoc(maps MapSet) int {
-	var loc int
-	switch m := maps.(type) {
-	case MapSetInts:
-		locs := FindLocations(m)
-		loc = slices.Min(locs.Items())
-	case MapSetRanges:
-		minLoc := MaxInt
-		for pair_number, seed_pair := range m.SeedRanges {
-			fmt.Println(pair_number)
-			for i := 0; i < seed_pair[1]; i++ {
-				input := seed_pair[0] + i
-				loc := MapThroughSet(m, input)
-				if loc < minLoc {
-					minLoc = loc
-				}
-			}
-			loc = minLoc
+func processSeedPair(wg *sync.WaitGroup, label int, pair [2]int, mapSet *MapSetRanges, outputSet *set.Set[int]) {
+	fmt.Println(label)
+	minLoc := MaxInt
+	rangeStart := pair[0]
+	rangeLen := pair[1]
+	for i := 0; i < rangeLen; i++ {
+		input := rangeStart + i
+		loc := MapThroughSet(mapSet, input)
+		if loc < minLoc {
+			minLoc = loc
 		}
 	}
-	return loc
+	outputSet.Add(minLoc)
+	wg.Done()
+}
+
+func MinLoc(maps MapSet) int {
+	locs := set.New[int]()
+	switch m := maps.(type) {
+	case MapSetInts:
+		locs = FindLocations(m)
+	case MapSetRanges:
+		var wg sync.WaitGroup
+		for pair_number, seed_pair := range m.SeedRanges {
+			wg.Add(1)
+			go processSeedPair(&wg, pair_number, seed_pair, &m, locs)
+		}
+		wg.Wait()
+	}
+	return slices.Min(locs.Items())
 }
 
 func main() {
