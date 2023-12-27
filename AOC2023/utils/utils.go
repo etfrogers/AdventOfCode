@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -20,6 +21,17 @@ func Sum(data []int) int {
 		total += val
 	}
 	return total
+}
+
+func Prod(data []int) int {
+	if len(data) == 0 {
+		return 0
+	}
+	prod := 1
+	for _, val := range data {
+		prod *= val
+	}
+	return prod
 }
 
 func Check(e error) {
@@ -82,4 +94,10 @@ func DropEmpty[T string | []any](s []T) []T {
 		}
 	}
 	return new
+}
+
+func AtoiError(x string) int {
+	v, e := strconv.Atoi(x)
+	Check(e)
+	return v
 }

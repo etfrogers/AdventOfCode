@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"utils"
@@ -52,12 +51,6 @@ func (m MapSetRanges) Maps() []LocationMap {
 	return m.maps
 }
 
-func AtoiError(x string) int {
-	v, e := strconv.Atoi(x)
-	utils.Check(e)
-	return v
-}
-
 func NewMapSet(data []string, withRanges bool) MapSet {
 	tokens := utils.SplitSplice(data, "")
 	seeds_slice := tokens[0]
@@ -67,7 +60,7 @@ func NewMapSet(data []string, withRanges bool) MapSet {
 		panic(fmt.Errorf("failed to extract seed header"))
 	}
 	seed_tokens := utils.DropEmpty(strings.Split(seeds_str, " "))
-	seed_slice := utils.Map[string, int](seed_tokens, AtoiError)
+	seed_slice := utils.Map[string, int](seed_tokens, utils.AtoiError)
 
 	map_tokens := tokens[1:]
 	maps := utils.Map[[]string, LocationMap](map_tokens, NewLocationMap)
@@ -94,7 +87,7 @@ func NewLocationMap(data []string) LocationMap {
 		panic(fmt.Errorf("failed to extract map header"))
 	}
 	map_strs := utils.Map[string, []string](maps_slice, func(s string) []string { return strings.Split(s, " ") })
-	map_ints := utils.Map(map_strs, func(x []string) []int { return utils.Map[string, int](x, AtoiError) })
+	map_ints := utils.Map(map_strs, func(x []string) []int { return utils.Map[string, int](x, utils.AtoiError) })
 	maps := utils.Map[[]int, Mapping](map_ints, func(i []int) Mapping { return Mapping{i[0], i[1], i[2]} })
 	return LocationMap{Id: id, mappings: maps}
 }

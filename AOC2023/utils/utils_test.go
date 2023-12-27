@@ -95,3 +95,47 @@ func TestPowIntsError(t *testing.T) {
 		})
 	}
 }
+
+func TestProd(t *testing.T) {
+	testCases := []struct {
+		input  []int
+		answer int
+	}{
+		{[]int{0, 1, 1, 3, 789473289}, 0},
+		{[]int{1, 1, 1, 1, 1, 1, 1}, 1},
+		{[]int{1, 1, 1, 1, 1, 1, 64}, 64},
+		{[]int{99999090978}, 99999090978},
+		{[]int{0}, 0},
+		{[]int{}, 0},
+		{[]int{-1, 1, 1, 1, 1, 1, 64}, -64},
+		{[]int{-1, -1, 1, 1, 1, 1, 64}, 64},
+		{[]int{-1, -1, -1, 1, 1, 1, 64}, -64},
+		{[]int{-1, -1, -1, -1, 1, 1, 64}, 64},
+		{[]int{-1, -1, -1, -1, -1, 1, 64}, -64},
+		{[]int{-1, -1, -1, -1, -1, -1, 64}, 64},
+		{[]int{-1, -1, -1, -1, -1, -1, -64}, -64},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.input), func(t *testing.T) {
+			assert.Equal(t, tc.answer, Prod(tc.input))
+		})
+	}
+}
+
+func TestSum(t *testing.T) {
+	testCases := []struct {
+		input  []int
+		answer int
+	}{
+		{[]int{0, 1, 1, 3, 789473289}, 789473294},
+		{[]int{0, 0, 0, 0, 0}, 0},
+		{[]int{1, -1, -99, 99}, 0},
+		{[]int{1, 1, 1, 1, 1}, 5},
+		{[]int{}, 0},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.input), func(t *testing.T) {
+			assert.Equal(t, tc.answer, Sum(tc.input))
+		})
+	}
+}
