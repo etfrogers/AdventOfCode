@@ -38,17 +38,22 @@ func (r *Race) NWinners() int {
 	return n
 }
 
-func parseLine(line string) []int {
+func parseLine(line string, badKerning bool) []int {
 	_, dataStr, _ := strings.Cut(line, ":")
-	dataSlice := utils.DropEmpty(strings.Split(dataStr, " "))
+	var dataSlice []string
+	if badKerning {
+		dataSlice = []string{strings.ReplaceAll(dataStr, " ", "")}
+	} else {
+		dataSlice = utils.DropEmpty(strings.Split(dataStr, " "))
+	}
 	return utils.Map[string, int](dataSlice, utils.AtoiError)
 }
 
-func NewRaces(lines []string) []Race {
+func NewRaces(lines []string, badKerning bool) []Race {
 	timeStr := lines[0]
 	distStr := lines[1]
-	times := parseLine(timeStr)
-	dists := parseLine(distStr)
+	times := parseLine(timeStr, badKerning)
+	dists := parseLine(distStr, badKerning)
 
 	races := make([]Race, len(times))
 	for i, time := range times {
@@ -59,8 +64,12 @@ func NewRaces(lines []string) []Race {
 
 func main() {
 	lines := utils.ReadInput()
-	races := NewRaces(lines)
+	races := NewRaces(lines, false)
 	nWinners := utils.Map(races, func(x Race) int { return x.NWinners() })
 	part1Answer := utils.Prod(nWinners)
 	fmt.Printf("Day 6, Part 1 answer: %d\n", part1Answer)
+
+	races2 := NewRaces(lines, true)
+	part2Answer := races2[0].NWinners()
+	fmt.Printf("Day 6, Part 2 answer: %d\n", part2Answer)
 }
