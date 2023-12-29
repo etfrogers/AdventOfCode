@@ -67,6 +67,28 @@ func TestCountStrings(t *testing.T) {
 	}
 }
 
+func TestDelete(t *testing.T) {
+	counter := NewFromString("AAABBC")
+	keys, counts := counter.KeysInOrder()
+	assert.Equal(t, 2, counter.Get("B"))
+	assert.Equal(t, []string{"A", "B", "C"}, keys)
+	assert.Equal(t, []int{3, 2, 1}, counts)
+
+	counter.Delete("B")
+	keys, counts = counter.KeysInOrder()
+	assert.Equal(t, 0, counter.Get("B"))
+	assert.Equal(t, []string{"A", "C"}, keys)
+	assert.Equal(t, []int{3, 1}, counts)
+
+	assert.Equal(t, 3, counter.Get("A"))
+	counter.Delete("A")
+	keys, counts = counter.KeysInOrder()
+	assert.Equal(t, 0, counter.Get("A"))
+	assert.Equal(t, []string{"C"}, keys)
+	assert.Equal(t, []int{1}, counts)
+
+}
+
 func TestCountInt(t *testing.T) {
 	testCases := []struct {
 		input          []int

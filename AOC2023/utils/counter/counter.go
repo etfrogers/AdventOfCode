@@ -60,3 +60,7 @@ func (c Counter[T]) KeysInOrder() (keys []T, counts []int) {
 	}
 	return
 }
+
+func (c *Counter[T]) Delete(key T) {
+	delete(c.counts, key)
+}
