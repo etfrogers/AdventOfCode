@@ -16,8 +16,22 @@ func Map[T, V any](ts []T, fn func(T) V) []V {
 	return result
 }
 
-func Sum(data []int) int {
-	total := 0
+func Reduce[T any](s []T, fn func(T, T) T) T {
+	var result T
+	switch len(s) {
+	case 0, 1:
+		panic("slice input to reduce must have at least 2 elements")
+	default:
+		result = fn(s[0], s[1])
+		for i := 2; i < len(s); i++ {
+			result = fn(result, s[i])
+		}
+	}
+	return result
+}
+
+func Sum[T int | float64](data []T) T {
+	total := T(0)
 	for _, val := range data {
 		total += val
 	}
@@ -115,4 +129,84 @@ func AtoiError(x string) int {
 	v, e := strconv.Atoi(x)
 	Check(e)
 	return v
+}
+
+func FindAll[T comparable](s []T, f func(T) bool) (res []T) {
+	res = []T{}
+	for _, val := range s {
+		if f(val) {
+			res = append(res, val)
+		}
+	}
+	return
+}
+
+func MapKeys[T comparable, V any](m map[T]V) (keys []T) {
+	keys = make([]T, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	return
+}
+
+func All(s []bool) bool {
+	for _, val := range s {
+		if !val {
+			return false
+		}
+	}
+	return true
+}
+
+func Any(s []bool) bool {
+	for _, val := range s {
+		if val {
+			return true
+		}
+	}
+	return false
+}
+
+func GCF(n ...int) int {
+	switch len(n) {
+	case 0:
+		return 0
+	case 1:
+		return n[0]
+	default:
+		return Reduce(n, gcf2)
+	}
+}
+
+func gcf2(p, q int) int {
+	if p < 0 || q < 0 {
+		panic("all inputs to gcf must be non-negative")
+	}
+
+	for q > 0 {
+		old_q := q
+		q = p % q
+		p = old_q
+	}
+	return p
+}
+
+func LCM(n ...int) int {
+	switch len(n) {
+	case 0:
+		return 0
+	case 1:
+		return n[0]
+	default:
+		return Reduce(n, lcm2)
+	}
+}
+
+func lcm2(p, q int) int {
+	if p < 0 || q < 0 {
+		panic("all inputs to gcf must be non-negative")
+	}
+	return p * q / (gcf2(p, q))
 }

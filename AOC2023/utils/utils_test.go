@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -180,6 +181,156 @@ func TestSum(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc.input), func(t *testing.T) {
 			assert.Equal(t, tc.answer, Sum(tc.input))
+		})
+	}
+}
+
+func randSlice[T int | float64](length int, max int) []T {
+	var dummy T
+	result := make([]T, length)
+	for i := 0; i < length; i++ {
+		switch any(dummy).(type) {
+		case int, string:
+			if max == 0 {
+				result[i] = T(rand.Int())
+			} else {
+				result[i] = T(rand.Intn(max))
+			}
+		case float64:
+			if max == 0 {
+				result[i] = T(rand.Float64())
+			} else {
+				result[i] = T(rand.Float64() * float64(max))
+			}
+		}
+
+	}
+	return result
+}
+
+func add[T float64 | int | string](x, y T) T {
+	return x + y
+}
+
+func TestReduceAgainstSumInt(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			length := rand.Intn(100) + 2
+			s := randSlice[int](length, 1000)
+			sum := Sum(s)
+			reduceSum := Reduce[int](s, add)
+			assert.Equal(t, sum, reduceSum)
+		})
+	}
+}
+
+func TestReduceAgainstSumFloat(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			length := rand.Intn(100) + 2
+			s := randSlice[float64](length, 1000)
+			sum := Sum(s)
+			reduceSum := Reduce(s, add)
+			assert.Equal(t, sum, reduceSum)
+		})
+	}
+}
+
+func TestReduceError(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			// panic len 0
+			testFn := func() { Reduce([]int{}, add) }
+			assert.Panics(t, testFn)
+			// panic len 1
+			testFn = func() { Reduce([]int{1}, add) }
+			assert.Panics(t, testFn)
+			// no panic len 2
+			testFn = func() { Reduce([]int{1, 2}, add) }
+			testFn()
+
+		})
+	}
+}
+
+func TestAll(t *testing.T) {
+	testCases := []struct {
+		input    []bool
+		expected bool
+	}{
+		{[]bool{true}, true},
+		{[]bool{}, true},
+		{[]bool{true, true, true}, true},
+		{[]bool{true, true, false}, false},
+		{[]bool{false, false, false}, false},
+		{[]bool{false}, false},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc.expected, All(tc.input))
+		})
+	}
+}
+
+func TestAny(t *testing.T) {
+	testCases := []struct {
+		input    []bool
+		expected bool
+	}{
+		{[]bool{true}, true},
+		{[]bool{}, false},
+		{[]bool{true, true, true}, true},
+		{[]bool{true, true, false}, true},
+		{[]bool{false, false, false}, false},
+		{[]bool{false}, false},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc.expected, Any(tc.input))
+		})
+	}
+}
+
+func TestGCF(t *testing.T) {
+	testCases := []struct {
+		input    []int
+		expected int
+	}{
+		{[]int{}, 0},
+		{[]int{1}, 1},
+		{[]int{987}, 987},
+		{[]int{1071, 462}, 21},
+		{[]int{462, 1071}, 21},
+		{[]int{1386, 3213}, 63},
+		{[]int{3213, 1386}, 63},
+		{[]int{2, 2, 2, 2, 2}, 2},
+		{[]int{2, 4, 6, 8, 10}, 2},
+		{[]int{45, 100, 25, 15, 10}, 5},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc.expected, GCF(tc.input...))
+		})
+	}
+}
+
+func TestLCM(t *testing.T) {
+	testCases := []struct {
+		input    []int
+		expected int
+	}{
+		{[]int{}, 0},
+		{[]int{1}, 1},
+		{[]int{987}, 987},
+		{[]int{6, 10}, 30},
+		{[]int{10, 6}, 30},
+		{[]int{10, 18, 25}, 450},
+		{[]int{18, 25, 10}, 450},
+		{[]int{10, 12, 15, 75}, 300},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc.expected, LCM(tc.input...))
 		})
 	}
 }

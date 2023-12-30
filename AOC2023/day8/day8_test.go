@@ -72,7 +72,7 @@ func TestGhostWalk(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-	expected := 16897
+	expected := 16563603485021
 	lines := utils.ReadInput()
 	inst, net := NewNetwork(lines)
 	part2Answer := net.GhostWalk(inst)

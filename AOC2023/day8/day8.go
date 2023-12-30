@@ -33,11 +33,15 @@ func NewNetwork(lines []string) (instructions string, net Network) {
 	return
 }
 
-func (n *Network) Walk(instructions string) (pathLength int) {
+func (n *Network) Walk(instructions string) int {
+	return n.baseWalk(instructions, "AAA", func(s string) bool { return s == "ZZZ" }, nil)
+}
+
+func (n *Network) baseWalk(instructions, start string, stopper func(string) bool, c chan int) (pathLength int) {
 	instInd := 0
 	pathLength = 0
-	label := "AAA"
-	for label != "ZZZ" {
+	label := start
+	for !stopper(label) {
 		switch string(instructions[instInd]) {
 		case "R":
 			label = (*n)[label].right
@@ -48,28 +52,23 @@ func (n *Network) Walk(instructions string) (pathLength int) {
 		instInd %= len(instructions)
 		pathLength++
 	}
+	if c != nil {
+		c <- pathLength
+	}
 	return
 }
 
 func (n *Network) GhostWalk(instructions string) (pathLength int) {
-	instInd := 0
-	pathLength = 0
-
 	labels := utils.FindAll(utils.MapKeys(*n), func(k string) bool { return strings.HasSuffix(k, "A") })
-	for !utils.All(utils.Map(labels, func(k string) bool { return strings.HasSuffix(k, "Z") })) {
-		for i, label := range labels {
-			switch string(instructions[instInd]) {
-			case "R":
-				labels[i] = (*n)[label].right
-			case "L":
-				labels[i] = (*n)[label].left
-			}
-		}
-		instInd++
-		instInd %= len(instructions)
-		pathLength++
+	c := make(chan int, len(labels))
+	for _, label := range labels {
+		go n.baseWalk(instructions, label, func(k string) bool { return strings.HasSuffix(k, "Z") }, c)
 	}
-	return
+	lengths := make([]int, len(labels))
+	for i := range labels {
+		lengths[i] = <-c
+	}
+	return utils.LCM(lengths...)
 }
 
 func main() {
