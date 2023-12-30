@@ -52,3 +52,29 @@ func TestExampleWalk(t *testing.T) {
 		})
 	}
 }
+
+func TestGhostWalk(t *testing.T) {
+	lines := strings.Split(`LR
+
+	11A = (11B, XXX)
+	11B = (XXX, 11Z)
+	11Z = (11B, XXX)
+	22A = (22B, XXX)
+	22B = (22C, 22C)
+	22C = (22Z, 22Z)
+	22Z = (22B, 22B)
+	XXX = (XXX, XXX)`, "\n")
+	expected := 6
+	inst, net := NewNetwork(lines)
+
+	walkLength := net.GhostWalk(inst)
+	assert.Equal(t, expected, walkLength)
+}
+
+func TestPart2(t *testing.T) {
+	expected := 16897
+	lines := utils.ReadInput()
+	inst, net := NewNetwork(lines)
+	part2Answer := net.GhostWalk(inst)
+	assert.Equal(t, expected, part2Answer)
+}
