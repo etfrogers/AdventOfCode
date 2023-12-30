@@ -25,7 +25,7 @@ func TestSplitSliceInt(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc.input), func(t *testing.T) {
-			assert.Equal(t, tc.expected, SplitSplice(tc.input, tc.sep))
+			assert.Equal(t, tc.expected, SplitSlice(tc.input, tc.sep))
 		})
 	}
 }
@@ -45,7 +45,51 @@ func TestSplitSliceString(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc.input), func(t *testing.T) {
-			assert.Equal(t, tc.expected, SplitSplice(tc.input, tc.sep))
+			assert.Equal(t, tc.expected, SplitSlice(tc.input, tc.sep))
+		})
+	}
+}
+
+func TestCutSliceInt(t *testing.T) {
+	testCases := []struct {
+		input     []int
+		sep       int
+		expected1 []int
+		expected2 []int
+	}{
+		{[]int{1, 2, 1}, 2, []int{1}, []int{1}},
+		{[]int{1, 2, 2, 1}, 2, []int{1}, []int{2, 1}},
+		{[]int{1, 1, 1, 1}, 2, []int{1, 1, 1, 1}, []int{}},
+		{[]int{1, 1, 1, 1}, 1, []int{}, []int{1, 1, 1}},
+		{[]int{}, 2, []int{}, []int{}},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			p1, p2 := CutSlice(tc.input, tc.sep)
+			assert.Equal(t, tc.expected1, p1)
+			assert.Equal(t, tc.expected2, p2)
+		})
+	}
+}
+
+func TestCutSliceString(t *testing.T) {
+	testCases := []struct {
+		input     []string
+		sep       string
+		expected1 []string
+		expected2 []string
+	}{
+		{[]string{"1", "2", "1"}, "2", []string{"1"}, []string{"1"}},
+		{[]string{"1", "2", "2", "1"}, "2", []string{"1"}, []string{"2", "1"}},
+		{[]string{"1", "1", "1", "1"}, "2", []string{"1", "1", "1", "1"}, []string{}},
+		{[]string{"1", "1", "1", "1"}, "1", []string{}, []string{"1", "1", "1"}},
+		{[]string{}, "2", []string{}, []string{}},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			p1, p2 := CutSlice(tc.input, tc.sep)
+			assert.Equal(t, tc.expected1, p1)
+			assert.Equal(t, tc.expected2, p2)
 		})
 	}
 }

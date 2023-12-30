@@ -52,7 +52,7 @@ func (m MapSetRanges) Maps() []LocationMap {
 }
 
 func NewMapSet(data []string, withRanges bool) MapSet {
-	tokens := utils.SplitSplice(data, "")
+	tokens := utils.SplitSlice(data, "")
 	seeds_slice := tokens[0]
 	seeds_str := seeds_slice[0]
 	seed_header, seeds_str, found := strings.Cut(seeds_str, ":")

@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -66,7 +67,7 @@ func PowInts(x, n int) (int, error) {
 	return x * y * y, err
 }
 
-func SplitSplice[T comparable](s []T, sep T) [][]T {
+func SplitSlice[T comparable](s []T, sep T) [][]T {
 	output := [][]T{}
 	current_ind := 0
 	output = append(output, []T{})
@@ -84,6 +85,20 @@ func SplitSplice[T comparable](s []T, sep T) [][]T {
 		output = output[:len(output)-1]
 	}
 	return output
+}
+
+// Splits on fist instance of sep
+func CutSlice[T comparable](s []T, sep T) (part1, part2 []T) {
+	index := slices.Index[[]T, T](s, sep)
+	if index < 0 {
+		// Separator not found
+		part1 = s[:]
+		part2 = []T{}
+		return
+	}
+	part1 = s[:index]
+	part2 = s[index+1:]
+	return
 }
 
 func DropEmpty[T string | []any](s []T) []T {
