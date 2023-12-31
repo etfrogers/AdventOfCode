@@ -36,32 +36,35 @@ func lastElem[T any](s []T) T {
 	return s[len(s)-1]
 }
 
-func (s *Sequence) Extrapolate() int {
+func (s *Sequence) Extrapolate() (int, int) {
 	diffs := [][]int{}
 	diffs = append(diffs, *s)
 	for !allZeros(diffs[len(diffs)-1]) {
 		diffs = append(diffs, diff(lastElem(diffs)))
 	}
 
-	for i := len(diffs) - 1; i >= 0; i-- {
-		var newVal int
-		if i == len(diffs)-1 {
-			newVal = 0
-		} else {
-			newVal = lastElem(diffs[i+1]) + lastElem(diffs[i])
-		}
-		diffs[i] = append(diffs[i], newVal)
+	startVal, endVal := 0, 0
+	for i := len(diffs) - 2; i >= 0; i-- {
+		endVal += lastElem(diffs[i])
+		startVal = diffs[i][0] - startVal
 	}
-	return lastElem(diffs[0])
+	return startVal, endVal
 }
 
-func (sl *SequenceList) SumExtrapolate() int {
-	return utils.Sum(utils.Map[Sequence, int](*sl, func(s Sequence) int { return s.Extrapolate() }))
+func (sl *SequenceList) SumExtrapolate() (startSum, endSum int) {
+	startSum, endSum = 0, 0
+	for _, s := range *sl {
+		startVal, endVal := s.Extrapolate()
+		startSum += startVal
+		endSum += endVal
+	}
+	return
 }
 
 func main() {
 	lines := utils.ReadInput()
 	sequences := NewSequenceList(lines)
-	part1Answer := sequences.SumExtrapolate()
+	part2Answer, part1Answer := sequences.SumExtrapolate()
 	fmt.Printf("Day 9, Part 1 answer: %d\n", part1Answer)
+	fmt.Printf("Day 9, Part 2 answer: %d\n", part2Answer)
 }
