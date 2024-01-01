@@ -38,8 +38,11 @@ var testCases []string = []string{testCase1plain, testCase1real, testCase2plain,
 var testCaseLines [][]string = utils.Map(testCases, func(s string) []string { return strings.Split(s, "\n") })
 
 func TestPart1(t *testing.T) {
-	t.Skip("not implemented")
-	assert.Fail(t, "not implemented")
+	expected := 6640
+	lines := utils.ReadInput()
+	p := NewPipeline(lines)
+	part1Answer := p.MaxDistFromStart()
+	assert.Equal(t, expected, part1Answer)
 }
 
 func TestMaxDist(t *testing.T) {

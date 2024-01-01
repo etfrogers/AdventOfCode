@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 	"utils"
 
 	"gonum.org/v1/gonum/graph"
-	"gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/traverse"
 )
@@ -16,7 +14,7 @@ const Y_FACTOR int = 10_000_000
 
 type Pipeline struct {
 	startPos graph.Node
-	*simple.UndirectedGraph
+	*simple.DirectedGraph
 }
 
 type xyNode struct {
@@ -34,7 +32,7 @@ func GenerateID(x, y int) (id int64) {
 
 func NewPipeline(lines []string) Pipeline {
 	p := Pipeline{}
-	p.UndirectedGraph = simple.NewUndirectedGraph()
+	p.DirectedGraph = simple.NewDirectedGraph()
 
 	// First add nodes
 	for y, line := range lines {
@@ -73,7 +71,9 @@ func NewPipeline(lines []string) Pipeline {
 			case "S":
 				// add nothing to graph: edge should have been added by other nodes
 				p.startPos = node
-				p.AddNode(node)
+				if p.Node(node.ID()) == nil {
+					p.AddNode(node)
+				}
 				continue // to avoid adding edges
 			default:
 				panic("unexpected value")
@@ -83,24 +83,48 @@ func NewPipeline(lines []string) Pipeline {
 			p.SetEdge(edge2)
 		}
 	}
+	// Add edges out from startPos
+	toStart := p.To(p.startPos.ID())
+	if toStart.Len() != 2 {
+		panic("wrong number of connections to start")
+	}
+	for toStart.Next() {
+		n := toStart.Node()
+		edge := p.NewEdge(p.startPos, n)
+		p.SetEdge(edge)
+	}
 	return p
 }
 
 func (p *Pipeline) MaxDistFromStart() int {
-	paths := path.DijkstraFrom(p.startPos, p.UndirectedGraph)
-	dists := []int{}
-	search := traverse.DepthFirst{Visit: func(n graph.Node) {
-		dists = append(dists, int(paths.WeightTo(n.ID())))
-	}}
+	dists := map[int64]int{}
+	dist := 0
+	search := traverse.BreadthFirst{
+		Visit: func(n graph.Node) {
+			dists[n.ID()] = dist
+		},
+		Traverse: func(e graph.Edge) bool {
+			// only traverse an edge if there is also an edge back
+			dist = dists[e.From().ID()] + 1
+			return p.HasEdgeFromTo(e.To().ID(), e.From().ID())
+
+		},
+	}
 	// search all nodes (func will stop when it has visited all)
-	until := func(n graph.Node) bool { return false }
+	until := func(graph.Node, int) bool { return false }
 	search.Walk(p, p.startPos, until)
-	return slices.Max[[]int, int](dists)
+	maxDist := 0
+	for _, v := range dists {
+		if v > maxDist {
+			maxDist = v
+		}
+	}
+	return maxDist
 }
 
 func main() {
 	lines := utils.ReadInput()
-	fmt.Println(lines)
-	part1Answer := 0
+	p := NewPipeline(lines)
+	part1Answer := p.MaxDistFromStart()
 	fmt.Printf("Day 10, Part 1 answer: %d\n", part1Answer)
 }
