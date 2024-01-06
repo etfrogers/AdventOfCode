@@ -15,6 +15,7 @@ const Y_FACTOR int = 10_000_000
 type Pipeline struct {
 	startPos graph.Node
 	*simple.DirectedGraph
+	dists map[int64]int
 }
 
 type xyNode struct {
@@ -31,7 +32,7 @@ func GenerateID(x, y int) (id int64) {
 }
 
 func NewPipeline(lines []string) Pipeline {
-	p := Pipeline{}
+	p := Pipeline{dists: map[int64]int{}}
 	p.DirectedGraph = simple.NewDirectedGraph()
 
 	// First add nodes
@@ -93,33 +94,57 @@ func NewPipeline(lines []string) Pipeline {
 		edge := p.NewEdge(p.startPos, n)
 		p.SetEdge(edge)
 	}
+
+	p.DoWalking()
+
 	return p
 }
 
-func (p *Pipeline) MaxDistFromStart() int {
-	dists := map[int64]int{}
+type NetWalker struct {
+	*traverse.BreadthFirst
+	from      graph.Node
+	prunedNet graph.Graph
+}
+
+func NewNetWalker(p *Pipeline) NetWalker {
+	nw := NetWalker{prunedNet: simple.NewUndirectedGraph()}
 	dist := 0
-	search := traverse.BreadthFirst{
+	nw.BreadthFirst = &traverse.BreadthFirst{
 		Visit: func(n graph.Node) {
-			dists[n.ID()] = dist
+			p.dists[n.ID()] = dist
 		},
 		Traverse: func(e graph.Edge) bool {
 			// only traverse an edge if there is also an edge back
-			dist = dists[e.From().ID()] + 1
+			dist = p.dists[e.From().ID()] + 1
 			return p.HasEdgeFromTo(e.To().ID(), e.From().ID())
 
 		},
 	}
-	// search all nodes (func will stop when it has visited all)
+	return nw
+}
+
+func (nw *NetWalker) Walk(g *Pipeline, from graph.Node) {
 	until := func(graph.Node, int) bool { return false }
-	search.Walk(p, p.startPos, until)
+	nw.BreadthFirst.Walk(g, from, until)
+}
+
+func (p *Pipeline) DoWalking() {
+	search := NewNetWalker(p)
+	search.Walk(p, p.startPos)
+}
+
+func (p *Pipeline) MaxDistFromStart() int {
 	maxDist := 0
-	for _, v := range dists {
+	for _, v := range p.dists {
 		if v > maxDist {
 			maxDist = v
 		}
 	}
 	return maxDist
+}
+
+func (p *Pipeline) EnclosedArea() int {
+	return 0
 }
 
 func main() {
