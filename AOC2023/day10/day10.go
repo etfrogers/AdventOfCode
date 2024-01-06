@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"strings"
 	"utils"
+	"utils/counter"
+	"utils/set"
+
+	"slices"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -15,9 +19,10 @@ const Y_FACTOR int = 10_000_000
 type Pipeline struct {
 	startPos graph.Node
 	*simple.DirectedGraph
-	dists    map[int64]int
-	mainLoop simple.UndirectedGraph
-	tiles    [][]string
+	dists       map[int64]int
+	mainLoop    simple.UndirectedGraph
+	tiles       [][]string
+	markedTiles [][]string
 }
 
 type xyNode struct {
@@ -180,8 +185,152 @@ func (p *Pipeline) MaxDistFromStart() int {
 	return maxDist
 }
 
+type direction int
+
+const (
+	up direction = iota
+	down
+	left
+	right
+)
+
+type TileWalker struct {
+	isInside       bool
+	isOnPipe       bool
+	lastPipeInFrom direction
+}
+
+func (w *TileWalker) Reset() {
+	w.isInside = false
+	w.isOnPipe = false
+	w.lastPipeInFrom = up
+}
+
+func (w *TileWalker) ToggleInside() {
+	w.isInside = !w.isInside
+}
+func (w *TileWalker) WalkLine(chars []string) {
+	for i, char := range chars {
+		switch char {
+		case "|":
+			w.ToggleInside()
+		case "-":
+			// do nothing
+		case "L":
+			w.isOnPipe = true
+			w.lastPipeInFrom = up
+		case "J":
+			w.isOnPipe = false
+			if w.lastPipeInFrom == down {
+				w.ToggleInside()
+			}
+		case "7":
+			w.isOnPipe = false
+			if w.lastPipeInFrom == up {
+				w.ToggleInside()
+			}
+		case "F":
+			w.isOnPipe = true
+			w.lastPipeInFrom = down
+		case ".":
+			if w.isInside {
+				chars[i] = "I"
+			} else {
+				chars[i] = "O"
+			}
+		case "S":
+			panic("S should have been removed")
+		default:
+			panic("unexpected value")
+		}
+	}
+}
+
+func (p *Pipeline) CloneTiles() {
+	p.markedTiles = make([][]string, len(p.tiles))
+	for i := range p.tiles {
+		p.markedTiles[i] = slices.Clone(p.tiles[i])
+	}
+}
+
 func (p *Pipeline) EnclosedArea() int {
-	return 0
+	p.MarkupTiles()
+	counter := counter.New[string]()
+	for _, line := range p.markedTiles {
+		counter.Add(line...)
+	}
+	return counter.Get("I")
+}
+
+func (p *Pipeline) CleanupTiles() {
+	for y, line := range p.markedTiles {
+		for x := range line {
+			id := GenerateID(x, y)
+			if n := p.mainLoop.Node(id); n == nil {
+				line[x] = "."
+			}
+			if line[x] == "S" {
+				n := p.mainLoop.Node(id)
+				canReach := graph.NodesOf(p.mainLoop.From(id))
+				if len(canReach) != 2 {
+					panic("Unexpected number of connections")
+				}
+				outDirs := set.New[direction]()
+				for _, to := range canReach {
+					outDirs.Add(directionFrom(n.(xyNode), to.(xyNode)))
+				}
+				line[x] = dirPairToChar(outDirs)
+			}
+		}
+	}
+}
+
+func dirPairToChar(s *set.Set[direction]) (char string) {
+	if s.Len() != 2 {
+		panic("wrong number of dirs")
+	}
+	switch {
+	case s.Equals(set.New(up, down)):
+		char = "|"
+	case s.Equals(set.New(left, right)):
+		char = "-"
+	case s.Equals(set.New(left, up)):
+		char = "J"
+	case s.Equals(set.New(left, down)):
+		char = "7"
+	case s.Equals(set.New(right, up)):
+		char = "L"
+	case s.Equals(set.New(right, down)):
+		char = "F"
+	}
+	return
+}
+
+func directionFrom(node, to xyNode) (dir direction) {
+	dx := to.x - node.x
+	dy := to.y - node.y
+	switch {
+	case dx == -1 && dy == 0:
+		dir = left
+	case dx == 1 && dy == 0:
+		dir = right
+	case dx == 0 && dy == -1:
+		dir = up
+	case dx == 0 && dy == 1:
+		dir = down
+	default:
+		panic("Unexpected case")
+	}
+	return
+}
+
+func (p *Pipeline) MarkupTiles() {
+	p.CloneTiles()
+	p.CleanupTiles()
+	w := TileWalker{}
+	for _, line := range p.markedTiles {
+		w.WalkLine(line)
+	}
 }
 
 func main() {
@@ -189,4 +338,6 @@ func main() {
 	p := NewPipeline(lines)
 	part1Answer := p.MaxDistFromStart()
 	fmt.Printf("Day 10, Part 1 answer: %d\n", part1Answer)
+	part2Answer := p.EnclosedArea()
+	fmt.Printf("Day 10, Part 2 answer: %d\n", part2Answer)
 }

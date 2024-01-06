@@ -47,6 +47,14 @@ func TestPart1(t *testing.T) {
 	assert.Equal(t, expected, part1Answer)
 }
 
+func TestPart2(t *testing.T) {
+	expected := 411
+	lines := utils.ReadInput()
+	p := NewPipeline(lines)
+	part2Answer := p.EnclosedArea()
+	assert.Equal(t, expected, part2Answer)
+}
+
 func TestMaxDist(t *testing.T) {
 	expectedDist := []int{4, 4, 8, 8}
 	for i, lines := range testCaseLines {
@@ -120,6 +128,41 @@ func TestLoop(t *testing.T) {
 		t.Run(fmt.Sprint(lines), func(t *testing.T) {
 			pipes := NewPipeline(lines)
 			assert.Equal(t, expectedArea[i], pipes.EnclosedArea())
+		})
+	}
+}
+
+func TestLoopPart1Cases(t *testing.T) {
+	expectedArea := []int{1, 1, 1, 1}
+	for i, lines := range testCaseLines {
+		t.Run(fmt.Sprint(lines), func(t *testing.T) {
+			pipes := NewPipeline(lines)
+			assert.Equal(t, expectedArea[i], pipes.EnclosedArea())
+		})
+	}
+}
+
+func TestCleanup(t *testing.T) {
+	testCases := []struct {
+		clean string
+		dirty string
+	}{
+		{testCase1plain, testCase1real},
+		{testCase2plain, testCase2real},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			linesClean := strings.Split(tc.clean, "\n")
+			pipesClean := NewPipeline(linesClean)
+			pipesClean.CloneTiles()
+			pipesClean.CleanupTiles()
+			linesDirty := strings.Split(tc.dirty, "\n")
+			pipesDirty := NewPipeline(linesDirty)
+			pipesDirty.CloneTiles()
+			pipesDirty.CleanupTiles()
+			for i := range pipesClean.markedTiles {
+				assert.Equal(t, pipesClean.markedTiles[i], pipesDirty.markedTiles[i])
+			}
 		})
 	}
 }
