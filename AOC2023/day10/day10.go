@@ -15,7 +15,9 @@ const Y_FACTOR int = 10_000_000
 type Pipeline struct {
 	startPos graph.Node
 	*simple.DirectedGraph
-	dists map[int64]int
+	dists    map[int64]int
+	mainLoop simple.UndirectedGraph
+	tiles    [][]string
 }
 
 type xyNode struct {
@@ -32,13 +34,24 @@ func GenerateID(x, y int) (id int64) {
 }
 
 func NewPipeline(lines []string) Pipeline {
-	p := Pipeline{dists: map[int64]int{}}
-	p.DirectedGraph = simple.NewDirectedGraph()
+	p := Pipeline{
+		dists:         map[int64]int{},
+		mainLoop:      *simple.NewUndirectedGraph(),
+		DirectedGraph: simple.NewDirectedGraph(),
+	}
 
-	// First add nodes
+	p.tiles = make([][]string, len(lines))
 	for y, line := range lines {
-		chars := strings.Split(line, "")
-		for x, char := range chars {
+		p.tiles[y] = strings.Split(line, "")
+	}
+	p.buildInitialGraph()
+	p.buildDistsAndMainLoop()
+	return p
+}
+
+func (p *Pipeline) buildInitialGraph() {
+	for y, line := range p.tiles {
+		for x, char := range line {
 			node := xyNode{x, y}
 			var north, south, east, west graph.Node
 			north = xyNode{x, y - 1}
@@ -94,30 +107,29 @@ func NewPipeline(lines []string) Pipeline {
 		edge := p.NewEdge(p.startPos, n)
 		p.SetEdge(edge)
 	}
-
-	p.DoWalking()
-
-	return p
 }
 
 type NetWalker struct {
 	*traverse.BreadthFirst
-	from      graph.Node
-	prunedNet graph.Graph
+	from graph.Node
 }
 
 func NewNetWalker(p *Pipeline) NetWalker {
-	nw := NetWalker{prunedNet: simple.NewUndirectedGraph()}
+	nw := NetWalker{}
 	dist := 0
 	nw.BreadthFirst = &traverse.BreadthFirst{
 		Visit: func(n graph.Node) {
 			p.dists[n.ID()] = dist
+			if nw.from != nil {
+				edge := p.NewEdge(nw.from, n)
+				p.mainLoop.SetEdge(edge)
+			}
 		},
 		Traverse: func(e graph.Edge) bool {
 			// only traverse an edge if there is also an edge back
+			nw.from = e.From()
 			dist = p.dists[e.From().ID()] + 1
 			return p.HasEdgeFromTo(e.To().ID(), e.From().ID())
-
 		},
 	}
 	return nw
@@ -128,9 +140,34 @@ func (nw *NetWalker) Walk(g *Pipeline, from graph.Node) {
 	nw.BreadthFirst.Walk(g, from, until)
 }
 
-func (p *Pipeline) DoWalking() {
+func (p *Pipeline) buildDistsAndMainLoop() {
 	search := NewNetWalker(p)
 	search.Walk(p, p.startPos)
+
+	// After the walk, the last node from each direction is not connected,
+	// so find the two node with only one edge and connect them
+	mainNodes := p.mainLoop.Nodes()
+	oneEdgeNodes := make([]graph.Node, 2)
+	oneEdgeNodeCounter := 0
+	for mainNodes.Next() {
+		n := mainNodes.Node()
+		edges := p.mainLoop.From(n.ID())
+		nEdges := edges.Len()
+		switch nEdges {
+		case 2:
+			// Expected - do nothing
+		case 1:
+			oneEdgeNodes[oneEdgeNodeCounter] = n
+			oneEdgeNodeCounter++
+			if oneEdgeNodeCounter > 2 {
+				panic("Too many unmatched nodes")
+			}
+		default:
+			panic("Node with unexpected number of edges")
+		}
+	}
+	p.mainLoop.SetEdge(p.NewEdge(oneEdgeNodes[0], oneEdgeNodes[1]))
+
 }
 
 func (p *Pipeline) MaxDistFromStart() int {

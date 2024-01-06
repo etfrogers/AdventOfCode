@@ -5,8 +5,10 @@ import (
 	"strings"
 	"testing"
 	"utils"
+	"utils/set"
 
 	"github.com/stretchr/testify/assert"
+	"gonum.org/v1/gonum/graph"
 )
 
 var testCase1plain string = `.....
@@ -55,9 +57,66 @@ func TestMaxDist(t *testing.T) {
 	}
 }
 
+func TestMainLoopClean(t *testing.T) {
+	testCases := []string{testCase1plain, testCase2plain}
+	for _, tc := range testCases {
+		t.Run(tc, func(t *testing.T) {
+			lines := strings.Split(tc, "\n")
+			pipes := NewPipeline(lines)
+			assert.True(t, graphsEqual(&pipes.mainLoop, pipes.DirectedGraph))
+		})
+	}
+}
+
+func TestMainLoopDirty(t *testing.T) {
+	testCases := []struct {
+		clean string
+		dirty string
+	}{
+		{testCase1plain, testCase1real},
+		{testCase2plain, testCase2real},
+	}
+	for i, tc := range testCases {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			linesClean := strings.Split(tc.clean, "\n")
+			pipesClean := NewPipeline(linesClean)
+			linesDirty := strings.Split(tc.dirty, "\n")
+			pipesDirty := NewPipeline(linesDirty)
+			assert.True(t, graphsEqual(&pipesClean.mainLoop, &pipesDirty.mainLoop))
+		})
+	}
+}
+
+func nodeIdSet(g simpleGraph) set.Set[int64] {
+	return *set.New(utils.Map(graph.NodesOf(g.Nodes()), func(n graph.Node) int64 { return n.ID() })...)
+}
+
+type simpleGraph interface {
+	Nodes() graph.Nodes
+	Edges() graph.Edges
+	HasEdgeBetween(int64, int64) bool
+}
+
+func graphsEqual(g1, g2 simpleGraph) bool {
+	nodeSet1 := nodeIdSet(g1)
+	nodeSet2 := nodeIdSet(g2)
+	if !nodeSet1.Equals(&nodeSet2) {
+		return false
+	}
+
+	edges1 := g1.Edges()
+	for edges1.Next() {
+		edge := edges1.Edge()
+		if !g2.HasEdgeBetween(edge.From().ID(), edge.To().ID()) {
+			return false
+		}
+	}
+	return true
+}
+
 func TestLoop(t *testing.T) {
 	expectedArea := []int{4, 4, 8, 10}
-	for i, lines := range testCaseLines {
+	for i, lines := range testLinesLoop {
 		t.Run(fmt.Sprint(lines), func(t *testing.T) {
 			pipes := NewPipeline(lines)
 			assert.Equal(t, expectedArea[i], pipes.EnclosedArea())
