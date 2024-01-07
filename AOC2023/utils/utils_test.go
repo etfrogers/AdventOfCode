@@ -334,3 +334,107 @@ func TestLCM(t *testing.T) {
 		})
 	}
 }
+
+func TestFilter(t *testing.T) {
+	ints := []int{0, 1, 2, 3, 4, 5, 6, 7}
+	output := Filter(ints, func(x int) bool { return x >= 0 })
+	expected := ints
+	assert.Equal(t, expected, output)
+
+	output = Filter(ints, func(x int) bool { return true })
+	assert.Equal(t, expected, output)
+
+	output = Filter(ints, func(x int) bool { return false })
+	expected = []int{}
+	assert.Equal(t, expected, output)
+
+	output = Filter(ints, func(x int) bool { return x < -97678 })
+	expected = []int{}
+	assert.Equal(t, expected, output)
+
+	output = Filter(ints, func(x int) bool { return x < 3 })
+	expected = []int{0, 1, 2}
+	assert.Equal(t, expected, output)
+
+	str_o := Filter([]string{"a", "b", "cde", "efg"}, func(s string) bool { return len(s) > 2 })
+	assert.Equal(t, str_o, []string{"cde", "efg"})
+
+	str_o = Filter([]string{"a", "b", "cde", "efg"}, func(s string) bool { return s == "a" })
+	assert.Equal(t, str_o, []string{"a"})
+}
+
+func TestReadInput(t *testing.T) {
+	lines := ReadInput()
+	expected := []string{"This", "is a", "test file."}
+	assert.Equal(t, 3, len(lines))
+	assert.Equal(t, expected, lines)
+}
+
+func TestCheck(t *testing.T) {
+	assert.Panics(t, func() { Check(fmt.Errorf("e")) })
+	assert.NotPanics(t, func() { Check(nil) })
+}
+
+func TestMap(t *testing.T) {
+	ints := []int{0, 1, 2, 3}
+	expected := []int{0, 1, 4, 9}
+	output := Map(ints, func(i int) int { x, _ := PowInts(i, 2); return x })
+	assert.Equal(t, expected, output)
+
+	expected_s := []string{"0", "1", "2", "3"}
+	output_s := Map(ints, func(i int) string { return fmt.Sprint(i) })
+	assert.Equal(t, expected_s, output_s)
+
+	output = Map(output_s, func(s string) int { return AtoiError(s) })
+	assert.Equal(t, ints, output)
+}
+
+func TestDropEmptyInts(t *testing.T) {
+	testCases := []struct {
+		input    [][]int
+		expected [][]int
+	}{
+		{[][]int{{0}, {1, 2, 3}}, [][]int{{0}, {1, 2, 3}}},
+		{[][]int{{}, {1, 2, 3}}, [][]int{{1, 2, 3}}},
+		{[][]int{}, [][]int{}},
+		{[][]int{{}, {}}, [][]int{}},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc.expected, DropEmpty(tc.input))
+		})
+	}
+}
+
+func TestDropEmptyStrs(t *testing.T) {
+	testCases := []struct {
+		input    []string
+		expected []string
+	}{
+		{[]string{"a", "bcd"}, []string{"a", "bcd"}},
+		{[]string{"", "abc", "", ""}, []string{"abc"}},
+		{[]string{"", "", "", ""}, []string{}},
+		{[]string{}, []string{}},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc.expected, DropEmpty(tc.input))
+		})
+	}
+}
+
+func TestMapKeys(t *testing.T) {
+	testCases := []struct {
+		input    map[string]int
+		expected []string
+	}{
+		{map[string]int{"a": 1}, []string{"a"}},
+		{map[string]int{}, []string{}},
+		{map[string]int{"a": 1, "b": 1, "c": 4}, []string{"a", "c", "b"}},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.ElementsMatch(t, tc.expected, MapKeys(tc.input))
+		})
+	}
+}

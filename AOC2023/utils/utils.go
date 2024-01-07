@@ -30,6 +30,16 @@ func Reduce[T any](s []T, fn func(T, T) T) T {
 	return result
 }
 
+func Filter[T any](s []T, fn func(T) bool) (output []T) {
+	output = []T{}
+	for _, val := range s {
+		if fn(val) {
+			output = append(output, val)
+		}
+	}
+	return
+}
+
 func Sum[T int | float64](data []T) T {
 	total := T(0)
 	for _, val := range data {
@@ -115,7 +125,7 @@ func CutSlice[T comparable](s []T, sep T) (part1, part2 []T) {
 	return
 }
 
-func DropEmpty[T string | []any](s []T) []T {
+func DropEmpty[T string | []int](s []T) []T {
 	new := []T{}
 	for _, val := range s {
 		if len(val) != 0 {
@@ -129,16 +139,6 @@ func AtoiError(x string) int {
 	v, e := strconv.Atoi(x)
 	Check(e)
 	return v
-}
-
-func FindAll[T comparable](s []T, f func(T) bool) (res []T) {
-	res = []T{}
-	for _, val := range s {
-		if f(val) {
-			res = append(res, val)
-		}
-	}
-	return
 }
 
 func MapKeys[T comparable, V any](m map[T]V) (keys []T) {

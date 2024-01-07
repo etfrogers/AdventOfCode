@@ -59,7 +59,7 @@ func (n *Network) baseWalk(instructions, start string, stopper func(string) bool
 }
 
 func (n *Network) GhostWalk(instructions string) (pathLength int) {
-	labels := utils.FindAll(utils.MapKeys(*n), func(k string) bool { return strings.HasSuffix(k, "A") })
+	labels := utils.Filter(utils.MapKeys(*n), func(k string) bool { return strings.HasSuffix(k, "A") })
 	c := make(chan int, len(labels))
 	for _, label := range labels {
 		go n.baseWalk(instructions, label, func(k string) bool { return strings.HasSuffix(k, "Z") }, c)
