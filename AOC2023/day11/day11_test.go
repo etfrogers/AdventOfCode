@@ -44,6 +44,14 @@ func TestPart1(t *testing.T) {
 	assert.Equal(t, expected, part1Answer)
 }
 
+func TestPart2(t *testing.T) {
+	expected := 622120986954
+	lines := utils.ReadInput()
+	im := NewSpaceImage(lines, 1_000_000)
+	part2Answer := im.SumGalaxyDistances()
+	assert.Equal(t, expected, part2Answer)
+}
+
 func TestExpansion(t *testing.T) {
 	im := NewSpaceImage(testLines, 2)
 	assert.Equal(t, expanded, im.String())

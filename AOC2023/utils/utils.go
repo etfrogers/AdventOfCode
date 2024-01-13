@@ -210,3 +210,12 @@ func lcm2(p, q int) int {
 	}
 	return p * q / (gcf2(p, q))
 }
+
+// If elem is a pointer type all elements will point to the same item
+func FullSlice[T ~[]E, E any](n int, elem E) T {
+	s := make(T, n)
+	for i := range s {
+		s[i] = elem
+	}
+	return s
+}
