@@ -51,7 +51,7 @@ func TestBuildWorkflow(t *testing.T) {
 func TestDestination(t *testing.T) {
 	rs, items := BuildWorkflowAndItems(testLines)
 	dests := ProcessItems(items, rs)
-	expected := []Status{ACCEPTED, REJETECTED, ACCEPTED, REJETECTED, ACCEPTED}
+	expected := []Status{ACCEPTED, REJECTED, ACCEPTED, REJECTED, ACCEPTED}
 	assert.Equal(t, expected, dests)
 }
 
@@ -72,4 +72,87 @@ func TestPart1(t *testing.T) {
 	lines := utils.ReadInput()
 	rs, items := BuildWorkflowAndItems(lines)
 	assert.Equal(t, expected, TotalRatings(items, rs))
+}
+
+func TestCombinations(t *testing.T) {
+	expected := 167409079868000
+	rs, _ := BuildWorkflowAndItems(testLines)
+	assert.Equal(t, expected, TotalCombinationsAccepted(rs))
+}
+
+func TestAllCombinations(t *testing.T) {
+	rs, _ := BuildWorkflowAndItems(testLines)
+	acc, rej, abor := FindPaths(rs)
+	NAcc := FindCombinations(acc)
+	NRej := FindCombinations(rej)
+	NAbor := FindCombinations(abor)
+	assert.Equal(t, 256_000_000_000_000, NAcc+NRej+NAbor)
+}
+
+func TestBasicCombinations(t *testing.T) {
+	path := NewPath("das")
+	assert.Equal(t, path.ValidCombinations(), 256_000_000_000_000)
+
+	paths := []Path{NewPath("das"), NewPath("asd")}
+	rule := Rule{dest: "q", condition: Condition{name: "x", value: 2000, op: gt}}
+	paths[0].AddRule(rule, true)
+	paths[1].AddRule(rule.Inverted(), false)
+	assert.Equal(t, FindCombinations(paths), 256_000_000_000_000)
+
+	assert.Equal(t, paths[0].ValidCombinations(), 256_000_000_000_000/2)
+	assert.Equal(t, paths[1].ValidCombinations(), 256_000_000_000_000/2)
+
+	path2 := NewPath("qwe")
+	path2.limits[ConditionKey{"x", lt}] = 1001
+	assert.Equal(t, path2.ValidCombinations(), 64_000_000_000_000)
+
+	path2.limits[ConditionKey{"m", lt}] = 2001
+	path2.limits[ConditionKey{"m", gt}] = 1000
+	assert.Equal(t, path2.ValidCombinations(), 16_000_000_000_000)
+
+	path2.limits[ConditionKey{"a", lt}] = 3001
+	path2.limits[ConditionKey{"a", gt}] = 2000
+	assert.Equal(t, path2.ValidCombinations(), 4_000_000_000_000)
+
+	path2.limits[ConditionKey{"s", gt}] = 3000
+	assert.Equal(t, path2.ValidCombinations(), 1_000_000_000_000)
+
+	path3 := NewPath("rty")
+	path3.limits[ConditionKey{"x", lt}] = 2
+	assert.Equal(t, path3.ValidCombinations(), 64_000_000_000)
+
+	path3.limits[ConditionKey{"m", lt}] = 2
+	path3.limits[ConditionKey{"a", lt}] = 2
+	path3.limits[ConditionKey{"s", lt}] = 2
+	assert.Equal(t, path3.ValidCombinations(), 1)
+
+	path3.limits[ConditionKey{"s", lt}] = 1
+	assert.Equal(t, path3.ValidCombinations(), 0)
+
+	path4 := NewPath("rty")
+	path4.limits[ConditionKey{"a", lt}] = 3000
+	path4.limits[ConditionKey{"a", gt}] = 3001
+	assert.Equal(t, path4.ValidCombinations(), 0)
+
+}
+
+func TestIsValid(t *testing.T) {
+	path := NewPath("das")
+	assert.True(t, path.isValid())
+
+	rule := Rule{dest: "q", condition: Condition{name: "x", value: 2000, op: gt}}
+	path.AddRule(rule, true)
+	assert.True(t, path.isValid())
+
+	path.AddRule(rule.Inverted(), false)
+	assert.False(t, path.isValid())
+}
+
+func TestPart2(t *testing.T) {
+	expected := 113057405770956
+	lines := utils.ReadInput()
+	rs, _ := BuildWorkflowAndItems(lines)
+	part2Answer := TotalCombinationsAccepted(rs)
+	assert.Equal(t, expected, part2Answer)
+
 }
