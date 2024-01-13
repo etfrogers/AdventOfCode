@@ -74,3 +74,11 @@ func NewFromStrings(lines []string) Grid[string] {
 	}
 	return g
 }
+
+func (g *Grid[E]) Clone() Grid[E] {
+	new := make(Grid[E], g.NRows())
+	for i := range *g {
+		new[i] = slices.Clone((*g)[i])
+	}
+	return new
+}

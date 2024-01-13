@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"utils"
 	"utils/counter"
+	"utils/grid"
 	"utils/set"
-
-	"slices"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -21,8 +19,8 @@ type Pipeline struct {
 	*simple.DirectedGraph
 	dists       map[int64]int
 	mainLoop    simple.UndirectedGraph
-	tiles       [][]string
-	markedTiles [][]string
+	tiles       grid.Grid[string]
+	markedTiles grid.Grid[string]
 }
 
 type xyNode struct {
@@ -45,10 +43,7 @@ func NewPipeline(lines []string) Pipeline {
 		DirectedGraph: simple.NewDirectedGraph(),
 	}
 
-	p.tiles = make([][]string, len(lines))
-	for y, line := range lines {
-		p.tiles[y] = strings.Split(line, "")
-	}
+	p.tiles = grid.NewFromStrings(lines)
 	p.buildInitialGraph()
 	p.buildDistsAndMainLoop()
 	return p
@@ -247,10 +242,7 @@ func (w *TileWalker) WalkLine(chars []string) {
 }
 
 func (p *Pipeline) CloneTiles() {
-	p.markedTiles = make([][]string, len(p.tiles))
-	for i := range p.tiles {
-		p.markedTiles[i] = slices.Clone(p.tiles[i])
-	}
+	p.markedTiles = p.tiles.Clone()
 }
 
 func (p *Pipeline) EnclosedArea() int {
