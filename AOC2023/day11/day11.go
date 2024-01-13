@@ -10,7 +10,7 @@ import (
 )
 
 type SpaceImage struct {
-	*grid.Grid[string]
+	grid.Grid[string]
 	expX, expY      set.Set[int]
 	expansionFactor int
 }
@@ -19,18 +19,14 @@ type Galaxy struct {
 }
 
 func NewSpaceImage(lines []string, expansion int) SpaceImage {
-	arr := make([][]string, len(lines))
-	for i, line := range lines {
-		arr[i] = strings.Split(line, "")
-	}
-	g := grid.New(arr)
-	im := SpaceImage{Grid: &g, expansionFactor: expansion, expX: *set.New[int](), expY: *set.New[int]()}
+	g := grid.NewFromStrings(lines)
+	im := SpaceImage{Grid: g, expansionFactor: expansion, expX: *set.New[int](), expY: *set.New[int]()}
 	im.Expand()
 	return im
 }
 
 func (im *SpaceImage) colAllDots(x int) bool {
-	for y := range *im.Grid {
+	for y := range im.Grid {
 		if im.Get(x, y) != "." {
 			return false
 		}
@@ -42,8 +38,8 @@ func (im *SpaceImage) rowAllDots(y int) bool {
 	return allDots(im.GetRow(y))
 }
 
-func allDots(s *[]string) bool {
-	for _, v := range *s {
+func allDots(s []string) bool {
+	for _, v := range s {
 		if v != "." {
 			return false
 		}
@@ -52,8 +48,8 @@ func allDots(s *[]string) bool {
 }
 
 func (im *SpaceImage) InsertColDots(x int) {
-	for i := range *im.Grid {
-		(*im.Grid)[i] = slices.Insert((*im.Grid)[i], x, ".")
+	for i := range im.Grid {
+		im.Grid[i] = slices.Insert(im.Grid[i], x, ".")
 	}
 }
 
@@ -78,7 +74,7 @@ func (im *SpaceImage) String() string {
 	_, rowLen := im.Size()
 	// //insert rows first (easiest)
 	insertInd := 0
-	for y := range *im.Grid {
+	for y := range im.Grid {
 		if im.expY.Contains(y) {
 			newRow := utils.FullSlice[[]string, string](rowLen, ".")
 			im.InsertRow(insertInd, newRow)
@@ -88,7 +84,7 @@ func (im *SpaceImage) String() string {
 	}
 
 	insertInd = 0
-	for x := range (*im.Grid)[0] {
+	for x := range im.Grid[0] {
 		if im.expX.Contains(x) {
 			im.InsertColDots(insertInd)
 			insertInd++
@@ -96,8 +92,8 @@ func (im *SpaceImage) String() string {
 		insertInd++
 	}
 
-	arr := make([]string, len(*im.Grid))
-	for i, chars := range *im.Grid {
+	arr := make([]string, len(im.Grid))
+	for i, chars := range im.Grid {
 		arr[i] = strings.Join(chars, "")
 	}
 	return strings.Join(arr, "\n")
@@ -105,8 +101,8 @@ func (im *SpaceImage) String() string {
 
 func (im *SpaceImage) FindGalaxies() []Galaxy {
 	galaxies := []Galaxy{}
-	for y := range *im.Grid {
-		for x := range (*im.Grid)[0] {
+	for y := range im.Grid {
+		for x := range im.Grid[0] {
 			if im.Get(x, y) == "#" {
 				galaxies = append(galaxies, Galaxy{x, y})
 			}

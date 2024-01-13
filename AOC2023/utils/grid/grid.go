@@ -3,6 +3,7 @@ package grid
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"utils"
 )
 
@@ -12,8 +13,8 @@ func (g *Grid[E]) Get(x, y int) E {
 	return (*g)[y][x]
 }
 
-func (g *Grid[E]) GetRow(y int) *[]E {
-	return &(*g)[y]
+func (g *Grid[E]) GetRow(y int) []E {
+	return (*g)[y]
 }
 
 func (g *Grid[E]) GetCol(x int) []E {
@@ -63,5 +64,13 @@ func (g *Grid[E]) checkLengths() {
 func New[E any](input [][]E) Grid[E] {
 	g := Grid[E](input)
 	g.checkLengths()
+	return g
+}
+
+func NewFromStrings(lines []string) Grid[string] {
+	g := make(Grid[string], len(lines))
+	for i, line := range lines {
+		g[i] = strings.Split(line, "")
+	}
 	return g
 }
