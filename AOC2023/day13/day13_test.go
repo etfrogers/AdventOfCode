@@ -152,7 +152,7 @@ func TestFindReflections(t *testing.T) {
 		{horz, 1},
 	}
 	for i, tc := range testCases {
-		reflection := testPatterns[i].FindReflection()
+		reflection := testPatterns[i].FindReflection(false)
 		assert.Equal(t, tc.direction, reflection.direction)
 		assert.Equal(t, tc.indexBefore, reflection.indexBefore)
 	}
@@ -160,24 +160,22 @@ func TestFindReflections(t *testing.T) {
 
 func TestEdgeCases(t *testing.T) {
 	p := Pattern{grid.NewFromStrings([]string{"#..", "..."})}
-	ref := p.FindReflection()
-	// assert.Equal(t, 2, len(refs))
+	ref := p.FindReflection(false)
 	assert.Equal(t, Reflection{vert, 2}, ref)
-	// assert.Equal(t, Reflection{vert, 2}, refs[1])
 
 	p = Pattern{grid.NewFromStrings([]string{".##.", ".##."})}
-	ref = p.FindReflection()
+	ref = p.FindReflection(false)
 	assert.Equal(t, Reflection{vert, 2}, ref)
 }
 
 func TestSummarize(t *testing.T) {
 	// Only the first two patterns were in in the original example.
-	total := Summarize(testPatterns[:2])
+	total := Summarize(testPatterns[:2], false)
 	assert.Equal(t, 405, total)
 }
 
 func TestSummarize2(t *testing.T) {
-	total := Summarize(testPatterns2)
+	total := Summarize(testPatterns2, false)
 	assert.Equal(t, 709, total)
 }
 
@@ -185,6 +183,11 @@ func TestPart1(t *testing.T) {
 	expected := 29846
 	lines := utils.ReadInput()
 	patterns := BuildPatterns(lines)
-	part1Answer := Summarize(patterns)
+	part1Answer := Summarize(patterns, false)
 	assert.Equal(t, expected, part1Answer)
+}
+
+func TestSmudgeSummarize(t *testing.T) {
+	total := Summarize(testPatterns[:2], true)
+	assert.Equal(t, 400, total)
 }

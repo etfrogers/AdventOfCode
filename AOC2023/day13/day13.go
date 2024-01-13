@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"slices"
 	"utils"
 	"utils/grid"
 )
@@ -32,7 +31,20 @@ func (r *Reflection) Value() (value int) {
 	return
 }
 
-func (p *Pattern) ReflectsAbout(before int, direction Direction) bool {
+func sliceDifferences(s1, s2 []string) int {
+	if len(s1) != len(s2) {
+		panic("args to sliceDifferences must have the same lenth")
+	}
+	diffs := 0
+	for i := range s1 {
+		if s1[i] != s2[i] {
+			diffs++
+		}
+	}
+	return diffs
+}
+
+func (p *Pattern) ReflectsAbout(before int, direction Direction) (diff int) {
 	var limit int
 	switch direction {
 	case horz:
@@ -40,6 +52,7 @@ func (p *Pattern) ReflectsAbout(before int, direction Direction) bool {
 	case vert:
 		limit = p.NCols()
 	}
+	diffs := 0
 	for offset := 1; true; offset++ {
 		left := before - (offset - 1)
 		right := before + offset
@@ -55,40 +68,43 @@ func (p *Pattern) ReflectsAbout(before int, direction Direction) bool {
 			left_slice = p.GetCol(left)
 			right_slice = p.GetCol(right)
 		}
-		if !slices.Equal(left_slice, right_slice) {
-			return false
-		}
+		diffs += sliceDifferences(left_slice, right_slice)
 	}
-	return true
+	return diffs
 }
 
-func (p *Pattern) FindReflection() (reflection Reflection) {
+func (p *Pattern) FindReflection(smudge bool) (reflection Reflection) {
 	//search for horizontal reflections first
+	diffTarget := 0
+	if smudge {
+		diffTarget = 1
+	}
 	for y := 0; y < p.NRows()-1; y++ {
-		if p.ReflectsAbout(y, horz) {
-			reflection = Reflection{horz, y + 1}
+		if p.ReflectsAbout(y, horz) == diffTarget {
+			return Reflection{horz, y + 1}
 		}
 	}
 	for x := 0; x < p.NCols()-1; x++ {
-		if p.ReflectsAbout(x, vert) {
-			reflection = Reflection{vert, x + 1}
+
+		if p.ReflectsAbout(x, vert) == diffTarget {
+			return Reflection{vert, x + 1}
 		}
 	}
-	return reflection
+	return Reflection{}
 }
 
-func FindReflections(patterns []Pattern) []Reflection {
+func FindReflections(patterns []Pattern, smudge bool) []Reflection {
 	refs := make([]Reflection, 0, len(patterns))
-	for i, pattern := range patterns {
-		r := pattern.FindReflection()
+	for _, pattern := range patterns {
+		r := pattern.FindReflection(smudge)
 		refs = append(refs, r)
-		fmt.Println(i, r, len(refs))
+		// fmt.Println(i, r, len(refs))
 	}
 	return refs
 }
 
-func Summarize(patterns []Pattern) int {
-	refs := FindReflections(patterns)
+func Summarize(patterns []Pattern, smudge bool) int {
+	refs := FindReflections(patterns, smudge)
 	return utils.Sum(utils.Map(refs, func(r Reflection) int { return r.Value() }))
 }
 
@@ -104,6 +120,8 @@ func BuildPatterns(lines []string) []Pattern {
 func main() {
 	lines := utils.ReadInput()
 	patterns := BuildPatterns(lines)
-	part1Answer := Summarize(patterns)
+	part1Answer := Summarize(patterns, false)
 	fmt.Printf("Day 13, Part 1 answer: %d\n", part1Answer)
+	part2Answer := Summarize(patterns, true)
+	fmt.Printf("Day 13, Part 2 answer: %d\n", part2Answer)
 }
