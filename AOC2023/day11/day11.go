@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"slices"
-	"strings"
 	"utils"
 	"utils/grid"
 	"utils/set"
@@ -92,11 +91,7 @@ func (im *SpaceImage) String() string {
 		insertInd++
 	}
 
-	arr := make([]string, len(im.Grid))
-	for i, chars := range im.Grid {
-		arr[i] = strings.Join(chars, "")
-	}
-	return strings.Join(arr, "\n")
+	return im.Grid.String()
 }
 
 func (im *SpaceImage) FindGalaxies() []Galaxy {

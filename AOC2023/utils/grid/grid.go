@@ -82,3 +82,17 @@ func (g *Grid[E]) Clone() Grid[E] {
 	}
 	return new
 }
+
+func (g *Grid[E]) String() string {
+	arr := make([]string, len(*g))
+	for i, elems := range *g {
+		var chars []string
+		// switch any(elems[0]).(type){
+		chars, ok := any(elems).([]string)
+		if !ok {
+			chars = utils.Map[E, string](elems, func(elem E) string { return fmt.Sprint(elem) })
+		}
+		arr[i] = strings.Join(chars, "")
+	}
+	return strings.Join(arr, "\n")
+}
