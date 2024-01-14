@@ -16,11 +16,11 @@ type Galaxy struct {
 	x, y int
 }
 
-func NewSpaceImage(lines []string, expansion int) SpaceImage {
+func NewSpaceImage(lines []string, expansion int) *SpaceImage {
 	g := grid.NewFromStrings(lines)
 	im := SpaceImage{Grid: g, expansionFactor: expansion, expX: *set.New[int](), expY: *set.New[int]()}
 	im.Expand()
-	return im
+	return &im
 }
 
 func (im *SpaceImage) colAllDots(x int) bool {
