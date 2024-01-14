@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"slices"
 	"utils"
 	"utils/grid"
 	"utils/set"
@@ -25,12 +24,7 @@ func NewSpaceImage(lines []string, expansion int) SpaceImage {
 }
 
 func (im *SpaceImage) colAllDots(x int) bool {
-	for y := range im.Grid {
-		if im.Get(x, y) != "." {
-			return false
-		}
-	}
-	return true
+	return allDots(im.GetCol(x))
 }
 
 func (im *SpaceImage) rowAllDots(y int) bool {
@@ -47,9 +41,7 @@ func allDots(s []string) bool {
 }
 
 func (im *SpaceImage) InsertColDots(x int) {
-	for i := range im.Grid {
-		im.Grid[i] = slices.Insert(im.Grid[i], x, ".")
-	}
+	im.Grid.InsertCol(x, utils.FullSlice[[]string](im.NRows(), "."))
 }
 
 func (im *SpaceImage) Expand() {
@@ -73,7 +65,7 @@ func (im *SpaceImage) String() string {
 	_, rowLen := im.Size()
 	// //insert rows first (easiest)
 	insertInd := 0
-	for y := range im.Grid {
+	for y := 0; y < im.NRows(); y++ {
 		if im.expY.Contains(y) {
 			newRow := utils.FullSlice[[]string, string](rowLen, ".")
 			im.InsertRow(insertInd, newRow)
@@ -83,7 +75,7 @@ func (im *SpaceImage) String() string {
 	}
 
 	insertInd = 0
-	for x := range im.Grid[0] {
+	for x := 0; x < im.NCols(); x++ {
 		if im.expX.Contains(x) {
 			im.InsertColDots(insertInd)
 			insertInd++
@@ -96,11 +88,10 @@ func (im *SpaceImage) String() string {
 
 func (im *SpaceImage) FindGalaxies() []Galaxy {
 	galaxies := []Galaxy{}
-	for y := range im.Grid {
-		for x := range im.Grid[0] {
-			if im.Get(x, y) == "#" {
-				galaxies = append(galaxies, Galaxy{x, y})
-			}
+	it := im.IndIterator()
+	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+		if im.Get(x, y) == "#" {
+			galaxies = append(galaxies, Galaxy{x, y})
 		}
 	}
 	return galaxies

@@ -50,52 +50,51 @@ func NewPipeline(lines []string) Pipeline {
 }
 
 func (p *Pipeline) buildInitialGraph() {
-	for y, line := range p.tiles {
-		for x, char := range line {
-			node := xyNode{x, y}
-			var north, south, east, west graph.Node
-			north = xyNode{x, y - 1}
-			south = xyNode{x, y + 1}
-			east = xyNode{x + 1, y}
-			west = xyNode{x - 1, y}
+	it := p.tiles.IndIterator()
+	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+		node := xyNode{x, y}
+		var north, south, east, west graph.Node
+		north = xyNode{x, y - 1}
+		south = xyNode{x, y + 1}
+		east = xyNode{x + 1, y}
+		west = xyNode{x - 1, y}
 
-			var edge1, edge2 graph.Edge
-			switch char {
-			case "|":
-				edge1 = p.NewEdge(node, north)
-				edge2 = p.NewEdge(node, south)
-			case "-":
-				edge1 = p.NewEdge(node, east)
-				edge2 = p.NewEdge(node, west)
-			case "L":
-				edge1 = p.NewEdge(node, north)
-				edge2 = p.NewEdge(node, east)
-			case "J":
-				edge1 = p.NewEdge(node, north)
-				edge2 = p.NewEdge(node, west)
-			case "7":
-				edge1 = p.NewEdge(node, south)
-				edge2 = p.NewEdge(node, west)
-			case "F":
-				edge1 = p.NewEdge(node, south)
-				edge2 = p.NewEdge(node, east)
-			case ".":
-				// do nothing
-				continue // to avoid adding edges
-			case "S":
-				// add nothing to graph: edge should have been added by other nodes
-				p.startPos = node
-				if p.Node(node.ID()) == nil {
-					p.AddNode(node)
-				}
-				continue // to avoid adding edges
-			default:
-				panic("unexpected value")
+		var edge1, edge2 graph.Edge
+		switch p.tiles.Get(x, y) {
+		case "|":
+			edge1 = p.NewEdge(node, north)
+			edge2 = p.NewEdge(node, south)
+		case "-":
+			edge1 = p.NewEdge(node, east)
+			edge2 = p.NewEdge(node, west)
+		case "L":
+			edge1 = p.NewEdge(node, north)
+			edge2 = p.NewEdge(node, east)
+		case "J":
+			edge1 = p.NewEdge(node, north)
+			edge2 = p.NewEdge(node, west)
+		case "7":
+			edge1 = p.NewEdge(node, south)
+			edge2 = p.NewEdge(node, west)
+		case "F":
+			edge1 = p.NewEdge(node, south)
+			edge2 = p.NewEdge(node, east)
+		case ".":
+			// do nothing
+			continue // to avoid adding edges
+		case "S":
+			// add nothing to graph: edge should have been added by other nodes
+			p.startPos = node
+			if p.Node(node.ID()) == nil {
+				p.AddNode(node)
 			}
-			// No need to add Nodes explicitly: adding edges implicitly adds the end nodes
-			p.SetEdge(edge1)
-			p.SetEdge(edge2)
+			continue // to avoid adding edges
+		default:
+			panic("unexpected value")
 		}
+		// No need to add Nodes explicitly: adding edges implicitly adds the end nodes
+		p.SetEdge(edge1)
+		p.SetEdge(edge2)
 	}
 	// Add edges out from startPos
 	toStart := p.To(p.startPos.ID())
@@ -248,31 +247,31 @@ func (p *Pipeline) CloneTiles() {
 func (p *Pipeline) EnclosedArea() int {
 	p.MarkupTiles()
 	counter := counter.New[string]()
-	for _, line := range p.markedTiles {
+	it := p.markedTiles.LineIterator()
+	for line, ok := it.Next(); ok; line, ok = it.Next() {
 		counter.Add(line...)
 	}
 	return counter.Get("I")
 }
 
 func (p *Pipeline) CleanupTiles() {
-	for y, line := range p.markedTiles {
-		for x := range line {
-			id := GenerateID(x, y)
-			if n := p.mainLoop.Node(id); n == nil {
-				line[x] = "."
+	it := p.markedTiles.IndIterator()
+	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+		id := GenerateID(x, y)
+		if n := p.mainLoop.Node(id); n == nil {
+			p.markedTiles.Set(x, y, ".")
+		}
+		if p.markedTiles.Get(x, y) == "S" {
+			n := p.mainLoop.Node(id)
+			canReach := graph.NodesOf(p.mainLoop.From(id))
+			if len(canReach) != 2 {
+				panic("Unexpected number of connections")
 			}
-			if line[x] == "S" {
-				n := p.mainLoop.Node(id)
-				canReach := graph.NodesOf(p.mainLoop.From(id))
-				if len(canReach) != 2 {
-					panic("Unexpected number of connections")
-				}
-				outDirs := set.New[direction]()
-				for _, to := range canReach {
-					outDirs.Add(directionFrom(n.(xyNode), to.(xyNode)))
-				}
-				line[x] = dirPairToChar(outDirs)
+			outDirs := set.New[direction]()
+			for _, to := range canReach {
+				outDirs.Add(directionFrom(n.(xyNode), to.(xyNode)))
 			}
+			p.markedTiles.Set(x, y, dirPairToChar(outDirs))
 		}
 	}
 }
@@ -320,7 +319,8 @@ func (p *Pipeline) MarkupTiles() {
 	p.CloneTiles()
 	p.CleanupTiles()
 	w := TileWalker{}
-	for _, line := range p.markedTiles {
+	it := p.markedTiles.LineIterator()
+	for line, ok := it.Next(); ok; line, ok = it.Next() {
 		w.WalkLine(line)
 	}
 }

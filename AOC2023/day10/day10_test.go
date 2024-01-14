@@ -160,9 +160,7 @@ func TestCleanup(t *testing.T) {
 			pipesDirty := NewPipeline(linesDirty)
 			pipesDirty.CloneTiles()
 			pipesDirty.CleanupTiles()
-			for i := range pipesClean.markedTiles {
-				assert.Equal(t, pipesClean.markedTiles[i], pipesDirty.markedTiles[i])
-			}
+			assert.Equal(t, pipesClean.markedTiles, pipesDirty.markedTiles)
 		})
 	}
 }
