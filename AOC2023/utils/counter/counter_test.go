@@ -3,6 +3,7 @@ package counter
 import (
 	"fmt"
 	"testing"
+	"utils/iter"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +20,7 @@ func TestCountStringsLen(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
-			counter := NewFromString(tc.input)
+			counter := FromString(tc.input)
 			assert.Equal(t, tc.expectedLen, counter.Len())
 		})
 	}
@@ -56,7 +57,7 @@ func TestCountStrings(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
-			counter := NewFromString(tc.input)
+			counter := FromString(tc.input)
 			keys, counts := counter.KeysInOrder()
 			assert.Equal(t, tc.expectedKeys, keys)
 			assert.Equal(t, tc.expectedCounts, counts)
@@ -68,7 +69,7 @@ func TestCountStrings(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	counter := NewFromString("AAABBC")
+	counter := FromString("AAABBC")
 	keys, counts := counter.KeysInOrder()
 	assert.Equal(t, 2, counter.Get("B"))
 	assert.Equal(t, []string{"A", "B", "C"}, keys)
@@ -109,6 +110,38 @@ func TestCountInt(t *testing.T) {
 			for i, key := range tc.expectedKeys {
 				assert.Equal(t, tc.expectedCounts[i], counter.Get(key))
 			}
+		})
+	}
+}
+
+func TestIterAgainstFromString(t *testing.T) {
+	testCases := []string{
+		"AAAA",
+		"FDSADEWRTEWASCSADWQEDAFRFTR",
+		"",
+		"2136735217615555555",
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
+			cStr := FromString(tc)
+			cIter := FromIter(iter.FromStr(tc))
+			assert.Equal(t, cStr, cIter)
+		})
+	}
+}
+
+func TestIterAgainstSlice(t *testing.T) {
+	testCases := [][]int{
+		{1, 23, 2, 54, 2, 2, 2, 2},
+		{1, 1, 1, 1, 1},
+		{},
+		{32121321, 321312, 11, 1, 132, 11, 2},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
+			cStr := New(tc...)
+			cIter := FromIter(iter.FromSlice(tc))
+			assert.Equal(t, cStr, cIter)
 		})
 	}
 }

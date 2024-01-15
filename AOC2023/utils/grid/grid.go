@@ -115,16 +115,28 @@ func (g *Grid[E]) String() string {
 	return strings.Join(arr, "\n")
 }
 
-func (g *Grid[E]) Iterator() gridIter[E] {
-	return gridIter[E]{g, g.IndIterator()}
+func (g *Grid[E]) Iterator() *gridIter[E] {
+	return &gridIter[E]{g, *g.IndIterator()}
 }
 
-func (g *Grid[E]) LineIterator() lineIter[E] {
-	return lineIter[E]{g, -1}
+func (g *Grid[E]) LineIterator() *lineIter[E] {
+	return &lineIter[E]{g, -1}
 }
 
-func (g *Grid[E]) IndIterator() indIter[E] {
-	return indIter[E]{g, -1, 0}
+func (g *Grid[E]) IndIterator() *indIter[E] {
+	return &indIter[E]{g, -1, 0}
+}
+
+func Map[E any, T any](g *Grid[E], fn func(E) T) Grid[T] {
+	var elem T
+	new := Full[T](g.NRows(), g.NCols(), elem)
+	old_it := g.Iterator()
+	new_it := new.Iterator()
+	for elem, ok := old_it.Next(); ok; elem, ok = old_it.Next() {
+		new_it.Next()
+		new_it.Set(fn(elem))
+	}
+	return new
 }
 
 type gridIter[E any] struct {

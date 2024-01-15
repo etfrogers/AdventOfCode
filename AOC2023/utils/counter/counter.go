@@ -3,6 +3,7 @@ package counter
 import (
 	"sort"
 	"strings"
+	"utils/iter"
 )
 
 type Counter[T comparable] struct {
@@ -14,8 +15,16 @@ type counterPair[T comparable] struct {
 	count int
 }
 
-func NewFromString(str string) Counter[string] {
+func FromString(str string) Counter[string] {
 	return New(strings.Split(str, "")...)
+}
+
+func FromIter[T comparable](it iter.Iter[T]) Counter[T] {
+	counter := New[T]()
+	for v, ok := it.Next(); ok; v, ok = it.Next() {
+		counter.Add(v)
+	}
+	return counter
 }
 
 func New[T comparable](x ...T) Counter[T] {
