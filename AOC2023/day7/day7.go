@@ -34,7 +34,7 @@ const WILDCARD = "J"
 
 func (h *Hand) Counter() *counter.Counter[string] {
 	if h.counter.Len() == 0 {
-		h.counter = counter.NewFromString(h.cards)
+		h.counter = counter.FromString(h.cards)
 	}
 	return &h.counter
 }

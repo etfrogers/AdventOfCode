@@ -99,9 +99,9 @@ func (b *Beam) isInside(layout *Layout) bool {
 
 var NIL_BEAM Beam = Beam{-1, -1, NO_LIGHT}
 
-func (l *Layout) Illuminate() {
+func (l *Layout) Illuminate(initBeam Beam) {
 	beams := stack.New[Beam]()
-	beams.Push(Beam{0, 0, RIGHT})
+	beams.Push(initBeam)
 	for beams.Len() > 0 {
 		beam, _ := beams.Pop()
 		for beam.isInside(l) {
@@ -194,10 +194,74 @@ func (l *Layout) NEnergised() int {
 	return counts.Get(true)
 }
 
+type BeamScore struct {
+	beam  Beam
+	score int
+}
+
+func (l *Layout) MostEnergetic() BeamScore {
+	/*
+		x := -1
+		topRowIt := iter.NewNext[Beam](func() (Beam, bool) {
+			x++
+			return Beam{x, 0, DOWN}, x < l.NCols()
+		})
+		x = -1
+		bottomRowIt := iter.NewNext[Beam](func() (Beam, bool) {
+			x++
+			return Beam{x, l.NRows() - 1, UP}, x < l.NCols()
+		})
+
+			y := 0
+			leftColIt := iter.NewNext[Beam](func() (Beam, bool) {
+				y++
+				return Beam{0, y, RIGHT}, x < l.NRows()
+			})
+			y = 0
+			rightColIt := iter.NewNext[Beam](func() (Beam, bool) {
+				y++
+				return Beam{l.NCols() - 1, y, LEFT}, x < l.NRows()
+			})*/
+
+	beams := make([]Beam, (l.NCols()+l.NRows())*2)
+	i := 0
+	for x := 0; x < l.NCols(); x++ {
+		beams[i] = Beam{x, 0, DOWN}
+		i++
+		beams[i] = Beam{x, l.NRows() - 1, UP}
+		i++
+	}
+	for y := 0; y < l.NRows(); y++ {
+		beams[i] = Beam{0, y, RIGHT}
+		i++
+		beams[i] = Beam{l.NCols() - 1, y, LEFT}
+		i++
+	}
+
+	// beamIt := iter.Chain(topRowIt, bottomRowIt)
+	// fmt.Println(iter.ToSlice(beamIt))
+
+	scores := utils.Map(beams, func(b Beam) BeamScore {
+		testLayout := Layout{l.Clone()}
+		testLayout.Illuminate(b)
+		score := testLayout.NEnergised()
+		return BeamScore{b, score}
+	})
+
+	beamScore := iter.MaxFunc(iter.FromSlice(scores), func(bs1, bs2 BeamScore) bool { return bs1.score < bs2.score })
+	return beamScore
+}
+
 func main() {
 	lines := utils.ReadInput()
 	layout := BuildLayout(lines)
-	layout.Illuminate()
+	layout.Illuminate(Beam{0, 0, RIGHT})
 	part1Answer := layout.NEnergised()
 	fmt.Printf("Day 16, Part 1 answer: %d\n", part1Answer)
+
+	layout = BuildLayout(lines)
+	maxBeam := layout.MostEnergetic()
+	part2Answer := maxBeam.score
+	fmt.Printf("Day 16, Part 2 answer: %d\n", part2Answer)
+
 }

@@ -124,7 +124,7 @@ func TestIterAgainstFromString(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc), func(t *testing.T) {
 			cStr := FromString(tc)
-			cIter := FromIter(iter.FromStr(tc))
+			cIter := FromIter(iter.FromString(tc))
 			assert.Equal(t, cStr, cIter)
 		})
 	}

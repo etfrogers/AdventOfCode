@@ -5,7 +5,10 @@ import (
 	"sync/atomic"
 )
 
-func FromStr(s string) Iter[string] {
+func FromString(s string) interface {
+	PrevIter[string]
+	SetIter[string]
+} {
 	return &strIter{s: s, i: -1}
 }
 
@@ -30,8 +33,14 @@ func (it *strIter) Prev() {
 }
 
 // Set implements SetIter.
-func (it *strIter) Set(v rune) {
-	[]rune(it.s)[it.i] = rune(v)
+func (it *strIter) Set(v string) {
+	if len(v) != 1 {
+		panic("set takes a string of length 1")
+	}
+	r := rune(v[0])
+	rs := []rune(it.s)
+	rs[it.i] = rune(r)
+	it.s = string(rs)
 }
 
 // iter.FromSlice returns an iterator over a slice.

@@ -1,5 +1,9 @@
 package iter
 
+import (
+	"cmp"
+)
+
 // Iter supports iterating over a sequence of values of type `E`.
 type Iter[E any] interface {
 	// Next returns the next value in the iteration if there is one,
@@ -85,11 +89,16 @@ type PrevIter[E any] interface {
 // ToSlice returns a slice containing all the elements in an iterator.
 // [ This might be in the slices package, as slices.FromIter. ]
 func ToSlice[E any](it Iter[E]) []E {
-	var r []E
+	r := make([]E, 0)
 	for v, _ok := it.Next(); _ok; v, _ok = it.Next() {
 		r = append(r, v)
 	}
 	return r
+}
+
+func ToString(it Iter[string]) string {
+	strIt := it.(*strIter)
+	return strIt.s
 }
 
 // Filter returns a new iterator that only contains the elements of it
@@ -143,6 +152,54 @@ func Any(s Iter[bool]) bool {
 	return false
 }
 
+func Max[E cmp.Ordered](s Iter[E]) E {
+	maxVal, ok := s.Next()
+	if !ok {
+		panic("max called on an empty iterator")
+	}
+	for val, ok := s.Next(); ok; val, ok = s.Next() {
+		maxVal = max(maxVal, val)
+	}
+	return maxVal
+}
+
+func MaxFunc[E any](s Iter[E], less func(v1, v2 E) bool) E {
+	maxVal, ok := s.Next()
+	if !ok {
+		panic("max called on an empty iterator")
+	}
+	for val, ok := s.Next(); ok; val, ok = s.Next() {
+		if less(maxVal, val) {
+			maxVal = val
+		}
+	}
+	return maxVal
+}
+
+func Min[E cmp.Ordered](s Iter[E]) E {
+	minVal, ok := s.Next()
+	if !ok {
+		panic("min called on an empty iterator")
+	}
+	for val, ok := s.Next(); ok; val, ok = s.Next() {
+		minVal = min(minVal, val)
+	}
+	return minVal
+}
+
+func MinFunc[E any](s Iter[E], less func(v1, v2 E) bool) E {
+	minVal, ok := s.Next()
+	if !ok {
+		panic("max called on an empty iterator")
+	}
+	for val, ok := s.Next(); ok; val, ok = s.Next() {
+		if less(val, minVal) {
+			minVal = val
+		}
+	}
+	return minVal
+}
+
 // Equal reports whether two iterators have the same values
 // in the same order.
 func Equal[E comparable](it1, it2 Iter[E]) bool {
@@ -161,18 +218,15 @@ func Equal[E comparable](it1, it2 Iter[E]) bool {
 // Concat returns the concatenation of two iterators.
 // The resulting iterator returns all the elements of the
 // first iterator followed by all the elements of the second.
-func Concat[E any](it1, it2 Iter[E]) Iter[E] {
-	return NewNext(func() (E, bool) {
-		e, ok := it1.Next()
-		var r E
-		if ok {
-			r = e
-		} else {
-			e, ok := it2.Next()
-			if ok {
-				r = e
+func Chain[E any](its ...Iter[E]) Iter[E] {
+	return NewGen(func(yield func(E) bool) {
+		for _, it := range its {
+			for v, ok := it.Next(); ok; v, ok = it.Next() {
+				if !yield(v) {
+					return
+				}
 			}
 		}
-		return r, ok
 	})
+
 }

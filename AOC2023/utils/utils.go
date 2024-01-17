@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"slices"
 	"strconv"
@@ -218,4 +219,27 @@ func FullSlice[T ~[]E, E any](n int, elem E) T {
 		s[i] = elem
 	}
 	return s
+}
+
+func RandSlice[T int | float64](length int, max int) []T {
+	var dummy T
+	result := make([]T, length)
+	for i := 0; i < length; i++ {
+		switch any(dummy).(type) {
+		case int, string:
+			if max == 0 {
+				result[i] = T(rand.Int())
+			} else {
+				result[i] = T(rand.Intn(max))
+			}
+		case float64:
+			if max == 0 {
+				result[i] = T(rand.Float64())
+			} else {
+				result[i] = T(rand.Float64() * float64(max))
+			}
+		}
+
+	}
+	return result
 }

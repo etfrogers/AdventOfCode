@@ -185,29 +185,6 @@ func TestSum(t *testing.T) {
 	}
 }
 
-func randSlice[T int | float64](length int, max int) []T {
-	var dummy T
-	result := make([]T, length)
-	for i := 0; i < length; i++ {
-		switch any(dummy).(type) {
-		case int, string:
-			if max == 0 {
-				result[i] = T(rand.Int())
-			} else {
-				result[i] = T(rand.Intn(max))
-			}
-		case float64:
-			if max == 0 {
-				result[i] = T(rand.Float64())
-			} else {
-				result[i] = T(rand.Float64() * float64(max))
-			}
-		}
-
-	}
-	return result
-}
-
 func add[T float64 | int | string](x, y T) T {
 	return x + y
 }
@@ -216,7 +193,7 @@ func TestReduceAgainstSumInt(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			length := rand.Intn(100) + 2
-			s := randSlice[int](length, 1000)
+			s := RandSlice[int](length, 1000)
 			sum := Sum(s)
 			reduceSum := Reduce[int](s, add)
 			assert.Equal(t, sum, reduceSum)
@@ -228,7 +205,7 @@ func TestReduceAgainstSumFloat(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			length := rand.Intn(100) + 2
-			s := randSlice[float64](length, 1000)
+			s := RandSlice[float64](length, 1000)
 			sum := Sum(s)
 			reduceSum := Reduce(s, add)
 			assert.Equal(t, sum, reduceSum)
