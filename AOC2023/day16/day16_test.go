@@ -72,3 +72,11 @@ func TestMostEnergetic(t *testing.T) {
 	assert.Equal(t, expectedBeam, bs.beam)
 	assert.Equal(t, expectedScore, bs.score)
 }
+
+func TestPart2(t *testing.T) {
+	lines := utils.ReadInput()
+	layout := BuildLayout(lines)
+	maxBeam := layout.MostEnergetic()
+	part2Answer := maxBeam.score
+	assert.Equal(t, 7896, part2Answer)
+}
