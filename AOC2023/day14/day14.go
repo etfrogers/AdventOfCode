@@ -143,10 +143,36 @@ func (r *Rocks) Cycle() {
 	r.Tilt(EAST)
 }
 
+func (r *Rocks) GetLoadingAfterNCycles(n int) (result int) {
+	scores := make([]int, 0)
+	states := make(map[string]int)
+	for i := 0; true; i++ {
+		r.Cycle()
+		// scores 0 is after 1 cycle
+		state := r.String()
+		score := r.TotalLoading()
+		scores = append(scores, score)
+		if prev, ok := states[state]; ok {
+			loopLength := i - prev
+			// subtract 1 from n because we are storing data after 1 cycle in scores 0
+			remainAfterSetup := (n - 1) - prev
+			lengthIntoFinalLoop := remainAfterSetup % loopLength
+			result = scores[prev+lengthIntoFinalLoop]
+			break
+		}
+		states[state] = i
+	}
+	return
+}
+
 func main() {
 	lines := utils.ReadInput()
 	rocks := NewRocks(lines)
 	rocks.Tilt(NORTH)
 	part1Answer := rocks.TotalLoading()
 	fmt.Printf("Day 14, Part 1 answer: %d\n", part1Answer)
+
+	rocks = NewRocks(lines)
+	part2Answer := rocks.GetLoadingAfterNCycles(1_000_000_000)
+	fmt.Printf("Day 14, Part 2 answer: %d\n", part2Answer)
 }

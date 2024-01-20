@@ -143,3 +143,10 @@ func TestCycle(t *testing.T) {
 		assert.Equal(t, output, rocks.String())
 	}
 }
+
+func TestLoadingAfterN(t *testing.T) {
+	rocks := NewRocks(testLines)
+	expected := 64
+	actual := rocks.GetLoadingAfterNCycles(1_000_000_000)
+	assert.Equal(t, expected, actual)
+}
