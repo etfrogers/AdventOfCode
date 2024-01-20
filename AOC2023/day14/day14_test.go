@@ -150,3 +150,10 @@ func TestLoadingAfterN(t *testing.T) {
 	actual := rocks.GetLoadingAfterNCycles(1_000_000_000)
 	assert.Equal(t, expected, actual)
 }
+
+func TestPart2(t *testing.T) {
+	lines := utils.ReadInput()
+	rocks := NewRocks(lines)
+	part2Answer := rocks.GetLoadingAfterNCycles(1_000_000_000)
+	assert.Equal(t, 94585, part2Answer)
+}
