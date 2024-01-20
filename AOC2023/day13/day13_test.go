@@ -163,7 +163,7 @@ func TestEdgeCases(t *testing.T) {
 	ref := p.FindReflection(false)
 	assert.Equal(t, Reflection{vert, 2}, ref)
 
-	p = Pattern{grid.NewFromStrings([]string{".##.", ".##."})}
+	p = Pattern{grid.NewFromStrings([]string{".##.", "####"})}
 	ref = p.FindReflection(false)
 	assert.Equal(t, Reflection{vert, 2}, ref)
 }
