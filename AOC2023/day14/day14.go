@@ -71,17 +71,54 @@ func (r *Rocks) String() string {
 }
 
 func (r *Rocks) Tilt(d Dir) {
+	var invert, colMajor bool
 	switch d {
 	case NORTH:
-		for y := 1; y < r.NCols(); y++ {
-			for x := 0; x < r.NRows(); x++ {
-				y_ := y
-				for y_ > 0 && r.Get(x, y_) == ROUND && r.Get(x, y_-1) == EMPTY {
-					r.Set(x, y_, EMPTY)
-					r.Set(x, y_-1, ROUND)
-					y_--
-				}
-			}
+		invert, colMajor = false, false
+	case SOUTH:
+		invert, colMajor = true, false
+	case WEST:
+		invert, colMajor = false, true
+	case EAST:
+		invert, colMajor = true, true
+	default:
+		panic("not implemented")
+	}
+	it := r.IndIterator(invert, colMajor)
+	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+		r.moveRockAt(x, y, d)
+	}
+}
+
+func (r *Rocks) moveRockAt(x, y int, d Dir) {
+	switch d {
+	case NORTH:
+		y_ := y
+		for y_ > 0 && r.Get(x, y_) == ROUND && r.Get(x, y_-1) == EMPTY {
+			r.Set(x, y_, EMPTY)
+			r.Set(x, y_-1, ROUND)
+			y_--
+		}
+	case SOUTH:
+		y_ := y
+		for y_ < r.NRows()-1 && r.Get(x, y_) == ROUND && r.Get(x, y_+1) == EMPTY {
+			r.Set(x, y_, EMPTY)
+			r.Set(x, y_+1, ROUND)
+			y_++
+		}
+	case WEST:
+		x_ := x
+		for x_ > 0 && r.Get(x_, y) == ROUND && r.Get(x_-1, y) == EMPTY {
+			r.Set(x_, y, EMPTY)
+			r.Set(x_-1, y, ROUND)
+			x_--
+		}
+	case EAST:
+		x_ := x
+		for x_ < r.NCols()-1 && r.Get(x_, y) == ROUND && r.Get(x_+1, y) == EMPTY {
+			r.Set(x_, y, EMPTY)
+			r.Set(x_+1, y, ROUND)
+			x_++
 		}
 	default:
 		panic("not implemented")
@@ -97,6 +134,13 @@ func (r *Rocks) TotalLoading() int {
 		score += rowScore * nRocks
 	}
 	return score
+}
+
+func (r *Rocks) Cycle() {
+	r.Tilt(NORTH)
+	r.Tilt(WEST)
+	r.Tilt(SOUTH)
+	r.Tilt(EAST)
 }
 
 func main() {

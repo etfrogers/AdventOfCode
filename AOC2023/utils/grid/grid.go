@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 	"utils"
+	"utils/iter"
 )
 
 type Grid[E any] struct {
@@ -115,16 +116,31 @@ func (g *Grid[E]) String() string {
 	return strings.Join(arr, "\n")
 }
 
-func (g *Grid[E]) Iterator() *gridIter[E] {
-	return &gridIter[E]{g, *g.IndIterator()}
+// two args: invert, and colMajor, both bool, default false
+func (g *Grid[E]) Iterator(args ...bool) iter.SetIter[E] {
+	return &gridIter[E]{g, g.IndIterator(args...)}
 }
 
-func (g *Grid[E]) LineIterator() *lineIter[E] {
+func (g *Grid[E]) LineIterator() iter.Iter[[]E] {
 	return &lineIter[E]{g, -1}
 }
 
-func (g *Grid[E]) IndIterator() *indIter[E] {
-	return &indIter[E]{g, -1, 0}
+// two args: invert, and colMajor, both bool, default false
+func (g *Grid[E]) IndIterator(args ...bool) iter.Iter2[int, int] {
+	invert, colMajor := false, false
+	switch len(args) {
+
+	case 2:
+		colMajor = args[1]
+		fallthrough
+	case 1:
+		invert = args[0]
+	case 0:
+		// do nothing
+	default:
+		panic("function IndIterator take a maximu of two args")
+	}
+	return newIndIter[E](g, invert, colMajor)
 }
 
 func Map[E any, T any](g *Grid[E], fn func(E) T) Grid[T] {
@@ -141,7 +157,7 @@ func Map[E any, T any](g *Grid[E], fn func(E) T) Grid[T] {
 
 type gridIter[E any] struct {
 	grid *Grid[E]
-	inds indIter[E]
+	inds iter.Iter2[int, int]
 }
 
 type lineIter[E any] struct {
@@ -150,40 +166,128 @@ type lineIter[E any] struct {
 }
 
 type indIter[E any] struct {
-	grid *Grid[E]
-	x, y int
+	grid     *Grid[E]
+	x, y     int
+	invert   bool
+	colMajor bool
 }
 
-func (g *indIter[E]) Next() (x, y int, ok bool) {
-	g.x++
-	if g.x == g.grid.NCols() {
-		g.y++
-		g.x = 0
+func newIndIter[E any](g *Grid[E], invert, colMajor bool) *indIter[E] {
+	it := indIter[E]{grid: g, invert: invert, colMajor: colMajor}
+	if invert {
+		if colMajor {
+			it.x, it.y = g.NCols()-1, g.NRows()
+		} else {
+			it.x, it.y = g.NCols(), g.NRows()-1
+		}
+	} else {
+		if colMajor {
+			it.x, it.y = 0, -1
+		} else {
+			it.x, it.y = -1, 0
+		}
 	}
-	if g.y == g.grid.NRows() {
+	return &it
+}
+
+func (it *indIter[E]) Next() (x, y int, ok bool) {
+	if it.invert {
+		return it.prev()
+	} else {
+		return it.next()
+	}
+}
+
+func (it *indIter[E]) Prev() (x, y int, ok bool) {
+	if it.invert {
+		return it.next()
+	} else {
+		return it.prev()
+	}
+}
+
+func (it *indIter[E]) next() (x, y int, ok bool) {
+	if it.colMajor {
+		return it.colMajorNext()
+	} else {
+		return it.rowMajorNext()
+	}
+}
+
+func (it *indIter[E]) prev() (x, y int, ok bool) {
+	if it.colMajor {
+		return it.colMajorPrev()
+	} else {
+		return it.rowMajorPrev()
+	}
+}
+
+func (it *indIter[E]) colMajorNext() (x, y int, ok bool) {
+	it.y++
+	if it.y == it.grid.NRows() {
+		it.x++
+		it.y = 0
+	}
+	if it.x == it.grid.NCols() {
 		return -1, -1, false
 	}
-	return g.x, g.y, true
+	return it.x, it.y, true
 }
 
-func (g *gridIter[E]) Next() (E, bool) {
-	x, y, ok := g.inds.Next()
+func (it *indIter[E]) rowMajorNext() (x, y int, ok bool) {
+	it.x++
+	if it.x == it.grid.NCols() {
+		it.y++
+		it.x = 0
+	}
+	if it.y == it.grid.NRows() {
+		return -1, -1, false
+	}
+	return it.x, it.y, true
+}
+
+func (it *indIter[E]) colMajorPrev() (x, y int, ok bool) {
+	it.y--
+	if it.y < 0 {
+		it.x--
+		it.y = it.grid.NRows() - 1
+	}
+	if it.x < 0 {
+		return -1, -1, false
+	}
+	return it.x, it.y, true
+}
+func (it *indIter[E]) rowMajorPrev() (x, y int, ok bool) {
+	it.x--
+	if it.x < 0 {
+		it.y--
+		it.x = it.grid.NCols() - 1
+	}
+	if it.y < 0 {
+		return -1, -1, false
+	}
+	return it.x, it.y, true
+}
+
+func (it *gridIter[E]) Next() (E, bool) {
+	x, y, ok := it.inds.Next()
 	if ok {
-		return g.grid.Get(x, y), true
+		return it.grid.Get(x, y), true
 	} else {
 		var r E
 		return r, false
 	}
 }
 
-func (g *gridIter[E]) Set(val E) {
-	g.grid.Set(g.inds.x, g.inds.y, val)
+func (it *gridIter[E]) Set(val E) {
+	inds := it.inds.(*indIter[E])
+	it.grid.Set(inds.x, inds.y, val)
 }
 
-func (g *lineIter[E]) Next() ([]E, bool) {
-	g.i++
-	if g.i == g.grid.NRows() {
+func (it *lineIter[E]) Next() ([]E, bool) {
+	it.i++
+	if it.i == it.grid.NRows() {
 		return nil, false
 	}
-	return g.grid.GetRow(g.i), true
+	return it.grid.GetRow(it.i), true
 }

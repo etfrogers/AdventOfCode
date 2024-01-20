@@ -2,6 +2,7 @@ package iter
 
 import (
 	"cmp"
+	"strings"
 )
 
 // Iter supports iterating over a sequence of values of type `E`.
@@ -97,8 +98,15 @@ func ToSlice[E any](it Iter[E]) []E {
 }
 
 func ToString(it Iter[string]) string {
-	strIt := it.(*strIter)
-	return strIt.s
+	if strIt, ok := it.(*strIter); ok {
+		return strIt.s
+	}
+
+	b := strings.Builder{}
+	for v, _ok := it.Next(); _ok; v, _ok = it.Next() {
+		b.WriteString(v)
+	}
+	return b.String()
 }
 
 // Filter returns a new iterator that only contains the elements of it
