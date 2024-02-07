@@ -99,7 +99,9 @@ func (r *Record) buildTree() *tree.Tree[rune] {
 				if i == len(r.Listing)-1 {
 					lastGroup = len(r.Groups)
 				}
-				if (len(testGroups) <= len(r.Groups)) && slices.Equal(r.Groups[:lastGroup], testGroups[:lastGroup]) {
+				tgLen := len(testGroups)
+				gLen := len(r.Groups)
+				if (tgLen <= gLen) && lastGroup <= tgLen && lastGroup <= gLen && slices.Equal(r.Groups[:lastGroup], testGroups[:lastGroup]) {
 					n := tree.NewNode(testChar)
 					leaf.AddChild(n)
 					newLeaves.Push(n)
@@ -144,4 +146,9 @@ func main() {
 	rs := NewRecordSet(lines, false)
 	part1Answer := rs.TotalConfigs()
 	fmt.Printf("Day 12, Part 1 answer: %d\n", part1Answer)
+
+	rs2 := NewRecordSet(lines, true)
+	part2Answer := rs2.TotalConfigs()
+	fmt.Printf("Day 12, Part 2 answer: %d\n", part2Answer)
+
 }

@@ -81,14 +81,6 @@ func TestUnfold(t *testing.T) {
 	assert.Equal(t, expGroups, r.Groups)
 }
 
-/*
-???.### 1,1,3 - 1 arrangement
-.??..??...?##. 1,1,3 - 16384 arrangements
-?#?#?#?#?#?#?#? 1,3,1,6 - 1 arrangement
-????.#...#... 4,1,1 - 16 arrangements
-????.######..#####. 1,6,5 - 2500 arrangements
-?###???????? 3,2,1 - 506250 arrangements
-*/
 func TestNConfigsUnfold(t *testing.T) {
 	expected := []int{1, 16384, 1, 16, 2500, 506250}
 	for i, line := range testLines {
@@ -96,5 +88,17 @@ func TestNConfigsUnfold(t *testing.T) {
 			r := NewRecord(line, true)
 			assert.Equal(t, expected[i], len(r.PossibleConfigs()))
 		})
+	}
+}
+
+func TestTotalConfigsUnfold(t *testing.T) {
+	rs := NewRecordSet(testLines, true)
+	assert.Equal(t, 525152, rs.TotalConfigs())
+}
+
+func BenchmarkNconfigs(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		rs := NewRecordSet(testLines, true)
+		rs.TotalConfigs()
 	}
 }
