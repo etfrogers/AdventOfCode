@@ -26,7 +26,7 @@ var testLines []string = strings.Split(testCase, "\n")
 var knownLines []string = strings.Split(knownTestCase, "\n")
 
 func TestBuild(t *testing.T) {
-	expectedListing := []rune{'#', '.', '#', '.', '#', '#', '#'}
+	expectedListing := Path{'#', '.', '#', '.', '#', '#', '#'}
 	expectedGroups := []int{1, 1, 3}
 	r := NewRecord(knownLines[0], false)
 	assert.Equal(t, expectedListing, r.Listing)
@@ -56,7 +56,16 @@ func TestNConfigs(t *testing.T) {
 	for i, line := range testLines {
 		t.Run(line, func(t *testing.T) {
 			r := NewRecord(line, false)
-			assert.Equal(t, expected[i], len(r.PossibleConfigs()))
+			assert.Equal(t, expected[i], r.NPossibleConfigs())
+		})
+	}
+}
+
+func TestNConfigsKnownCase(t *testing.T) {
+	for _, line := range knownLines {
+		t.Run(line, func(t *testing.T) {
+			r := NewRecord(line, false)
+			assert.Equal(t, 1, r.NPossibleConfigs())
 		})
 	}
 }
@@ -66,7 +75,7 @@ func TestTotalConfigs(t *testing.T) {
 	assert.Equal(t, 21, rs.TotalConfigs())
 }
 
-func TestPart(t *testing.T) {
+func TestPart1(t *testing.T) {
 	lines := utils.ReadInput()
 	rs := NewRecordSet(lines, false)
 	part1Answer := rs.TotalConfigs()
@@ -74,7 +83,7 @@ func TestPart(t *testing.T) {
 }
 
 func TestUnfold(t *testing.T) {
-	expListing := []rune("???.###????.###????.###????.###????.###")
+	expListing := Path("???.###????.###????.###????.###????.###")
 	expGroups := []int{1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3}
 	r := NewRecord(testLines[0], true)
 	assert.Equal(t, expListing, r.Listing)
@@ -86,7 +95,7 @@ func TestNConfigsUnfold(t *testing.T) {
 	for i, line := range testLines {
 		t.Run(line, func(t *testing.T) {
 			r := NewRecord(line, true)
-			assert.Equal(t, expected[i], len(r.PossibleConfigs()))
+			assert.Equal(t, expected[i], r.NPossibleConfigs())
 		})
 	}
 }
@@ -101,4 +110,12 @@ func BenchmarkNconfigs(b *testing.B) {
 		rs := NewRecordSet(testLines, true)
 		rs.TotalConfigs()
 	}
+}
+
+func TestPart2(t *testing.T) {
+	//lines := utils.ReadInput()
+	//rs2 := NewRecordSet(lines[:100], true)
+	part2Answer := 0 //rs2.TotalConfigs()
+	assert.Equal(t, 0, part2Answer)
+	// fmt.Printf("Day 12, Part 2 answer: %d\n", part2Answer)
 }

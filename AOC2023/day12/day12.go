@@ -6,11 +6,12 @@ import (
 	"strings"
 	"utils"
 	"utils/stack"
-	"utils/tree"
 )
 
+type Path []rune
+
 type Record struct {
-	Listing []rune
+	Listing Path
 	Groups  []int
 }
 
@@ -71,66 +72,58 @@ func calculateGroups(listing []rune) (groups []int) {
 
 const NULL = rune(0)
 
-func (r *Record) buildTree() *tree.Tree[rune] {
-	root := tree.NewNode[rune](NULL)
-	t := tree.New[rune](root)
-	leaves := stack.New[*tree.Node[rune]]()
-	leaves.Push(root)
-	for i, s := range r.Listing {
-		newLeaves := stack.New[*tree.Node[rune]]()
-		for leaf, ok := leaves.Pop(); ok; leaf, ok = leaves.Pop() {
-			currentPath := pathFromNode(t, leaf)
-			var chars []rune
-			if s == '?' {
-				chars = []rune{'#', '.'}
-			} else {
-				chars = []rune{s}
+func (r *Record) NPossibleConfigs() int {
+	nPaths := 0
+	workingPaths := stack.New[Path]()
+	workingPaths.Push(Path{})
+
+	for workingPaths.Len() > 0 {
+		currentPath, _ := workingPaths.Pop()
+		i := len(currentPath)
+		s := r.Listing[i]
+		var chars []rune
+		if s == '?' {
+			chars = []rune{'#', '.'}
+		} else {
+			chars = []rune{s}
+		}
+		for _, testChar := range chars {
+			newPath := append(currentPath, testChar)
+			testGroups := calculateGroups(newPath)
+			lastGroup := len(testGroups)
+			gLen := len(r.Groups)
+			// label := fmt.Sprintf("%s - %v", string(newPath), testGroups)
+			if lastGroup > gLen {
+				// if we already have too many groups, this path is bad.
+				// fmt.Println("- " + label)
+				continue
+
 			}
-			leafIsValid := false
-			for _, testChar := range chars {
-				testPath := append(currentPath, testChar)
-				testGroups := calculateGroups(testPath)
-				lastGroup := len(testGroups)
-				if testChar == '#' && i < len(r.Listing)-1 {
-					// the last group could still increase if more #'s come up,
-					// so don't count it as a miss if the last char doesn't match
-					lastGroup--
-				}
-				if i == len(r.Listing)-1 {
-					lastGroup = len(r.Groups)
-				}
-				tgLen := len(testGroups)
-				gLen := len(r.Groups)
-				if (tgLen <= gLen) && lastGroup <= tgLen && lastGroup <= gLen && slices.Equal(r.Groups[:lastGroup], testGroups[:lastGroup]) {
-					n := tree.NewNode(testChar)
-					leaf.AddChild(n)
-					newLeaves.Push(n)
-					leafIsValid = true
-				}
+			if testChar == '#' && i < len(r.Listing)-1 && testGroups[lastGroup-1] <= r.Groups[lastGroup-1] {
+				// the last group could still increase if more #'s come up,
+				// so don't count it as a miss if the last char doesn't match
+				// unless the last group is already too large
+				lastGroup--
 			}
-			if !leafIsValid {
-				t.PruneBranchTo(leaf)
+			if i == len(r.Listing)-1 {
+				lastGroup = gLen
+			}
+			tgLen := len(testGroups)
+			if (tgLen <= gLen) && lastGroup <= tgLen && lastGroup <= gLen && slices.Equal(r.Groups[:lastGroup], testGroups[:lastGroup]) {
+				if len(newPath) == len(r.Listing) {
+					nPaths++
+					// fmt.Println("O " + label)
+				} else {
+					workingPaths.Push(slices.Clone(newPath))
+					// fmt.Println("+ " + label)
+				}
+				// } else {
+				// fmt.Println("- " + label)
 			}
 		}
-		leaves = newLeaves
 	}
-	return t
-}
-
-func pathFromNode(t *tree.Tree[rune], n *tree.Node[rune]) []rune {
-	vals := t.NodeToRootValues(n)
-	slices.Reverse(vals)
-	vals = vals[1:] // drop root value - NULL char
-	return vals
-}
-
-func (r *Record) PossibleConfigs() [][]rune {
-	t := r.buildTree()
-	// t.Render()
-	leaves := t.GetLeaves()
-	paths := utils.Map(leaves, func(n *tree.Node[rune]) []rune { return pathFromNode(t, n) })
-	// paths = utils.Filter(paths, func(listing []rune) bool { return slices.Equal(calculateGroups(listing), r.Groups) })
-	return paths
+	// fmt.Println("------------------")
+	return nPaths
 }
 
 func NewRecordSet(lines []string, unfold bool) RecordSet {
@@ -138,7 +131,31 @@ func NewRecordSet(lines []string, unfold bool) RecordSet {
 }
 
 func (rs *RecordSet) TotalConfigs() int {
-	return utils.Sum(utils.Map(*rs, func(r Record) int { return len(r.PossibleConfigs()) }))
+	tasks := stack.New[Record]()
+	nTasks := len(*rs)
+	nProc := 12
+	tasks.PushAll(*rs...)
+	c := make(chan int, nProc*2)
+
+	for i := 0; i < nProc; i++ {
+		fmt.Printf("starting worker %d\n", i)
+		go func() {
+			for {
+				fmt.Printf("%d / %d\n", nTasks-tasks.Len(), nTasks)
+				if r, ok := tasks.Pop(); ok {
+					c <- r.NPossibleConfigs()
+				} else {
+					break
+				}
+			}
+		}()
+	}
+
+	results := make([]int, nTasks)
+	for j := 0; j < nTasks; j++ {
+		results[j] = <-c
+	}
+	return utils.Sum(results)
 }
 
 func main() {

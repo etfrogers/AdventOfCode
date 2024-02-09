@@ -1,11 +1,12 @@
-package stack
+package stack_test
 
 import (
 	"testing"
+	"utils/stack"
 )
 
 func Test(t *testing.T) {
-	s := New[int]()
+	s := stack.New[int]()
 
 	if s.Len() != 0 {
 		t.Errorf("Length of an empty stack should be 0")
