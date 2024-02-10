@@ -33,24 +33,6 @@ func TestBuild(t *testing.T) {
 	assert.Equal(t, expectedGroups, r.Groups)
 }
 
-func TestGroups(t *testing.T) {
-	for _, line := range knownLines {
-		t.Run(line, func(t *testing.T) {
-			r := NewRecord(line, false)
-			assert.Equal(t, r.Groups, r.CalculateGroups())
-		})
-	}
-}
-
-func TestGroupsUnknown(t *testing.T) {
-	for _, line := range testLines {
-		t.Run(line, func(t *testing.T) {
-			r := NewRecord(line, false)
-			assert.Equal(t, []int{}, r.CalculateGroups())
-		})
-	}
-}
-
 func TestNConfigs(t *testing.T) {
 	expected := []int{1, 4, 1, 1, 4, 10}
 	for i, line := range testLines {
@@ -113,9 +95,43 @@ func BenchmarkNconfigs(b *testing.B) {
 }
 
 func TestPart2(t *testing.T) {
-	//lines := utils.ReadInput()
-	//rs2 := NewRecordSet(lines[:100], true)
-	part2Answer := 0 //rs2.TotalConfigs()
-	assert.Equal(t, 0, part2Answer)
-	// fmt.Printf("Day 12, Part 2 answer: %d\n", part2Answer)
+	lines := utils.ReadInput()
+	rs2 := NewRecordSet(lines, true)
+	part2Answer := rs2.TotalConfigs()
+	assert.Equal(t, 18093821750095, part2Answer)
+}
+
+func TestHeapPosOnly(t *testing.T) {
+	h := NewCursorHeap()
+	h.PushH(Cursor{Position: 3})
+	h.PushH(Cursor{Position: 2})
+	h.PushH(Cursor{Position: 1})
+	h.PushH(Cursor{Position: 5})
+	h.PushH(Cursor{Position: 0})
+	h.PushH(Cursor{Position: 4})
+
+	for i := range 6 {
+		assert.Equal(t, i, h.Peek().Position)
+		assert.Equal(t, i, h.PopH().Position)
+	}
+}
+
+func TestHeapGroups(t *testing.T) {
+	gs := [][]int{{4}, {1, 3, 5, 7}, {3, 6, 2, 7}, {1, 2, 3, 5, 7}, {1, 2, 3, 5, 7}, {2, 2, 3, 5, 7}}
+	h := NewCursorHeap()
+	h.PushH(Cursor{Position: 3, RemainingGroups: gs[3]})
+	h.PushH(Cursor{Position: 3, RemainingGroups: gs[4]})
+	h.PushH(Cursor{Position: 3, RemainingGroups: gs[2]})
+	h.PushH(Cursor{Position: 3, RemainingGroups: gs[0]})
+	h.PushH(Cursor{Position: 3, RemainingGroups: gs[1]})
+	h.PushH(Cursor{Position: 3, RemainingGroups: gs[5]})
+
+	for i := range 6 {
+		assert.Equal(t, 3, h.Peek().Position)
+		assert.Equal(t, gs[i], h.Peek().RemainingGroups)
+
+		top := h.PopH()
+		assert.Equal(t, 3, top.Position)
+		assert.Equal(t, gs[i], top.RemainingGroups)
+	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/heap"
 	"fmt"
 	"slices"
 	"strings"
@@ -37,35 +38,80 @@ func NewRecord(s string, unfold bool) Record {
 	return Record{Listing: []rune(listing), Groups: groups}
 }
 
-func (r *Record) CalculateGroups() (groups []int) {
-	return calculateGroups(r.Listing)
+type Cursor struct {
+	Position        int
+	RemainingGroups []int
+	InGroup         bool
+	Record          *Record
+	PathsToHere     int
 }
 
-func calculateGroups(listing []rune) (groups []int) {
-	groups = make([]int, 0, 10)
-	inGroup := false
-	currentGroup := 0
-	for _, spring := range listing {
-		switch {
-		case !inGroup && spring == '#':
-			currentGroup++
-			inGroup = true
-		case inGroup && spring == '#':
-			currentGroup++
-		case inGroup && spring == '.':
-			groups = append(groups, currentGroup)
-			currentGroup = 0
-			inGroup = false
-		case !inGroup && spring == '.':
-			// do nothing
-		case spring == '?':
-			return
-		default:
-			panic("unexpected value")
+func (c1 *Cursor) Equal(c2 Cursor) bool {
+	if c1.Position != c2.Position {
+		return false
+	}
+	return slices.Equal(c1.RemainingGroups, c2.RemainingGroups)
+}
+
+func (c Cursor) Clone() Cursor {
+	return Cursor{
+		Position:        c.Position,
+		RemainingGroups: slices.Clone(c.RemainingGroups),
+		InGroup:         c.InGroup,
+		Record:          c.Record,
+		PathsToHere:     c.PathsToHere,
+	}
+}
+
+func (c *Cursor) processHash() (validStep bool) {
+	if len(c.RemainingGroups) == 0 {
+		// if there are no more groups, a # is not a valid option
+		return false
+	}
+	c.RemainingGroups[0]--
+	c.InGroup = true
+	return c.RemainingGroups[0] >= 0
+}
+
+func (c *Cursor) processDot() (validStep bool) {
+	if c.InGroup {
+		if c.RemainingGroups[0] != 0 {
+			return false
+		}
+		c.RemainingGroups = c.RemainingGroups[1:]
+		c.InGroup = false
+	}
+	// if not in group, do nothing
+	return true
+}
+
+func (c *Cursor) Advance() (newCursors []Cursor) {
+	retVal := func(b bool) []Cursor {
+		if b {
+			return []Cursor{*c}
+		} else {
+			return []Cursor{}
 		}
 	}
-	if currentGroup > 0 {
-		groups = append(groups, currentGroup)
+	c.Position++
+	spring := c.Record.Listing[c.Position]
+	switch spring {
+	case '#':
+		newCursors = retVal(c.processHash())
+
+	case '.':
+		newCursors = retVal(c.processDot())
+	case '?':
+		newCursors = make([]Cursor, 0, 2)
+		c2 := c.Clone()
+		if c.processHash() {
+			newCursors = append(newCursors, *c)
+		}
+		if c2.processDot() {
+			newCursors = append(newCursors, c2)
+		}
+	default:
+		panic("unexpected value")
 	}
 	return
 }
@@ -74,55 +120,25 @@ const NULL = rune(0)
 
 func (r *Record) NPossibleConfigs() int {
 	nPaths := 0
-	workingPaths := stack.New[Path]()
-	workingPaths.Push(Path{})
+	cursors := NewCursorHeap()
+	baseCursor := Cursor{Position: -1, RemainingGroups: slices.Clone(r.Groups), Record: r, PathsToHere: 1}
+	cursors.Push(baseCursor)
 
-	for workingPaths.Len() > 0 {
-		currentPath, _ := workingPaths.Pop()
-		i := len(currentPath)
-		s := r.Listing[i]
-		var chars []rune
-		if s == '?' {
-			chars = []rune{'#', '.'}
-		} else {
-			chars = []rune{s}
+	for cursors.Len() > 0 {
+		cursor := heap.Pop(&cursors).(*Cursor)
+		for cursors.Len() > 0 && cursors.Peek().Equal(*cursor) {
+			equiv := heap.Pop(&cursors).(*Cursor)
+			cursor.PathsToHere += equiv.PathsToHere
 		}
-		for _, testChar := range chars {
-			newPath := append(currentPath, testChar)
-			testGroups := calculateGroups(newPath)
-			lastGroup := len(testGroups)
-			gLen := len(r.Groups)
-			// label := fmt.Sprintf("%s - %v", string(newPath), testGroups)
-			if lastGroup > gLen {
-				// if we already have too many groups, this path is bad.
-				// fmt.Println("- " + label)
-				continue
-
+		if cursor.Position == len(r.Listing)-1 {
+			if len(cursor.RemainingGroups) == 0 || (len(cursor.RemainingGroups) == 1 && cursor.RemainingGroups[0] == 0) {
+				nPaths += cursor.PathsToHere
 			}
-			if testChar == '#' && i < len(r.Listing)-1 && testGroups[lastGroup-1] <= r.Groups[lastGroup-1] {
-				// the last group could still increase if more #'s come up,
-				// so don't count it as a miss if the last char doesn't match
-				// unless the last group is already too large
-				lastGroup--
-			}
-			if i == len(r.Listing)-1 {
-				lastGroup = gLen
-			}
-			tgLen := len(testGroups)
-			if (tgLen <= gLen) && lastGroup <= tgLen && lastGroup <= gLen && slices.Equal(r.Groups[:lastGroup], testGroups[:lastGroup]) {
-				if len(newPath) == len(r.Listing) {
-					nPaths++
-					// fmt.Println("O " + label)
-				} else {
-					workingPaths.Push(slices.Clone(newPath))
-					// fmt.Println("+ " + label)
-				}
-				// } else {
-				// fmt.Println("- " + label)
-			}
+			continue
 		}
+		newCursors := cursor.Advance()
+		cursors.PushH(newCursors...)
 	}
-	// fmt.Println("------------------")
 	return nPaths
 }
 
@@ -137,7 +153,7 @@ func (rs *RecordSet) TotalConfigs() int {
 	tasks.PushAll(*rs...)
 	c := make(chan int, nProc*2)
 
-	for i := 0; i < nProc; i++ {
+	for i := range nProc {
 		fmt.Printf("starting worker %d\n", i)
 		go func() {
 			for {
