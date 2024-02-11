@@ -84,8 +84,7 @@ func (r *Rocks) Tilt(d Dir) {
 	default:
 		panic("not implemented")
 	}
-	it := r.IndIterator(invert, colMajor)
-	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+	for x, y := range r.IndIterator(invert, colMajor) {
 		r.moveRockAt(x, y, d)
 	}
 }

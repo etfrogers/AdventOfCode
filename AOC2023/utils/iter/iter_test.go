@@ -25,14 +25,46 @@ func TestSliceRoundTrip(t *testing.T) {
 	}
 }
 
+func TestStringRoundTrip(t *testing.T) {
+	testCases := []string{
+		"",
+		"{1, 2, 3, 4, 5}",
+		"daqwdq",
+		"aaaaaa",
+		"121312321112w21",
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprint(tc), func(t *testing.T) {
+			assert.Equal(t, tc, ToString(FromString(tc)))
+		})
+	}
+}
+
 func TestSliceRoundTripRand(t *testing.T) {
-	for i := 0; i < 0; i++ {
+	for i := 0; i < 10; i++ {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			s := utils.RandSlice[int](100, 10000)
 			assert.Equal(t, s, ToSlice(FromSlice(s)))
 
 			sf := utils.RandSlice[float64](100, 10000)
 			assert.Equal(t, sf, ToSlice(FromSlice(sf)))
+		})
+	}
+}
+
+func intLess(v1, v2 int) bool       { return v1 < v2 }
+func floatLess(v1, v2 float64) bool { return v1 < v2 }
+
+func TestMaxMinVsFunc(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			s := utils.RandSlice[int](100, 10000)
+			assert.Equal(t, Max(FromSlice(s)), MaxFunc(FromSlice(s), intLess))
+			assert.Equal(t, Min(FromSlice(s)), MinFunc(FromSlice(s), intLess))
+
+			sf := utils.RandSlice[float64](100, 10000)
+			assert.Equal(t, Max(FromSlice(sf)), MaxFunc(FromSlice(sf), floatLess))
+			assert.Equal(t, Min(FromSlice(sf)), MinFunc(FromSlice(sf), floatLess))
 		})
 	}
 }
@@ -57,7 +89,6 @@ func TestMax(t *testing.T) {
 		t.Run(fmt.Sprint(tc), func(t *testing.T) {
 			it := FromSlice(tc.input)
 			assert.Equal(t, tc.expected, Max(it))
-			assert.Panics(t, func() { Max(it) })
 		})
 	}
 }
@@ -75,7 +106,6 @@ func TestMin(t *testing.T) {
 		t.Run(fmt.Sprint(tc), func(t *testing.T) {
 			it := FromSlice(tc.input)
 			assert.Equal(t, tc.expected, Min(it))
-			assert.Panics(t, func() { Min(it) })
 		})
 	}
 }
@@ -114,10 +144,6 @@ func TestChain(t *testing.T) {
 		{[][]int{{}, {}, {}}, []int{}},
 		{[][]int{{1}, {2}, {3}}, []int{1, 2, 3}},
 		{[][]int{{1}, {}, {3}}, []int{1, 3}},
-		// {1, 2, 3, 4, 5},
-		// {1, 1, 1, 1, 1},
-		// {1},
-		// {"A", "bhdas", "wewq"},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprint(tc), func(t *testing.T) {
@@ -167,25 +193,6 @@ func TestMap(t *testing.T) {
 	output_s = Map(func(i int) string { return fmt.Sprint(i) }, FromSlice(ints))
 	output = Map(func(s string) int { return utils.AtoiError(s) }, output_s)
 	assert.Equal(t, ints, ToSlice(output))
-}
-
-func TestStringReplace(t *testing.T) {
-	str := "123456"
-	it := FromString(str)
-	v, ok := it.Next()
-	assert.True(t, ok)
-	assert.Equal(t, "1", v)
-	it.Set("a")
-	output := ToString(it)
-	assert.Equal(t, "a23456", output)
-	it = FromString(str)
-	for val, ok := it.Next(); ok; val, ok = it.Next() {
-		if val == "3" || val == "5" {
-			it.Set("a")
-		}
-	}
-	output = ToString(it)
-	assert.Equal(t, "12a4a6", output)
 }
 
 func add[T int | float64](x, y T) T {

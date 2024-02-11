@@ -1,55 +1,65 @@
 package iter
 
 import (
-	"runtime"
-	"sync/atomic"
+	"iter"
 )
 
-func FromString(s string) interface {
-	PrevIter[string]
-	SetIter[string]
-} {
-	return &strIter{s: s, i: -1}
-}
-
-type strIter struct {
-	s string
-	i int
-}
-
-func (it *strIter) Next() (string, bool) {
-	it.i++
-	ok := it.i >= 0 && it.i < len(it.s)
-	var v string
-	if ok {
-		v = string(it.s[it.i])
+func FromString(s string) iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for i := range len(s) {
+			if !yield(string(s[i])) {
+				return
+			}
+		}
 	}
-	return v, ok
 }
 
-// Prev implements PrevIter.
-func (it *strIter) Prev() {
-	it.i--
-}
-
-// Set implements SetIter.
-func (it *strIter) Set(v string) {
-	if len(v) != 1 {
-		panic("set takes a string of length 1")
+func Count(n int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for i := range n {
+			if !yield(i) {
+				return
+			}
+		}
 	}
-	r := rune(v[0])
-	rs := []rune(it.s)
-	rs[it.i] = rune(r)
-	it.s = string(rs)
 }
+
+func CountDown(n int) iter.Seq[int] {
+	return func(yield func(int) bool) {
+		for i := n - 1; i >= 0; i-- {
+			if !yield(i) {
+				return
+			}
+		}
+	}
+}
+
+// // Prev implements PrevIter.
+// func (it *strIter) Prev() {
+// 	it.i--
+// }
+
+// // Set implements SetIter.
+// func (it *strIter) Set(v string) {
+// 	if len(v) != 1 {
+// 		panic("set takes a string of length 1")
+// 	}
+// 	r := rune(v[0])
+// 	rs := []rune(it.s)
+// 	rs[it.i] = rune(r)
+// 	it.s = string(rs)
+// }
 
 // iter.FromSlice returns an iterator over a slice.
 // For example purposes only, this iterator implements
 // some of the optional interfaces mentioned earlier.
-func FromSlice[E any](s []E) Iter[E] {
-	return &sliceIter[E]{
-		s: s,
-		i: -1,
+func FromSlice[E any](s []E) iter.Seq[E] {
+	return func(yield func(E) bool) {
+		for i := range len(s) {
+			if !yield(s[i]) {
+				return
+			}
+		}
 	}
 }
 
@@ -58,26 +68,26 @@ type sliceIter[E any] struct {
 	i int
 }
 
-func (it *sliceIter[E]) Next() (E, bool) {
-	it.i++
-	ok := it.i >= 0 && it.i < len(it.s)
-	var v E
-	if ok {
-		v = it.s[it.i]
-	}
-	return v, ok
-}
+// func (it *sliceIter[E]) Next() (E, bool) {
+// 	it.i++
+// 	ok := it.i >= 0 && it.i < len(it.s)
+// 	var v E
+// 	if ok {
+// 		v = it.s[it.i]
+// 	}
+// 	return v, ok
+// }
 
-// Prev implements PrevIter.
-func (it *sliceIter[E]) Prev() {
-	it.i--
-}
+// // Prev implements PrevIter.
+// func (it *sliceIter[E]) Prev() {
+// 	it.i--
+// }
 
-// Set implements SetIter.
-func (it *sliceIter[E]) Set(v E) {
-	it.s[it.i] = v
-}
-
+// // Set implements SetIter.
+// func (it *sliceIter[E]) Set(v E) {
+// 	it.s[it.i] = v
+// }
+/*
 // NewNext takes a function that returns (v, bool) and returns
 // an iterator that calls the function until the second result is false.
 func NewNext[E any](f func() (E, bool)) Iter[E] {
@@ -154,3 +164,4 @@ func (it *genIter[E]) Stop() {
 	close(it.cmore)
 	<-it.cnext
 }
+*/

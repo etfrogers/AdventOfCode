@@ -2,10 +2,10 @@ package tree
 
 import (
 	"fmt"
+	"iter"
 	"slices"
 	"strings"
 	"utils"
-	"utils/iter"
 )
 
 type Node[T any] struct {
@@ -135,8 +135,8 @@ func (t *Tree[T]) Remove(node *Node[T]) {
 	node.parent = nil
 }
 
-func (t *Tree[T]) AllNodes() iter.Iter[*Node[T]] {
-	return iter.NewGen[*Node[T]](func(yield func(*Node[T]) bool) {
+func (t *Tree[T]) AllNodes() iter.Seq[*Node[T]] {
+	return func(yield func(*Node[T]) bool) {
 		t.Traverse(func(n *Node[T]) { yield(n) })
-	})
+	}
 }

@@ -1,9 +1,9 @@
 package counter
 
 import (
+	"iter"
 	"sort"
 	"strings"
-	"utils/iter"
 )
 
 type Counter[T comparable] struct {
@@ -19,9 +19,9 @@ func FromString(str string) Counter[string] {
 	return New(strings.Split(str, "")...)
 }
 
-func FromIter[T comparable](it iter.Iter[T]) Counter[T] {
+func FromIter[T comparable](it iter.Seq[T]) Counter[T] {
 	counter := New[T]()
-	for v, ok := it.Next(); ok; v, ok = it.Next() {
+	for v := range it {
 		counter.Add(v)
 	}
 	return counter

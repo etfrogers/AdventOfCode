@@ -51,7 +51,7 @@ func NewPipeline(lines []string) Pipeline {
 
 func (p *Pipeline) buildInitialGraph() {
 	it := p.tiles.IndIterator()
-	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+	for x, y := range it {
 		node := xyNode{x, y}
 		var north, south, east, west graph.Node
 		north = xyNode{x, y - 1}
@@ -248,7 +248,7 @@ func (p *Pipeline) EnclosedArea() int {
 	p.MarkupTiles()
 	counter := counter.New[string]()
 	it := p.markedTiles.LineIterator()
-	for line, ok := it.Next(); ok; line, ok = it.Next() {
+	for line := range it {
 		counter.Add(line...)
 	}
 	return counter.Get("I")
@@ -256,7 +256,7 @@ func (p *Pipeline) EnclosedArea() int {
 
 func (p *Pipeline) CleanupTiles() {
 	it := p.markedTiles.IndIterator()
-	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+	for x, y := range it {
 		id := GenerateID(x, y)
 		if n := p.mainLoop.Node(id); n == nil {
 			p.markedTiles.Set(x, y, ".")
@@ -320,7 +320,7 @@ func (p *Pipeline) MarkupTiles() {
 	p.CleanupTiles()
 	w := TileWalker{}
 	it := p.markedTiles.LineIterator()
-	for line, ok := it.Next(); ok; line, ok = it.Next() {
+	for line := range it {
 		w.WalkLine(line)
 	}
 }

@@ -2,10 +2,11 @@ package grid
 
 import (
 	"fmt"
+	"iter"
 	"slices"
 	"strings"
 	"utils"
-	"utils/iter"
+	i "utils/iter"
 )
 
 type Grid[E any] struct {
@@ -117,16 +118,28 @@ func (g *Grid[E]) String() string {
 }
 
 // two args: invert, and colMajor, both bool, default false
-func (g *Grid[E]) Iterator(args ...bool) iter.SetIter[E] {
-	return &gridIter[E]{g, g.IndIterator(args...)}
+func (g *Grid[E]) Iterator(args ...bool) iter.Seq[E] {
+	return func(yield func(E) bool) {
+		for x, y := range g.IndIterator(args...) {
+			if !yield(g.Get(x, y)) {
+				return
+			}
+		}
+	}
 }
 
-func (g *Grid[E]) LineIterator() iter.Iter[[]E] {
-	return &lineIter[E]{g, -1}
+func (g *Grid[E]) LineIterator() iter.Seq[[]E] {
+	return func(yield func([]E) bool) {
+		for y := range g.NRows() {
+			if !yield(g.GetRow(y)) {
+				return
+			}
+		}
+	}
 }
 
 // two args: invert, and colMajor, both bool, default false
-func (g *Grid[E]) IndIterator(args ...bool) iter.Iter2[int, int] {
+func (g *Grid[E]) IndIterator(args ...bool) iter.Seq2[int, int] {
 	invert, colMajor := false, false
 	switch len(args) {
 
@@ -138,7 +151,7 @@ func (g *Grid[E]) IndIterator(args ...bool) iter.Iter2[int, int] {
 	case 0:
 		// do nothing
 	default:
-		panic("function IndIterator take a maximu of two args")
+		panic("function IndIterator take a maximum of two args")
 	}
 	return newIndIter[E](g, invert, colMajor)
 }
@@ -146,148 +159,65 @@ func (g *Grid[E]) IndIterator(args ...bool) iter.Iter2[int, int] {
 func Map[E any, T any](g *Grid[E], fn func(E) T) Grid[T] {
 	var elem T
 	new := Full[T](g.NRows(), g.NCols(), elem)
-	old_it := g.Iterator()
-	new_it := new.Iterator()
-	for elem, ok := old_it.Next(); ok; elem, ok = old_it.Next() {
-		new_it.Next()
-		new_it.Set(fn(elem))
+	ind_it := g.IndIterator()
+	for x, y := range ind_it {
+		elem := g.Get(x, y)
+		new.Set(x, y, fn(elem))
 	}
 	return new
 }
 
-type gridIter[E any] struct {
-	grid *Grid[E]
-	inds iter.Iter2[int, int]
-}
-
-type lineIter[E any] struct {
-	grid *Grid[E]
-	i    int
-}
-
-type indIter[E any] struct {
-	grid     *Grid[E]
-	x, y     int
-	invert   bool
-	colMajor bool
-}
-
-func newIndIter[E any](g *Grid[E], invert, colMajor bool) *indIter[E] {
-	it := indIter[E]{grid: g, invert: invert, colMajor: colMajor}
-	if invert {
-		if colMajor {
-			it.x, it.y = g.NCols()-1, g.NRows()
-		} else {
-			it.x, it.y = g.NCols(), g.NRows()-1
+func newIndIter[E any](g *Grid[E], invert, colMajor bool) iter.Seq2[int, int] {
+	switch {
+	case !invert && !colMajor:
+		{
+			return func(yield func(int, int) bool) {
+				for y := range g.NRows() {
+					for x := range g.NCols() {
+						if !yield(x, y) {
+							return
+						}
+					}
+				}
+			}
 		}
-	} else {
-		if colMajor {
-			it.x, it.y = 0, -1
-		} else {
-			it.x, it.y = -1, 0
+	case invert && !colMajor:
+		{
+			return func(yield func(int, int) bool) {
+				for y := range i.CountDown(g.NRows()) {
+					for x := range i.CountDown(g.NCols()) {
+						if !yield(x, y) {
+							return
+						}
+					}
+				}
+			}
 		}
+	case !invert && colMajor:
+		{
+			return func(yield func(int, int) bool) {
+				for x := range g.NCols() {
+					for y := range g.NRows() {
+						if !yield(x, y) {
+							return
+						}
+					}
+				}
+			}
+		}
+	case invert && colMajor:
+		{
+			return func(yield func(int, int) bool) {
+				for x := range i.CountDown(g.NCols()) {
+					for y := range i.CountDown(g.NRows()) {
+						if !yield(x, y) {
+							return
+						}
+					}
+				}
+			}
+		}
+	default:
+		panic("Not implemented")
 	}
-	return &it
-}
-
-func (it *indIter[E]) Next() (x, y int, ok bool) {
-	if it.invert {
-		return it.prev()
-	} else {
-		return it.next()
-	}
-}
-
-func (it *indIter[E]) Prev() (x, y int, ok bool) {
-	if it.invert {
-		return it.next()
-	} else {
-		return it.prev()
-	}
-}
-
-func (it *indIter[E]) next() (x, y int, ok bool) {
-	if it.colMajor {
-		return it.colMajorNext()
-	} else {
-		return it.rowMajorNext()
-	}
-}
-
-func (it *indIter[E]) prev() (x, y int, ok bool) {
-	if it.colMajor {
-		return it.colMajorPrev()
-	} else {
-		return it.rowMajorPrev()
-	}
-}
-
-func (it *indIter[E]) colMajorNext() (x, y int, ok bool) {
-	it.y++
-	if it.y == it.grid.NRows() {
-		it.x++
-		it.y = 0
-	}
-	if it.x == it.grid.NCols() {
-		return -1, -1, false
-	}
-	return it.x, it.y, true
-}
-
-func (it *indIter[E]) rowMajorNext() (x, y int, ok bool) {
-	it.x++
-	if it.x == it.grid.NCols() {
-		it.y++
-		it.x = 0
-	}
-	if it.y == it.grid.NRows() {
-		return -1, -1, false
-	}
-	return it.x, it.y, true
-}
-
-func (it *indIter[E]) colMajorPrev() (x, y int, ok bool) {
-	it.y--
-	if it.y < 0 {
-		it.x--
-		it.y = it.grid.NRows() - 1
-	}
-	if it.x < 0 {
-		return -1, -1, false
-	}
-	return it.x, it.y, true
-}
-func (it *indIter[E]) rowMajorPrev() (x, y int, ok bool) {
-	it.x--
-	if it.x < 0 {
-		it.y--
-		it.x = it.grid.NCols() - 1
-	}
-	if it.y < 0 {
-		return -1, -1, false
-	}
-	return it.x, it.y, true
-}
-
-func (it *gridIter[E]) Next() (E, bool) {
-	x, y, ok := it.inds.Next()
-	if ok {
-		return it.grid.Get(x, y), true
-	} else {
-		var r E
-		return r, false
-	}
-}
-
-func (it *gridIter[E]) Set(val E) {
-	inds := it.inds.(*indIter[E])
-	it.grid.Set(inds.x, inds.y, val)
-}
-
-func (it *lineIter[E]) Next() ([]E, bool) {
-	it.i++
-	if it.i == it.grid.NRows() {
-		return nil, false
-	}
-	return it.grid.GetRow(it.i), true
 }

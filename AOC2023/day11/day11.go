@@ -88,8 +88,7 @@ func (im *SpaceImage) String() string {
 
 func (im *SpaceImage) FindGalaxies() []Galaxy {
 	galaxies := []Galaxy{}
-	it := im.IndIterator()
-	for x, y, ok := it.Next(); ok; x, y, ok = it.Next() {
+	for x, y := range im.IndIterator() {
 		if im.Get(x, y) == "#" {
 			galaxies = append(galaxies, Galaxy{x, y})
 		}
