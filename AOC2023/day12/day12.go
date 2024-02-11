@@ -1,11 +1,11 @@
 package main
 
 import (
-	"container/heap"
 	"fmt"
 	"slices"
 	"strings"
 	"utils"
+	"utils/heap"
 	"utils/stack"
 )
 
@@ -120,14 +120,14 @@ const NULL = rune(0)
 
 func (r *Record) NPossibleConfigs() int {
 	nPaths := 0
-	cursors := NewCursorHeap()
+	cursors := heap.NewSliceHeap[Cursor]()
 	baseCursor := Cursor{Position: -1, RemainingGroups: slices.Clone(r.Groups), Record: r, PathsToHere: 1}
 	cursors.Push(baseCursor)
 
 	for cursors.Len() > 0 {
-		cursor := heap.Pop(&cursors).(*Cursor)
-		for cursors.Len() > 0 && cursors.Peek().Equal(*cursor) {
-			equiv := heap.Pop(&cursors).(*Cursor)
+		cursor := cursors.PopH()
+		for cursors.Len() > 0 && cursors.Peek().Equal(cursor) {
+			equiv := cursors.PopH()
 			cursor.PathsToHere += equiv.PathsToHere
 		}
 		if cursor.Position == len(r.Listing)-1 {

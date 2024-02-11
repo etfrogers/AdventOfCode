@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 	"utils"
+	"utils/heap"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -102,7 +103,7 @@ func TestPart2(t *testing.T) {
 }
 
 func TestHeapPosOnly(t *testing.T) {
-	h := NewCursorHeap()
+	h := heap.NewSliceHeap[Cursor]()
 	h.PushH(Cursor{Position: 3})
 	h.PushH(Cursor{Position: 2})
 	h.PushH(Cursor{Position: 1})
@@ -118,7 +119,7 @@ func TestHeapPosOnly(t *testing.T) {
 
 func TestHeapGroups(t *testing.T) {
 	gs := [][]int{{4}, {1, 3, 5, 7}, {3, 6, 2, 7}, {1, 2, 3, 5, 7}, {1, 2, 3, 5, 7}, {2, 2, 3, 5, 7}}
-	h := NewCursorHeap()
+	h := heap.NewSliceHeap[Cursor]()
 	h.PushH(Cursor{Position: 3, RemainingGroups: gs[3]})
 	h.PushH(Cursor{Position: 3, RemainingGroups: gs[4]})
 	h.PushH(Cursor{Position: 3, RemainingGroups: gs[2]})
