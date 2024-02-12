@@ -65,6 +65,10 @@ func (g *Grid[E]) Size() (ncols, nrows int) {
 	return g.NCols(), g.NRows()
 }
 
+func (g *Grid[E]) NElem() int {
+	return g.NCols() * g.NRows()
+}
+
 func Full[E any](x, y int, content E) Grid[E] {
 	g := Grid[E]{make([][]E, y)}
 	for i := range g.data {
@@ -158,7 +162,7 @@ func (g *Grid[E]) IndIterator(args ...bool) iter.Seq2[int, int] {
 
 func Map[E any, T any](g *Grid[E], fn func(E) T) Grid[T] {
 	var elem T
-	new := Full[T](g.NRows(), g.NCols(), elem)
+	new := Full[T](g.NCols(), g.NRows(), elem)
 	ind_it := g.IndIterator()
 	for x, y := range ind_it {
 		elem := g.Get(x, y)
