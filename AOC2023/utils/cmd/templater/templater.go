@@ -77,7 +77,7 @@ func TestPart1(t *testing.T) {
 
 const modText string = `module day%s
 
-go 1.21
+go 1.22
 
 require github.com/stretchr/testify v1.8.4
 
