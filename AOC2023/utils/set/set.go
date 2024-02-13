@@ -1,6 +1,7 @@
 package set
 
 import (
+	"iter"
 	"reflect"
 	"sync"
 )
@@ -77,9 +78,7 @@ func (s *Set[T]) Remove(items ...T) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	for _, item := range items {
-		if _, ok := s.items[item]; ok {
-			delete(s.items, item)
-		}
+		delete(s.items, item)
 	}
 }
 
@@ -115,4 +114,14 @@ func (s *Set[T]) Clear() {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 	clear(s.items)
+}
+
+func (s *Set[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for item := range s.items {
+			if !yield(item) {
+				return
+			}
+		}
+	}
 }

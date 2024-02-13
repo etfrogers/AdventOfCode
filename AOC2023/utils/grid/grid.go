@@ -7,7 +7,14 @@ import (
 	"strings"
 	"utils"
 	i "utils/iter"
+
+	"github.com/google/go-cmp/cmp"
 )
+
+type Coord interface {
+	X() int
+	Y() int
+}
 
 type Grid[E any] struct {
 	data [][]E
@@ -15,6 +22,18 @@ type Grid[E any] struct {
 
 func (g *Grid[E]) Get(x, y int) E {
 	return g.data[y][x]
+}
+
+func (g *Grid[E]) GetC(c Coord) E {
+	return g.data[c.Y()][c.X()]
+}
+
+func (g *Grid[E]) Inside(x, y int) bool {
+	return x >= 0 && x < g.NCols() && y >= 0 && y < g.NRows()
+}
+
+func (g *Grid[E]) InsideC(c Coord) bool {
+	return g.Inside(c.X(), c.Y())
 }
 
 func (g *Grid[E]) Set(x, y int, val E) {
@@ -140,6 +159,17 @@ func (g *Grid[E]) LineIterator() iter.Seq[[]E] {
 			}
 		}
 	}
+}
+
+// Returns x and y coords of first occurence of the input val
+// If the value is not found, returns -1, -1
+func (g *Grid[E]) Find(val E) (xInd, yInd int) {
+	for x, y := range g.IndIterator() {
+		if cmp.Equal(g.Get(x, y), val) {
+			return x, y
+		}
+	}
+	return -1, -1
 }
 
 // two args: invert, and colMajor, both bool, default false

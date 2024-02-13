@@ -1,6 +1,9 @@
 package stack
 
-import "sync"
+import (
+	"iter"
+	"sync"
+)
 
 type (
 	Stack[T any] struct {
@@ -64,5 +67,16 @@ func (this *Stack[T]) Push(value T) {
 func (this *Stack[T]) PushAll(values ...T) {
 	for _, value := range values {
 		this.Push(value)
+	}
+}
+
+// All returns an iterator over all elements in the stack. Consumes the stack
+func (this *Stack[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for this.length > 0 {
+			if val, ok := this.Pop(); !(ok && yield(val)) {
+				return
+			}
+		}
 	}
 }

@@ -19,3 +19,4 @@ use ./AOC2023/day15
 use ./AOC2023/day16
 use ./AOC2023/day17
 use ./AOC2023/day19
+use ./AOC2023/day21
