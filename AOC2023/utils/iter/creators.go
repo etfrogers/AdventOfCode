@@ -2,6 +2,7 @@ package iter
 
 import (
 	"iter"
+	"math"
 )
 
 func FromString(s string) iter.Seq[string] {
@@ -14,9 +15,32 @@ func FromString(s string) iter.Seq[string] {
 	}
 }
 
-func Count(n int) iter.Seq[int] {
+// 3 optional args: start, stop, step
+// 0 inputs: counts from 0 in steps of 1 forever (or to MaxInt)
+// 1 input: stop (start=0, step=1)
+// 2 inputs: start, stop (step=1)
+// 3 inputs: start, stop, step
+func Count(args ...int) iter.Seq[int] {
+	start := 0
+	stop := math.MaxInt
+	step := 1
+	switch len(args) {
+	case 0:
+		// use defaults
+	case 1:
+		stop = args[0]
+	case 2:
+		start = args[0]
+		stop = args[1]
+	case 3:
+		start = args[0]
+		stop = args[1]
+		step = args[2]
+	default:
+		panic("invalid number of arguments. Count takes 0-3 integer arguments")
+	}
 	return func(yield func(int) bool) {
-		for i := range n {
+		for i := start; i < stop; i += step {
 			if !yield(i) {
 				return
 			}
