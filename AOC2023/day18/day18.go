@@ -100,7 +100,7 @@ func Compare(ts1, ts2 TrenchSquare) int {
 }
 
 func sameHorzDir(s1, s2 TrenchSquare) bool {
-	// can assume on off s1.to and s1.from is U, D
+	// can assume one off s1.to and s1.from is U, D
 	to1, to2 := s1.moveToHere, s2.moveToHere
 	if to1.isHorizontal() {
 		return to1 == to2
@@ -140,16 +140,37 @@ func (ts *TrenchSquare) purelyHorizontal() bool {
 	return ts.moveFromHere.isHorizontal() && ts.moveToHere.isHorizontal()
 }
 
-func (ts *TrenchSquare) connectedToH(other TrenchSquare, useFrom bool) bool {
-	if useFrom {
-		return ts.moveFromHere.isHorizontal() && ts.moveFromHere == other.moveToHere
-	} else {
-		return ts.moveToHere.isHorizontal() && ts.moveToHere == other.moveFromHere
+func (ts *TrenchSquare) verticalComponent() direction {
+	switch {
+	case ts.purelyVertical():
+		panic("cannot return vertical component for purely vertical square")
+	case ts.moveFromHere.isVertical():
+		return ts.moveFromHere
+	case ts.moveToHere.isVertical():
+		return ts.moveToHere
+	default:
+		panic("square does not have a vertical component")
 	}
+}
+
+func haveSameVerticalComponents(ts1, ts2 TrenchSquare) bool {
+	// Can assume that exactly one component of each is vertical
+	return ts1.verticalComponent() == ts2.verticalComponent()
+
 }
 
 func (t *Trench) Sort() {
 	slices.SortFunc(*t, Compare)
+}
+
+type Segment struct {
+	crossing bool
+	start    int
+	len      int
+}
+
+func (s Segment) end() int {
+	return s.start + s.len - 1
 }
 
 func (t *Trench) FilledArea(args ...image) int {
@@ -174,81 +195,48 @@ func (t *Trench) FilledArea(args ...image) int {
 			i++
 		}
 		currLine := (*t)[startI:i]
-		inside := false
-		var lastMoveTo, lastMoveFrom direction
-		for j, ts := range currLine {
-			if ts.moveToHere == 'U' || ts.moveToHere == 'D' || ts.moveFromHere == 'U' || ts.moveFromHere == 'D' {
-				// already established that at least one of them is U or D
-				// so if both U, or both D, then we are on a vertical line, and we toggle
-				toggleInside := ts.moveToHere == ts.moveFromHere
 
-				// the other case we toggle is if the start of oursegment came in from the same
-				// direction as we are no wbout to leave it...
-				// so: if we came in from up, and go out up
-				toggleInside = toggleInside ||
-					(lastMoveTo.isVertical() && (lastMoveTo == ts.moveFromHere)) || // covers leftward moving line...
-					(lastMoveFrom.isVertical() && (lastMoveFrom == ts.moveToHere))
-				lastMoveTo = ts.moveToHere
-				lastMoveFrom = ts.moveFromHere
-				movedOutside := false
-				movedInside := false
-
-				if toggleInside {
-					if inside {
-						movedOutside = true
-					} else {
-						movedInside = true
-					}
-					inside = !inside
-				}
-				notTouchingNeighbour := j > 0 && currLine[j-1].x+1 != currLine[j].x
-				// if movedOutside || (inside && notTouchingNeighbour && !movedInside) {
-				if movedOutside && notTouchingNeighbour || (inside && notTouchingNeighbour && !movedInside) {
-					// cannot happen on first square
-					segmentStartInd := findStartOfSegment(currLine, j)
-					if segmentStartInd == 0 {
-						continue
-					}
-					endX := currLine[segmentStartInd].x
-					startX := currLine[segmentStartInd-1].x
-					area += (endX - startX)
-					if render {
-						for x_ := range iter.Count(startX+1, endX) {
-							if im.Get(x_-im.minx, y-im.miny) == "+" {
-								panic("double counting")
-							}
-							im.Set(x_-im.minx, y-im.miny, "+")
-						}
-					}
-				} else {
-					// if !inside {
-					area++
-					// }
-				}
+		segments := make([]Segment, 0, len(currLine))
+		for j := 0; j < len(currLine); j++ {
+			ts := currLine[j]
+			segment := Segment{start: ts.x, len: 1}
+			if ts.purelyVertical() {
+				segment.crossing = true
 			} else {
-				//L or R
-				// if !inside {
-				area++
-				// }
+				segment.len = 2
+				for currLine[j+segment.len-1].purelyHorizontal() {
+					segment.len++
+				}
+				segment.crossing = haveSameVerticalComponents(currLine[j], currLine[j+segment.len-1])
+			}
+			segments = append(segments, segment)
+			j += segment.len - 1
+		}
+
+		inside := false
+		for j, seg := range segments {
+			// cannot happen on first segment
+			if inside {
+				precEndX := seg.start
+				precStartX := segments[j-1].end() + 1
+				area += (precEndX - precStartX)
+				if render {
+					for x_ := range iter.Count(precStartX+1, precEndX) {
+						if im.Get(x_-im.minx, y-im.miny) == "+" {
+							panic("double counting")
+						}
+						im.Set(x_-im.minx, y-im.miny, "+")
+					}
+				}
+			}
+			area += seg.len
+			if seg.crossing {
+				inside = !inside
 			}
 
 		}
 	}
 	return area
-}
-
-func findStartOfSegment(line []TrenchSquare, startInd int) int {
-	segmentStartInd := startInd
-	ts := line[startInd]
-	if !ts.purelyVertical() {
-		useFrom := ts.moveFromHere.isHorizontal()
-		for segmentStartInd > 0 &&
-			// sameHorzDir(currLine[j], currLine[segmentStartInd-1]) {
-			line[segmentStartInd].connectedToH(line[segmentStartInd-1], useFrom) {
-			segmentStartInd--
-		}
-	}
-	return segmentStartInd
 }
 
 func (t *Trench) buildImage() image {

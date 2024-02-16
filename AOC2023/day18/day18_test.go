@@ -124,25 +124,25 @@ func TestManual(t *testing.T) {
 	}
 }
 
-func TestSegment(t *testing.T) {
-	testCases := []struct {
-		exp   int
-		line  [][]direction
-		start int
-	}{
-		{0, [][]direction{{'L', 'L'}}, 0},
-		{0, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'L'}, {'L', 'L'}, {'L', 'L'}}, 4},
-		{3, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'U'}, {'U', 'L'}, {'L', 'U'}}, 4},
-		{0, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'U'}, {'U', 'L'}, {'L', 'L'}}, 2},
-	}
-	for i, tc := range testCases {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			line := utils.Map[[]direction, TrenchSquare](tc.line,
-				func(ds []direction) TrenchSquare {
-					return TrenchSquare{moveToHere: ds[0], moveFromHere: ds[1]}
-				})
-			actual := findStartOfSegment(line, tc.start)
-			assert.Equal(t, tc.exp, actual)
-		})
-	}
-}
+// func TestSegment(t *testing.T) {
+// 	testCases := []struct {
+// 		exp   int
+// 		line  [][]direction
+// 		start int
+// 	}{
+// 		{0, [][]direction{{'L', 'L'}}, 0},
+// 		{0, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'L'}, {'L', 'L'}, {'L', 'L'}}, 4},
+// 		{3, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'U'}, {'U', 'L'}, {'L', 'U'}}, 4},
+// 		{0, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'U'}, {'U', 'L'}, {'L', 'L'}}, 2},
+// 	}
+// 	for i, tc := range testCases {
+// 		t.Run(fmt.Sprint(i), func(t *testing.T) {
+// 			line := utils.Map[[]direction, TrenchSquare](tc.line,
+// 				func(ds []direction) TrenchSquare {
+// 					return TrenchSquare{moveToHere: ds[0], moveFromHere: ds[1]}
+// 				})
+// 			actual := findStartOfSegment(line, tc.start)
+// 			assert.Equal(t, tc.exp, actual)
+// 		})
+// 	}
+// }
