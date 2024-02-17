@@ -265,6 +265,40 @@ func (t *Trench) Render() {
 	printImage(t.buildImage())
 }
 
+func ShoelaceTrapezoid(is InstructionSet) int {
+	x1, y1 := 0, 0
+
+	areaTimes2 := 0
+	for i := range is {
+		inst := is[i]
+		x2, y2 := x1, y1
+		delta := inst.len // + 1
+		switch inst.dir {
+		case 'U':
+			y2 += delta
+		case 'D':
+			y2 -= delta
+		case 'L':
+			x2 -= delta
+		case 'R':
+			x2 += delta
+		}
+		areaTimes2 += (y1 + y2) * (x1 - x2)
+		fmt.Printf("%s %d:\tx1: %d, x2: %d, y1: %d, y2: %d\t(y1 + y2): %d, (x1 - x2): %d\tDelta %d/2, Area %d\n",
+			string(inst.dir), inst.len,
+			x1, x2, y1, y2, (y1 + y2), (x1 - x2), (y1+y2)*(x1-x2), areaTimes2/2)
+		x1, y1 = x2, y2
+	}
+	area := areaTimes2 / 2
+	if area < 0 {
+		area = -area
+	}
+	perimeter := utils.Sum(utils.Map(is, func(i Instruction) int { return i.len }))
+	area += perimeter / 2
+	area++ // add one to account for outer corners
+	return area
+}
+
 func main() {
 	lines := utils.ReadInput()
 	is := BuildInstructions(lines)

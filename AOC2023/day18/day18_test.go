@@ -124,25 +124,56 @@ func TestManual(t *testing.T) {
 	}
 }
 
-// func TestSegment(t *testing.T) {
-// 	testCases := []struct {
-// 		exp   int
-// 		line  [][]direction
-// 		start int
-// 	}{
-// 		{0, [][]direction{{'L', 'L'}}, 0},
-// 		{0, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'L'}, {'L', 'L'}, {'L', 'L'}}, 4},
-// 		{3, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'U'}, {'U', 'L'}, {'L', 'U'}}, 4},
-// 		{0, [][]direction{{'L', 'L'}, {'L', 'L'}, {'L', 'U'}, {'U', 'L'}, {'L', 'L'}}, 2},
-// 	}
-// 	for i, tc := range testCases {
-// 		t.Run(fmt.Sprint(i), func(t *testing.T) {
-// 			line := utils.Map[[]direction, TrenchSquare](tc.line,
-// 				func(ds []direction) TrenchSquare {
-// 					return TrenchSquare{moveToHere: ds[0], moveFromHere: ds[1]}
-// 				})
-// 			actual := findStartOfSegment(line, tc.start)
-// 			assert.Equal(t, tc.exp, actual)
-// 		})
-// 	}
-// }
+func TestShoelace(t *testing.T) {
+	is := BuildInstructions(testLines)
+	area := ShoelaceTrapezoid(is)
+	assert.Equal(t, 62, area)
+}
+
+func TestManualShoelace(t *testing.T) {
+	for i, test := range append(shoelaceTests, manualTests...) {
+		t.Run(fmt.Sprint(i), func(t *testing.T) {
+			lines := utils.Map(strings.Split(test.instructions, "\n"), appendColor)
+			is := BuildInstructions(lines)
+			area := ShoelaceTrapezoid(is)
+			assert.Equal(t, test.expectedArea, area)
+			tr := is.Walk()
+			tr.Render()
+		})
+	}
+}
+
+var shoelaceTests = []struct {
+	expectedArea int
+	instructions string
+}{
+	{16, `R 3
+D 3
+L 3
+U 3`},
+	{9, `R 2
+D 2
+L 2
+U 2`},
+	{8, `R 2
+D 1
+L 1
+D 1
+L 1
+U 2`},
+}
+
+func TestPart1(t *testing.T) {
+	lines := utils.ReadInput()
+	is := BuildInstructions(lines)
+	tr := is.Walk()
+	part1Answer := tr.FilledArea()
+	assert.Equal(t, 47675, part1Answer)
+}
+
+func TestPart1Shoelace(t *testing.T) {
+	lines := utils.ReadInput()
+	is := BuildInstructions(lines)
+	part1Answer := ShoelaceTrapezoid(is)
+	assert.Equal(t, 47675, part1Answer)
+}
