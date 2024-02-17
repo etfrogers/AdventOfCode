@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"slices"
+	"strconv"
 	"utils"
 	"utils/grid"
 	"utils/iter"
@@ -35,21 +36,45 @@ type Trench []TrenchSquare
 
 var instRe = regexp.MustCompile(`(L|R|U|D) (\d+) \(\#([0-9a-f]{6})\)`)
 
-func NewInstruction(line string) Instruction {
+func NewInstruction(line string, useHexCodes bool) Instruction {
 	tokens := instRe.FindStringSubmatch(line)
-	var dir direction
-	if len(tokens[1]) == 1 {
-		dir = direction(tokens[1][0])
+	if useHexCodes {
+		coded := tokens[3]
+		lenStr := coded[:5]
+		dirbit := coded[5:]
+		len, err := strconv.ParseInt(lenStr, 16, 64)
+		utils.Check(err)
+		var dir direction
+		switch dirbit {
+		case "0":
+			dir = 'R'
+		case "1":
+			dir = 'D'
+		case "2":
+			dir = 'L'
+		case "3":
+			dir = 'U'
+		default:
+			panic("unexpected value")
+		}
+		code := "000000"
+		return Instruction{dir, int(len), code}
 	} else {
-		panic("failed to find dir")
+		var dir direction
+		if len(tokens[1]) == 1 {
+			dir = direction(tokens[1][0])
+		} else {
+			panic("failed to find dir")
+		}
+		len := utils.AtoiError(tokens[2])
+		code := tokens[3]
+		return Instruction{dir, len, code}
 	}
-	len := utils.AtoiError(tokens[2])
-	code := tokens[3]
-	return Instruction{dir, len, code}
+
 }
 
-func BuildInstructions(lines []string) InstructionSet {
-	return utils.Map(lines, NewInstruction)
+func BuildInstructions(lines []string, useHexCodes bool) InstructionSet {
+	return utils.Map(lines, func(s string) Instruction { return NewInstruction(s, useHexCodes) })
 }
 
 func (is *InstructionSet) Walk() Trench {
@@ -284,9 +309,9 @@ func ShoelaceTrapezoid(is InstructionSet) int {
 			x2 += delta
 		}
 		areaTimes2 += (y1 + y2) * (x1 - x2)
-		fmt.Printf("%s %d:\tx1: %d, x2: %d, y1: %d, y2: %d\t(y1 + y2): %d, (x1 - x2): %d\tDelta %d/2, Area %d\n",
-			string(inst.dir), inst.len,
-			x1, x2, y1, y2, (y1 + y2), (x1 - x2), (y1+y2)*(x1-x2), areaTimes2/2)
+		// fmt.Printf("%s %d:\tx1: %d, x2: %d, y1: %d, y2: %d\t(y1 + y2): %d, (x1 - x2): %d\tDelta %d/2, Area %d\n",
+		// 	string(inst.dir), inst.len,
+		// 	x1, x2, y1, y2, (y1 + y2), (x1 - x2), (y1+y2)*(x1-x2), areaTimes2/2)
 		x1, y1 = x2, y2
 	}
 	area := areaTimes2 / 2
@@ -301,10 +326,14 @@ func ShoelaceTrapezoid(is InstructionSet) int {
 
 func main() {
 	lines := utils.ReadInput()
-	is := BuildInstructions(lines)
+	is := BuildInstructions(lines, false)
 	tr := is.Walk()
 	im := tr.buildImage()
 	part1Answer := tr.FilledArea(im)
-	printImage(im)
+	// printImage(im)
 	fmt.Printf("Day 18, Part 1 answer: %d\n", part1Answer)
+
+	is = BuildInstructions(lines, true)
+	part2Answer := ShoelaceTrapezoid(is)
+	fmt.Printf("Day 18, Part 2 answer: %d\n", part2Answer)
 }

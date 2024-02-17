@@ -27,17 +27,17 @@ U 2 (#7a21e3)`
 var testLines []string = strings.Split(testCase, "\n")
 
 func TestWalkLen(t *testing.T) {
-	is := BuildInstructions(testLines)
+	is := BuildInstructions(testLines, false)
 	tr := is.Walk()
 	assert.Equal(t, 38, len(tr))
 }
 
 func TestFilledArea(t *testing.T) {
-	is := BuildInstructions(testLines)
+	is := BuildInstructions(testLines, false)
 	tr := is.Walk()
 	im := tr.buildImage()
 	area := tr.FilledArea(im)
-	printImage(im)
+	// printImage(im)
 	assert.Equal(t, 62, area)
 }
 
@@ -112,20 +112,20 @@ func TestManual(t *testing.T) {
 	for i, test := range manualTests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			lines := utils.Map(strings.Split(test.instructions, "\n"), appendColor)
-			is := BuildInstructions(lines)
+			is := BuildInstructions(lines, false)
 			tr := is.Walk()
 			im := tr.buildImage()
 			expectedSquares := utils.Sum(utils.Map(is, func(i Instruction) int { return i.len }))
 			assert.Equal(t, expectedSquares, len(tr))
 			area := tr.FilledArea(im)
-			printImage(im)
+			// printImage(im)
 			assert.Equal(t, test.expectedArea, area)
 		})
 	}
 }
 
 func TestShoelace(t *testing.T) {
-	is := BuildInstructions(testLines)
+	is := BuildInstructions(testLines, false)
 	area := ShoelaceTrapezoid(is)
 	assert.Equal(t, 62, area)
 }
@@ -134,11 +134,9 @@ func TestManualShoelace(t *testing.T) {
 	for i, test := range append(shoelaceTests, manualTests...) {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			lines := utils.Map(strings.Split(test.instructions, "\n"), appendColor)
-			is := BuildInstructions(lines)
+			is := BuildInstructions(lines, false)
 			area := ShoelaceTrapezoid(is)
 			assert.Equal(t, test.expectedArea, area)
-			tr := is.Walk()
-			tr.Render()
 		})
 	}
 }
@@ -165,7 +163,7 @@ U 2`},
 
 func TestPart1(t *testing.T) {
 	lines := utils.ReadInput()
-	is := BuildInstructions(lines)
+	is := BuildInstructions(lines, false)
 	tr := is.Walk()
 	part1Answer := tr.FilledArea()
 	assert.Equal(t, 47675, part1Answer)
@@ -173,7 +171,43 @@ func TestPart1(t *testing.T) {
 
 func TestPart1Shoelace(t *testing.T) {
 	lines := utils.ReadInput()
-	is := BuildInstructions(lines)
+	is := BuildInstructions(lines, false)
 	part1Answer := ShoelaceTrapezoid(is)
 	assert.Equal(t, 47675, part1Answer)
+}
+
+var part2instructions string = `R 461937
+D 56407
+R 356671
+D 863240
+R 367720
+D 266681
+L 577262
+U 829975
+L 112010
+D 829975
+L 491645
+U 686074
+L 5411
+U 500254`
+
+func TestHexBuild(t *testing.T) {
+	lines := utils.Map(strings.Split(part2instructions, "\n"), appendColor)
+	expected := BuildInstructions(lines, false)
+	actual := BuildInstructions(testLines, true)
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestHexArea(t *testing.T) {
+	is := BuildInstructions(testLines, true)
+	area := ShoelaceTrapezoid(is)
+	assert.Equal(t, 952408144115, area)
+}
+
+func TestPart2(t *testing.T) {
+	lines := utils.ReadInput()
+	is := BuildInstructions(lines, true)
+	part1Answer := ShoelaceTrapezoid(is)
+	assert.Equal(t, 122103860427465, part1Answer)
 }
