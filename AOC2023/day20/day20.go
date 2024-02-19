@@ -15,6 +15,11 @@ type Machine struct {
 	flipFlopNames []string
 }
 
+type machineState struct {
+	nLow, nHigh int
+	cycles      int
+}
+
 type Inputs map[string]Pulse
 
 type Processor interface {
@@ -106,9 +111,24 @@ func BuildMachine(lines []string) Machine {
 }
 
 func (m *Machine) Run(n int) {
-	for i := range n {
-		fmt.Println(i)
-		m.RunCycle()
+	states := map[string]machineState{}
+	looped := false
+	for i := 0; i < n; i++ { // cannot use range n, as varible is modifed in loop
+		memory := m.MemoryState()
+		if prevState, ok := states[memory]; ok && !looped {
+			loopLength := i - prevState.cycles
+			deltaLow := m.nLow - prevState.nLow
+			deltaHigh := m.nHigh - prevState.nHigh
+			remaining := n - i
+			loopsLeft := remaining / loopLength
+			m.nHigh += deltaHigh * loopsLeft
+			m.nLow += deltaLow * loopsLeft
+			i += loopLength * loopsLeft
+			looped = true
+		} else {
+			states[memory] = machineState{nLow: m.nLow, nHigh: m.nHigh, cycles: i}
+			m.RunCycle()
+		}
 	}
 }
 
@@ -189,6 +209,16 @@ func (m *Conjunction) ProcessSignal(from string, pulse Pulse) []Signal {
 
 func (m *Machine) Checksum() int {
 	return m.nHigh * m.nLow
+}
+
+func (m *Machine) MemoryState() string {
+	return iter.ToString(iter.Map(func(name string) string {
+		if m.nodes[name].(*FlipFlop).isOn {
+			return "1"
+		} else {
+			return "0"
+		}
+	}, iter.FromSlice(m.flipFlopNames)))
 }
 
 func main() {

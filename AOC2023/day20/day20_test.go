@@ -63,11 +63,7 @@ func TestCase1Single(t *testing.T) {
 func TestCase1Multi(t *testing.T) {
 	m := BuildMachine(testLines1)
 	m.Run(1000)
-	for _, name := range []string{"a", "b", "c"} {
-		n, ok := m.nodes[name].(*FlipFlop)
-		assert.True(t, ok)
-		assert.Equal(t, false, n.isOn)
-	}
+	assert.Equal(t, "000", m.MemoryState())
 	assert.Equal(t, 8000, m.nLow)
 	assert.Equal(t, 4000, m.nHigh)
 	assert.Equal(t, 32000000, m.Checksum())
