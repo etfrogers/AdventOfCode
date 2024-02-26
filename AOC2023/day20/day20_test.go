@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 	"utils"
+	"utils/iter"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -50,7 +51,7 @@ func TestBuild(t *testing.T) {
 
 func TestCase1Single(t *testing.T) {
 	m := BuildMachine(testLines1)
-	m.RunCycle()
+	m.RunCycle(0, "", Low)
 	for _, name := range []string{"a", "b", "c"} {
 		n, ok := m.nodes[name].(*FlipFlop)
 		assert.True(t, ok)
@@ -81,4 +82,13 @@ func TestPart1(t *testing.T) {
 	m.Run(1000)
 	part1Answer := m.Checksum()
 	assert.Equal(t, 817896682, part1Answer)
+}
+
+func TestPart2(t *testing.T) {
+	lines := utils.ReadInput()
+	m := BuildMachine(lines)
+	loopLengths := m.MonitorSignalsTo("lb", High)
+	lens := iter.ToSlice(loopLengths)
+	part2Answer := utils.LCM(lens...)
+	assert.Equal(t, 250924073918341, part2Answer)
 }

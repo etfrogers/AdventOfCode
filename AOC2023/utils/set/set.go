@@ -39,6 +39,14 @@ func New[T comparable](items ...T) *Set[T] {
 	return &s
 }
 
+func NewI[T comparable](items iter.Seq[T]) *Set[T] {
+	s := *New[T]()
+	for item := range items {
+		s.Add(item)
+	}
+	return &s
+}
+
 func (s *Set[T]) Add(items ...T) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -102,6 +110,9 @@ func (s *Set[T]) Equals(other *Set[T]) bool {
 	other.mutex.RLock()
 	defer s.mutex.RUnlock()
 	defer other.mutex.RUnlock()
+	if s.Len() != other.Len() {
+		return false
+	}
 	return reflect.DeepEqual(s.items, other.items)
 }
 

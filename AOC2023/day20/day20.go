@@ -2,17 +2,23 @@ package main
 
 import (
 	"fmt"
+	"hash/fnv"
+	goIter "iter"
 	"regexp"
 	"strings"
 	"utils"
 	"utils/iter"
 	"utils/queue"
+	"utils/set"
+
+	"gonum.org/v1/gonum/graph"
 )
 
 type Machine struct {
-	nodes         map[string]Processor
-	nLow, nHigh   int
-	flipFlopNames []string
+	nodes           map[string]Processor
+	nLow, nHigh     int
+	flipFlopNames   []string
+	recieverModules map[string]Pulse
 }
 
 type machineState struct {
@@ -27,6 +33,7 @@ type Processor interface {
 	setOutputs([]string)
 	getOutputs() []string
 	setName(string)
+	graph.Node
 }
 
 type Module struct {
@@ -90,7 +97,7 @@ func BuildModule(line string) (string, Processor) {
 }
 
 func BuildMachine(lines []string) Machine {
-	m := Machine{nodes: make(map[string]Processor, len(lines)), nLow: 0, nHigh: 0}
+	m := Machine{nodes: make(map[string]Processor, len(lines)), nLow: 0, nHigh: 0, recieverModules: map[string]Pulse{}}
 	for _, line := range lines {
 		name, mod := BuildModule(line)
 		m.nodes[name] = mod
@@ -127,16 +134,24 @@ func (m *Machine) Run(n int) {
 			looped = true
 		} else {
 			states[memory] = machineState{nLow: m.nLow, nHigh: m.nHigh, cycles: i}
-			m.RunCycle()
+			m.RunCycle(i, "", Low)
 		}
+		// fmt.Println(i)
 	}
 }
 
-func (m *Machine) RunCycle() {
+func (m *Machine) RunCycle(iteration int, nodeId string, level Pulse) (matched bool, from string) {
 	pulses := queue.New[Signal]()
 	pulses.Push(Signal{to: "broadcaster", from: "button", pulse: Low})
 	for pulses.Len() > 0 {
 		sig := pulses.Pop()
+		if sig.to == nodeId && sig.pulse == level {
+			if matched {
+				panic("unexpected state")
+			}
+			matched = true
+			from = sig.from
+		}
 		switch sig.pulse {
 		case Low:
 			m.nLow++
@@ -148,11 +163,14 @@ func (m *Machine) RunCycle() {
 		reciever, ok := m.nodes[sig.to]
 		if !ok {
 			// receiver module not present: signal can be sent, but nothing should be processed
+			// just record it
+			m.recieverModules[sig.to] = sig.pulse
 			continue
 		}
 		newPulses := reciever.ProcessSignal(sig.from, sig.pulse)
 		pulses.Push(newPulses...)
 	}
+	return
 }
 
 func (m *Module) setOutputs(os []string) {
@@ -221,10 +239,52 @@ func (m *Machine) MemoryState() string {
 	}, iter.FromSlice(m.flipFlopNames)))
 }
 
+func (m *Machine) MonitorSignalsTo(nodeId string, signal Pulse) goIter.Seq[int] {
+
+	return func(yield func(int) bool) {
+		mi := m.nodes[nodeId].(*Conjunction).inputs
+		monitoredInputs := set.NewI(iter.Keys(mi))
+		detectedInputs := set.New[string]()
+		// fmt.Println(monitoredInputs.Items())
+		i := 0
+		for !monitoredInputs.Equals(detectedInputs) {
+			i++
+			matched, from := m.RunCycle(i, nodeId, signal)
+			if matched {
+				if !yield(i) {
+					return
+				}
+				detectedInputs.Add(from)
+			}
+			// if i%1000 == 0 {
+			// 	fmt.Println(i)
+			// 	fmt.Println(detectedInputs.Items())
+			// }
+		}
+
+	}
+}
+
+func (m Module) ID() int64 {
+	return int64(fnv64a(m.name))
+}
+func fnv64a(text string) uint64 {
+	algorithm := fnv.New64a()
+	algorithm.Write([]byte(text))
+	return algorithm.Sum64()
+}
+
 func main() {
 	lines := utils.ReadInput()
 	m := BuildMachine(lines)
 	m.Run(1000)
 	part1Answer := m.Checksum()
 	fmt.Printf("Day 20, Part 1 answer: %d\n", part1Answer)
+
+	m = BuildMachine(lines)
+	loopLengths := m.MonitorSignalsTo("lb", High)
+	lens := iter.ToSlice(loopLengths)
+	fmt.Println(lens)
+	part2Answer := utils.LCM(lens...)
+	fmt.Printf("Day 20, Part 2 answer: %d\n", part2Answer)
 }
