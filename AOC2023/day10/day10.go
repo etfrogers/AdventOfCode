@@ -179,25 +179,16 @@ func (p *Pipeline) MaxDistFromStart() int {
 	return maxDist
 }
 
-type direction int
-
-const (
-	up direction = iota
-	down
-	left
-	right
-)
-
 type TileWalker struct {
 	isInside       bool
 	isOnPipe       bool
-	lastPipeInFrom direction
+	lastPipeInFrom utils.Direction
 }
 
 func (w *TileWalker) Reset() {
 	w.isInside = false
 	w.isOnPipe = false
-	w.lastPipeInFrom = up
+	w.lastPipeInFrom = utils.UP
 }
 
 func (w *TileWalker) ToggleInside() {
@@ -212,20 +203,20 @@ func (w *TileWalker) WalkLine(chars []string) {
 			// do nothing
 		case "L":
 			w.isOnPipe = true
-			w.lastPipeInFrom = up
+			w.lastPipeInFrom = utils.UP
 		case "J":
 			w.isOnPipe = false
-			if w.lastPipeInFrom == down {
+			if w.lastPipeInFrom == utils.DOWN {
 				w.ToggleInside()
 			}
 		case "7":
 			w.isOnPipe = false
-			if w.lastPipeInFrom == up {
+			if w.lastPipeInFrom == utils.UP {
 				w.ToggleInside()
 			}
 		case "F":
 			w.isOnPipe = true
-			w.lastPipeInFrom = down
+			w.lastPipeInFrom = utils.DOWN
 		case ".":
 			if w.isInside {
 				chars[i] = "I"
@@ -267,7 +258,7 @@ func (p *Pipeline) CleanupTiles() {
 			if len(canReach) != 2 {
 				panic("Unexpected number of connections")
 			}
-			outDirs := set.New[direction]()
+			outDirs := set.New[utils.Direction]()
 			for _, to := range canReach {
 				outDirs.Add(directionFrom(n.(xyNode), to.(xyNode)))
 			}
@@ -276,39 +267,39 @@ func (p *Pipeline) CleanupTiles() {
 	}
 }
 
-func dirPairToChar(s *set.Set[direction]) (char string) {
+func dirPairToChar(s *set.Set[utils.Direction]) (char string) {
 	if s.Len() != 2 {
 		panic("wrong number of dirs")
 	}
 	switch {
-	case s.Equals(set.New(up, down)):
+	case s.Equals(set.New(utils.UP, utils.DOWN)):
 		char = "|"
-	case s.Equals(set.New(left, right)):
+	case s.Equals(set.New(utils.LEFT, utils.RIGHT)):
 		char = "-"
-	case s.Equals(set.New(left, up)):
+	case s.Equals(set.New(utils.LEFT, utils.UP)):
 		char = "J"
-	case s.Equals(set.New(left, down)):
+	case s.Equals(set.New(utils.LEFT, utils.DOWN)):
 		char = "7"
-	case s.Equals(set.New(right, up)):
+	case s.Equals(set.New(utils.RIGHT, utils.UP)):
 		char = "L"
-	case s.Equals(set.New(right, down)):
+	case s.Equals(set.New(utils.RIGHT, utils.DOWN)):
 		char = "F"
 	}
 	return
 }
 
-func directionFrom(node, to xyNode) (dir direction) {
+func directionFrom(node, to xyNode) (dir utils.Direction) {
 	dx := to.x - node.x
 	dy := to.y - node.y
 	switch {
 	case dx == -1 && dy == 0:
-		dir = left
+		dir = utils.LEFT
 	case dx == 1 && dy == 0:
-		dir = right
+		dir = utils.RIGHT
 	case dx == 0 && dy == -1:
-		dir = up
+		dir = utils.UP
 	case dx == 0 && dy == 1:
-		dir = down
+		dir = utils.DOWN
 	default:
 		panic("Unexpected case")
 	}

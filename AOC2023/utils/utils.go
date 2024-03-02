@@ -9,6 +9,19 @@ import (
 	"strings"
 )
 
+type Direction int
+
+const (
+	NORTH Direction = iota
+	EAST
+	SOUTH
+	WEST
+	UP    = NORTH
+	DOWN  = SOUTH
+	LEFT  = WEST
+	RIGHT = EAST
+)
+
 func Map[T, V any](ts []T, fn func(T) V) []V {
 	result := make([]V, len(ts))
 	for i, t := range ts {

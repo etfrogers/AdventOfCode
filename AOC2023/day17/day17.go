@@ -12,39 +12,30 @@ type CityMap struct {
 	grid.Grid[int]
 }
 
-type Direction int
-
-const (
-	NORTH Direction = iota
-	EAST
-	SOUTH
-	WEST
-)
-
 type visitKey struct {
 	x, y  int
-	dir   Direction
+	dir   utils.Direction
 	steps int
 }
 
 type Path struct {
 	totalLoss  int
 	x, y       int
-	dir        Direction
+	dir        utils.Direction
 	stepsInDir int
 	history    []visitKey
 	ultra      bool
 }
 
-func (d Direction) String() (s string) {
+func DirToString(d utils.Direction) (s string) {
 	switch d {
-	case NORTH:
+	case utils.NORTH:
 		s = "^"
-	case SOUTH:
+	case utils.SOUTH:
 		s = "v"
-	case EAST:
+	case utils.EAST:
 		s = ">"
-	case WEST:
+	case utils.WEST:
 		s = "<"
 	}
 	return s
@@ -54,24 +45,24 @@ func (p Path) Less(other heap.Heaper) bool {
 	return p.totalLoss < other.(Path).totalLoss
 }
 
-func (p Path) PossibleDirs() []Direction {
+func (p Path) PossibleDirs() []utils.Direction {
 	left := p.dir - 1
 	if left < 0 {
-		left = WEST
+		left = utils.WEST
 	}
 	right := (p.dir + 1) % 4
-	var dirs []Direction
+	var dirs []utils.Direction
 	if p.ultra {
 		switch {
 		case p.stepsInDir < 4:
-			dirs = []Direction{p.dir}
+			dirs = []utils.Direction{p.dir}
 		case p.stepsInDir >= 4 && p.stepsInDir < 10:
-			dirs = []Direction{left, right, p.dir}
+			dirs = []utils.Direction{left, right, p.dir}
 		case p.stepsInDir >= 10:
-			dirs = []Direction{left, right}
+			dirs = []utils.Direction{left, right}
 		}
 	} else {
-		dirs = []Direction{left, right}
+		dirs = []utils.Direction{left, right}
 		if p.stepsInDir < 3 {
 			dirs = append(dirs, p.dir)
 		}
@@ -99,25 +90,25 @@ func (p Path) Clone() Path {
 	}
 }
 
-func (p *Path) Move(m CityMap, dir Direction) (valid bool) {
+func (p *Path) Move(m CityMap, dir utils.Direction) (valid bool) {
 	p.history = append(p.history, p.VisitKey())
 	switch dir {
-	case NORTH:
+	case utils.NORTH:
 		p.y--
 		if p.y < 0 {
 			return false
 		}
-	case SOUTH:
+	case utils.SOUTH:
 		p.y++
 		if p.y >= m.NRows() {
 			return false
 		}
-	case EAST:
+	case utils.EAST:
 		p.x++
 		if p.x >= m.NCols() {
 			return false
 		}
-	case WEST:
+	case utils.WEST:
 		p.x--
 		if p.x < 0 {
 			return false
@@ -141,7 +132,7 @@ func NewMap(lines []string) CityMap {
 func (m CityMap) leastLoss(ultra bool) int {
 	paths := heap.NewSliceHeap[Path]()
 	visited := make(map[visitKey]int, m.NElem()*4*3)
-	paths.PushH(Path{x: 0, y: 0, dir: EAST, totalLoss: 0, stepsInDir: 0, ultra: ultra, history: []visitKey{}})
+	paths.PushH(Path{x: 0, y: 0, dir: utils.EAST, totalLoss: 0, stepsInDir: 0, ultra: ultra, history: []visitKey{}})
 	for {
 		path := paths.PopH()
 		for _, dir := range path.PossibleDirs() {
@@ -168,7 +159,7 @@ func (m CityMap) leastLoss(ultra bool) int {
 func (m *CityMap) Render(p Path) {
 	mapWithPath := grid.Map(&(m.Grid), func(s int) string { return fmt.Sprint(s) })
 	for _, s := range p.history {
-		symbol := s.dir.String()
+		symbol := DirToString(s.dir)
 		mapWithPath.Set(s.x, s.y, symbol)
 	}
 	fmt.Println(mapWithPath.String())
