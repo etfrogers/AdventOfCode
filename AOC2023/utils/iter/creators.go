@@ -7,8 +7,8 @@ import (
 
 func FromString(s string) iter.Seq[string] {
 	return func(yield func(string) bool) {
-		for i := range len(s) {
-			if !yield(string(s[i])) {
+		for _, char := range s {
+			if !yield(string(char)) {
 				return
 			}
 		}
