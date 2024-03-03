@@ -34,15 +34,7 @@ var ROCK_MAP map[Rock]string = map[Rock]string{
 	CUBE:  "#",
 }
 
-var ROCK_INV_MAP = invertMap(ROCK_MAP)
-
-func invertMap[T, V comparable](m map[T]V) map[V]T {
-	r := make(map[V]T)
-	for k, v := range m {
-		r[v] = k
-	}
-	return r
-}
+var ROCK_INV_MAP = utils.InvertMap(ROCK_MAP)
 
 func StringToRock(s string) Rock {
 	r, ok := ROCK_INV_MAP[s]

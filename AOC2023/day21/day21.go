@@ -4,41 +4,31 @@ import (
 	"fmt"
 	"utils"
 	"utils/grid"
+	"utils/grid/direction"
+	"utils/grid/pos"
 	"utils/set"
 )
 
-type Pos struct {
-	x, y int
-}
-
-func (p Pos) X() int { return p.x }
-func (p Pos) Y() int { return p.y }
-
-func (p Pos) Add(other Pos) Pos {
-	return Pos{p.x + other.x, p.y + other.y}
-}
-
 type Garden struct {
 	grid.Grid[string]
-	start Pos
+	start pos.Pos
 }
 
 func NewGarden(lines []string) Garden {
 	g := grid.NewFromStrings(lines)
 	startx, starty := g.Find("S")
-	return Garden{g, Pos{startx, starty}}
+	return Garden{g, pos.New(startx, starty)}
 }
 
-var STEPS = []Pos{{+1, 0}, {-1, 0}, {0, +1}, {0, -1}}
-
 func (g *Garden) FindStepOutcomes(n int) int {
-	paths := set.New[Pos]()
+	paths := set.New[pos.Pos]()
 	paths.Add(g.start)
 	for range n {
-		newPaths := set.New[Pos]()
+		newPaths := set.New[pos.Pos]()
 		for path := range paths.All() {
-			for _, step := range STEPS {
-				newPath := path.Add(step)
+			for dir := range direction.All() {
+				newPath := path.Clone()
+				newPath.Move(dir)
 
 				if g.InsideC(newPath) && g.GetC(newPath) != "#" {
 					newPaths.Add(newPath)
@@ -52,10 +42,10 @@ func (g *Garden) FindStepOutcomes(n int) int {
 	return nPaths
 }
 
-func (g *Garden) Render(ps *set.Set[Pos]) {
+func (g *Garden) Render(ps *set.Set[pos.Pos]) {
 	mapWithPath := g.Clone()
 	for s := range ps.All() {
-		mapWithPath.Set(s.x, s.y, "O")
+		mapWithPath.Set(s.X(), s.Y(), "O")
 	}
 	fmt.Println(mapWithPath.String())
 }

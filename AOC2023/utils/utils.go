@@ -9,19 +9,6 @@ import (
 	"strings"
 )
 
-type Direction int
-
-const (
-	NORTH Direction = iota
-	EAST
-	SOUTH
-	WEST
-	UP    = NORTH
-	DOWN  = SOUTH
-	LEFT  = WEST
-	RIGHT = EAST
-)
-
 func Map[T, V any](ts []T, fn func(T) V) []V {
 	result := make([]V, len(ts))
 	for i, t := range ts {
@@ -255,4 +242,12 @@ func RandSlice[T int | float64](length int, max int) []T {
 
 	}
 	return result
+}
+
+func InvertMap[K, V comparable](m map[K]V) map[V]K {
+	newMap := make(map[V]K)
+	for k, v := range m {
+		newMap[v] = k
+	}
+	return newMap
 }

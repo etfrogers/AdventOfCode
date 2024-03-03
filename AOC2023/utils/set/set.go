@@ -2,6 +2,7 @@ package set
 
 import (
 	"iter"
+	"maps"
 	"reflect"
 	"sync"
 )
@@ -135,4 +136,8 @@ func (s *Set[T]) All() iter.Seq[T] {
 			}
 		}
 	}
+}
+
+func (s *Set[T]) Clone() Set[T] {
+	return Set[T]{items: maps.Clone(s.items)}
 }

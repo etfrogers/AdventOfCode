@@ -24,8 +24,8 @@ var testLines []string = strings.Split(testCase, "\n")
 
 func TestStart(t *testing.T) {
 	g := NewGarden(testLines)
-	assert.Equal(t, 5, g.start.x)
-	assert.Equal(t, 5, g.start.y)
+	assert.Equal(t, 5, g.start.X())
+	assert.Equal(t, 5, g.start.Y())
 }
 
 func TestSteps(t *testing.T) {
