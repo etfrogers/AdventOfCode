@@ -6,14 +6,13 @@ import (
 	"utils/counter"
 	"utils/grid"
 	"utils/grid/direction"
+	"utils/grid/pos"
 	"utils/set"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/traverse"
 )
-
-const Y_FACTOR int = 10_000_000
 
 type Pipeline struct {
 	startPos graph.Node
@@ -22,19 +21,6 @@ type Pipeline struct {
 	mainLoop    simple.UndirectedGraph
 	tiles       grid.Grid[string]
 	markedTiles grid.Grid[string]
-}
-
-type xyNode struct {
-	x int
-	y int
-}
-
-func (n xyNode) ID() (id int64) {
-	return GenerateID(n.x, n.y)
-}
-
-func GenerateID(x, y int) (id int64) {
-	return int64(y*Y_FACTOR + x)
 }
 
 func NewPipeline(lines []string) Pipeline {
@@ -53,12 +39,16 @@ func NewPipeline(lines []string) Pipeline {
 func (p *Pipeline) buildInitialGraph() {
 	it := p.tiles.IndIterator()
 	for x, y := range it {
-		node := xyNode{x, y}
-		var north, south, east, west graph.Node
-		north = xyNode{x, y - 1}
-		south = xyNode{x, y + 1}
-		east = xyNode{x + 1, y}
-		west = xyNode{x - 1, y}
+		node := pos.NewNode(x, y)
+		var north, south, east, west pos.XYNode
+		north = node.Clone()
+		north.Move(direction.NORTH)
+		south = node.Clone()
+		south.Move(direction.SOUTH)
+		east = node.Clone()
+		east.Move(direction.EAST)
+		west = node.Clone()
+		west.Move(direction.WEST)
 
 		var edge1, edge2 graph.Edge
 		switch p.tiles.Get(x, y) {
@@ -249,7 +239,7 @@ func (p *Pipeline) EnclosedArea() int {
 func (p *Pipeline) CleanupTiles() {
 	it := p.markedTiles.IndIterator()
 	for x, y := range it {
-		id := GenerateID(x, y)
+		id := pos.GenerateID(x, y)
 		if n := p.mainLoop.Node(id); n == nil {
 			p.markedTiles.Set(x, y, ".")
 		}
@@ -261,7 +251,8 @@ func (p *Pipeline) CleanupTiles() {
 			}
 			outDirs := set.New[direction.Direction]()
 			for _, to := range canReach {
-				outDirs.Add(directionFrom(n.(xyNode), to.(xyNode)))
+				posn := n.(pos.XYNode)
+				outDirs.Add(posn.DirectionFrom(to.(pos.XYNode)))
 			}
 			p.markedTiles.Set(x, y, dirPairToChar(outDirs))
 		}
@@ -285,24 +276,6 @@ func dirPairToChar(s *set.Set[direction.Direction]) (char string) {
 		char = "L"
 	case s.Equals(set.New(direction.RIGHT, direction.DOWN)):
 		char = "F"
-	}
-	return
-}
-
-func directionFrom(node, to xyNode) (dir direction.Direction) {
-	dx := to.x - node.x
-	dy := to.y - node.y
-	switch {
-	case dx == -1 && dy == 0:
-		dir = direction.LEFT
-	case dx == 1 && dy == 0:
-		dir = direction.RIGHT
-	case dx == 0 && dy == -1:
-		dir = direction.UP
-	case dx == 0 && dy == 1:
-		dir = direction.DOWN
-	default:
-		panic("Unexpected case")
 	}
 	return
 }

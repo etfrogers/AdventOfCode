@@ -38,6 +38,20 @@ func Filter[E any](f func(E) bool, it iter.Seq[E]) iter.Seq[E] {
 	}
 }
 
+// Filter returns a new iterator that only contains the elements of it
+// for which f returns true.
+func Filter2[T1, T2 any](f func(T1, T2) bool, it iter.Seq2[T1, T2]) iter.Seq2[T1, T2] {
+	return func(yield func(T1, T2) bool) {
+		for e1, e2 := range it {
+			if f(e1, e2) {
+				if !yield(e1, e2) {
+					return
+				}
+			}
+		}
+	}
+}
+
 // Reduce reduces an iterator to a value using a function.
 func Reduce[E1, E2 any](f func(E2, E1) E2, it iter.Seq[E1], init E2) E2 {
 	r := init

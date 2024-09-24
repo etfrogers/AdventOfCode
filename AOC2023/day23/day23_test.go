@@ -44,7 +44,7 @@ func TestAllPaths(t *testing.T) {
 	assert.Equal(t, expected, lens)
 }
 
-func TestLongestPaths(t *testing.T) {
+func TestLongestPath(t *testing.T) {
 	expected := 94
 	tr := NewTrails(testLines)
 	len := tr.LongestPath()

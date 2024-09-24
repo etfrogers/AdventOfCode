@@ -40,6 +40,10 @@ func (g *Grid[E]) Set(x, y int, val E) {
 	g.data[y][x] = val
 }
 
+func (g *Grid[E]) SetC(c Coord, val E) {
+	g.data[c.Y()][c.X()] = val
+}
+
 // Can edit the returned values to set elements
 func (g *Grid[E]) GetRow(y int) []E {
 	return g.data[y]

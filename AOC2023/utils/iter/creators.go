@@ -91,6 +91,10 @@ func Zip[T1, T2 any](s1 iter.Seq[T1], s2 iter.Seq[T2]) iter.Seq2[T1, T2] {
 	}
 }
 
+func ZipSlice[T1, T2 any](s1 []T1, s2 []T2) iter.Seq2[T1, T2] {
+	return Zip(FromSlice(s1), FromSlice(s2))
+}
+
 func Keys[K comparable, V any](m map[K]V) iter.Seq[K] {
 	return func(yield func(K) bool) {
 		for k := range m {
