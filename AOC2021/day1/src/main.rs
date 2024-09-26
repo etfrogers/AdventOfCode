@@ -1,9 +1,8 @@
-use std::fs;
+use utils;
 
 fn main() {
-    let input = fs::read_to_string("day1/src/input.txt")
-        .expect("Should have been able to read the file");
-    let data = parse_input(&input);
+    let input = utils::input_lines(1);
+    let data = parse_input(input);
     let day1 = n_increases(&data);
 
     println!("Day 1 answer: {}", day1);
@@ -30,9 +29,9 @@ fn n_increases(data: &Vec<i32>) -> i32 {
     n
 }
 
-fn parse_input(input: &str) -> Vec<i32> {
+fn parse_input(input: Vec<String>) -> Vec<i32> {
     let lines: Vec<i32> = input
-        .lines()
+        .into_iter()
         .map(|x| x.parse::<i32>().expect("Failed to parse"))
         .collect();
     lines
@@ -46,14 +45,14 @@ mod test {
 
     #[test]
     fn test_n_increases() {
-        let data = parse_input(TEST_1);
+        let data = parse_input(utils::string_input_lines(TEST_1));
         let result = n_increases(&data);
         assert_eq!(result, 7);
     }
 
     #[test]
     fn test_sliding_window() {
-        let data = parse_input(TEST_1);
+        let data = parse_input(utils::string_input_lines(TEST_1));
         let result = windowed_sum(3, &data);
         assert_eq!(result[0], 607);
         assert_eq!(result[1], 618);
@@ -62,7 +61,7 @@ mod test {
 
     #[test]
     fn test_sample_part2(){
-        let data = parse_input(TEST_1);
+        let data = parse_input(utils::string_input_lines(TEST_1));
         let result = n_increases(&windowed_sum(3, &data));
         assert_eq!(result, 5)
     }
@@ -70,9 +69,8 @@ mod test {
     #[test]
     fn test_part1() {
         println!("{:?}", env::current_dir());
-        let input = fs::read_to_string("src/input.txt")
-        .expect("Should have been able to read the file");
-        let data = parse_input(&input);
+        let input = utils::input_lines(1);
+        let data = parse_input(input);
         let day1 = n_increases(&data);
         assert_eq!(day1, 1529)
     }
@@ -80,9 +78,8 @@ mod test {
     #[test]
     fn test_part2() {
         println!("{:?}", env::current_dir());
-        let input = fs::read_to_string("src/input.txt")
-        .expect("Should have been able to read the file");
-        let data = parse_input(&input);
+        let input = utils::input_lines(1);
+        let data = parse_input(input);
         let windowed = windowed_sum(3, &data);
         let day2 = n_increases(&windowed);
         assert_eq!(day2, 1567)
