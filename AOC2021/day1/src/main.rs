@@ -39,8 +39,6 @@ fn parse_input(input: Vec<String>) -> Vec<i32> {
 
 #[cfg(test)]
 mod test {
-    use std::env;
-
     use super::*;
 
     #[test]
@@ -68,7 +66,6 @@ mod test {
 
     #[test]
     fn test_part1() {
-        println!("{:?}", env::current_dir());
         let input = utils::input_lines(1);
         let data = parse_input(input);
         let day1 = n_increases(&data);
@@ -77,7 +74,6 @@ mod test {
 
     #[test]
     fn test_part2() {
-        println!("{:?}", env::current_dir());
         let input = utils::input_lines(1);
         let data = parse_input(input);
         let windowed = windowed_sum(3, &data);
