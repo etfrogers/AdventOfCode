@@ -17,5 +17,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "day3"
+version = "0.1.0"
+dependencies = [
+ "utils",
+]
+
+[[package]]
+name = "templater"
+version = "0.1.0"
+
+[[package]]
 name = "utils"
 version = "0.1.0"
