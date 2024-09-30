@@ -30,14 +30,20 @@ fn test_gamma_epsilon(){
 }
 
 #[test]
-fn test_build(){
+fn test_oxgen_co2(){
     let input = utils::string_input_lines(TEST_1);
     let report = Report::build(input);
-    assert_eq!(report.ints[0], 4);
-    assert_eq!(report.ints[1], 30);
-    assert_eq!(*report.ints.last().unwrap(), 10);
+    assert_eq!(report.oxygen_rating, 23);
+    assert_eq!(report.co2_rating, 10);
 }
 
+
+#[test]
+fn test_life_support_rating(){
+    let input = utils::string_input_lines(TEST_1);
+    let report = Report::build(input);
+    assert_eq!(report.life_support_rating(), 230);
+}
 
 #[test]
 fn test_part1() {
@@ -45,4 +51,12 @@ fn test_part1() {
     let report = Report::build(input);
     let part1 = report.power_consumption();
     assert_eq!(part1, 4160394);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(3);
+    let report = Report::build(input);
+    let part2 = report.life_support_rating();
+    assert_eq!(part2, 4125600);
 }

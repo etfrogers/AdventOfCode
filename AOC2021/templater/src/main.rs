@@ -32,7 +32,7 @@ const MAIN_TEXT: &str = "use utils;
 fn main() {
     let input = utils::input_lines(1{#day#});
     let part_1_answer = 0;
-    println!(\"Day {#day#} answer: {}\", part_1_answer);
+    println!(\"Day {#day#}, Part 1 answer: {}\", part_1_answer);
 
 }
 
