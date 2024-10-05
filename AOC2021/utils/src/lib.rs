@@ -1,5 +1,7 @@
 use std::fs;
 
+pub mod grid;
+
 pub fn input_lines(day: u8) -> Vec<String> {
     let data = match fs::read_to_string(format!("day{day}/input.txt")) {
         Ok(d) => d,
