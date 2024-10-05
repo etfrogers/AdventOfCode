@@ -42,16 +42,23 @@ mod test;
 
 ";
 
-const TEST_TEXT: &str = "use super::*;
+const TEST_TEXT: &str = "use rstest::{rstest, fixture};
+use super::*;
 
 const TEST_1: &str = \"...\";
+
+#[fixture]
+fn input() -> Vec<String> {
+    utils::string_input_lines(TEST_1)
+}
+
 
 #[test]
 fn test_part1() {
     let input = utils::input_lines({#day#});
 
-    let part1 = 0;
-    assert_eq!(part1, 1);
+    let part_1_answer = 0;
+    assert_eq!(part_1_answer, 1);
 }
 ";
 
@@ -63,4 +70,6 @@ edition = \"2021\"
 [dependencies]
 utils = { path = \"../utils\" }
 
+[dev-dependencies]
+rstest = \"0.23.0\"
 ";
