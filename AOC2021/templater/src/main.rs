@@ -10,7 +10,7 @@ fn main() {
 	println!("templater creating files for day {day}\n");
 	// let path = env::current_dir().unwrap();
     // println!("The current directory is {}", path.display());
-    
+
 	let p = String::from("day") + day;
 	let dirname = Path::new(&p);
 	let fname = "main.rs";
@@ -19,10 +19,11 @@ fn main() {
 	fs::create_dir(dirname.join("src")).expect("Failed to create src dir");
 
 	let toml_code = TOML_TEXT.replace("{#day#}", &day);
+	let test_code = TEST_TEXT.replace("{#day#}", &day);
 	let main_code = MAIN_TEXT.replace("{#day#}", &day);
 
 	fs::write(dirname.join("src").join(fname), main_code).expect("Failed to write main");
-	fs::write(dirname.join("src").join(test_name), TEST_TEXT).expect("Failed to write test");
+	fs::write(dirname.join("src").join(test_name), test_code).expect("Failed to write test");
 	fs::write(dirname.join("Cargo.toml"), toml_code).expect("Failed to write toml");
 	fs::write(dirname.join("input.txt"), "").expect("Failed to write input");
 }
@@ -48,7 +49,7 @@ const TEST_1: &str = \"...\";
 #[test]
 fn test_part1() {
     let input = utils::input_lines({#day#});
-    
+
     let part1 = 0;
     assert_eq!(part1, 1);
 }
