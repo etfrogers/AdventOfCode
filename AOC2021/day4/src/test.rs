@@ -51,19 +51,45 @@ fn test_parse_boards(input: Vec<String>){
 
 #[rstest]
 fn test_run_game(mut game: Game){
-    let (winner, last_call) = game.play_game().unwrap();
-    let score = winner.total_unmarked() * last_call;
-    assert_eq!(last_call, 24);
-    assert_eq!(winner.total_unmarked(), 188);
+    let winners = game.play_game();
+    let winner = &winners[0];
+    let score = winner.board.total_unmarked() * winner.last_call;
+    assert_eq!(winner.last_call, 24);
+    assert_eq!(winner.board.total_unmarked(), 188);
     assert_eq!(score, 4512);
 }
+
+#[rstest]
+fn test_run_game_part_2(mut game: Game){
+    let winners = game.play_game();
+    let winner = winners.last().unwrap();
+    let score = winner.board.total_unmarked() * winner.last_call;
+    // 148 * 13 = 1924.
+    assert_eq!(winner.last_call, 13);
+    assert_eq!(winner.board.total_unmarked(), 148);
+    assert_eq!(score, 1924);
+}
+
 
 #[test]
 fn test_part1() {
     let input = utils::input_lines(4);
     let mut game = Game::from_strs(input).expect("Failed to build game");
-    let (winner, last_call) = game.play_game().unwrap();
+    let winners = game.play_game();
+    let winner = &winners[0];
 
-    let part_1_answer = winner.total_unmarked() * last_call;
+    let part_1_answer = winner.board.total_unmarked() * winner.last_call;
     assert_eq!(part_1_answer, 58374);
+}
+
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(4);
+    let mut game = Game::from_strs(input).expect("Failed to build game");
+    let winners = game.play_game();
+    let winner = winners.last().unwrap();
+
+    let part_2_answer = winner.board.total_unmarked() * winner.last_call;
+    assert_eq!(part_2_answer, 11377);
 }

@@ -57,6 +57,10 @@ struct Game {
     boards: RefCell<Vec<Board>>,
 }
 
+struct Winner {
+    board: Board,
+    last_call: u16,
+}
 
 impl Game {
 
@@ -79,36 +83,51 @@ impl Game {
         })
     }
 
-    fn play_game<'a>(&mut self) -> Option<(Board, u16)> {
-
+    fn play_game(&mut self) -> Vec<Winner> {
+        let n_boards = self.boards.borrow().len();
+        let mut to_play: Vec<usize> = (0..n_boards).collect();
+        let mut winners: Vec<Winner> = Vec::with_capacity(n_boards);
         for number in self.calls.iter() {
-            // self.call_number(*number);
-            self.call_number(*number);
-            let boards = self.boards.borrow();
-            let winning_boards: Vec<_> = boards.iter().filter(|b| b.has_won()).collect();
-            match winning_boards.len() {
-                0 => (),
-                1 => return Some((winning_boards[0].clone(), *number)),
-                _ => panic!("multiple boards won")
-            };
+            to_play = Self::call_number_on(*number, &mut self.boards.borrow_mut(), to_play);
+            let mut new_play = Vec::with_capacity(to_play.len());
+            for board_ind in to_play {
+                let boards = self.boards.borrow();
+                let board = &boards[board_ind];
+                if board.has_won() {
+                    winners.push(Winner{
+                        board: board.clone(),
+                        last_call: *number,
+                    });
+                } else{
+                    new_play.push(board_ind);
+                }
+            }
+            to_play = new_play;
         };
-        None
+        winners
     }
 
-    fn call_number(&self, n: u16) {
-        for b in self.boards.borrow_mut().iter_mut() {
+    fn call_number_on(n: u16, boards: &mut Vec<Board>, to_play: Vec<usize>) -> Vec<usize> {
+        for b in boards.iter_mut() {
             b.call_number(n)
         }
+        to_play
     }
 }
 
 fn main() {
-    let input = utils::input_lines(14);
+    let input = utils::input_lines(4);
     let mut game = Game::from_strs(input).expect("Failed to build game");
-    let (winner, last_call) = game.play_game().unwrap();
+    let winners = game.play_game();
+    let winner = &winners[0];
+    let part_1_answer = winner.board.total_unmarked() * winner.last_call;
 
-    let part_1_answer = winner.total_unmarked() * last_call;
     println!("Day 4, Part 1 answer: {}", part_1_answer);
+
+    let last_winner = winners.last().unwrap();
+    let part_2_answer = last_winner.board.total_unmarked() * last_winner.last_call;
+
+    println!("Day 4, Part 1 answer: {}", part_2_answer);
 
 }
 
