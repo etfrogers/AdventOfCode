@@ -1,9 +1,6 @@
+use std::num::ParseIntError;
 
-use std::{
-    collections::HashMap, num::ParseIntError
-};
-
-use utils;
+use utils::{self, Counter};
 
 fn main() {
     let input = utils::input_lines(3);
@@ -14,7 +11,6 @@ fn main() {
 
     let part_2_answer = report.life_support_rating();
     println!("Day 3, Part 2 answer: {}", part_2_answer);
-
 }
 
 #[derive(Debug, Clone)]
@@ -25,38 +21,36 @@ struct Report {
     gamma_rate: u32,
     oxygen_rating: u32,
     co2_rating: u32,
-    most_common_bits: Vec<bool>
+    most_common_bits: Vec<bool>,
 }
 
 #[derive(Debug)]
 struct NoMostCommon;
 
-
 impl Report {
-
-
     fn to_bool(c: char) -> bool {
         match c {
             '1' => true,
             '0' => false,
-            _ => panic!("chars must be 0 or 1")
+            _ => panic!("chars must be 0 or 1"),
         }
     }
 
     fn to_char(b: &bool) -> char {
-        if *b{'1'} else {'0'}
+        if *b {
+            '1'
+        } else {
+            '0'
+        }
     }
 
     fn build(strs: Vec<String>) -> Report {
-        
         let chars: Vec<Vec<bool>> = strs
             .into_iter()
-            .map(|s| s.chars()
-                .map(Report::to_bool )
-                .collect())
+            .map(|s| s.chars().map(Report::to_bool).collect())
             .collect();
         let len = chars[1].len();
-        let mut report = Report{
+        let mut report = Report {
             len,
             chars,
             epsilon_rate: 0,
@@ -79,14 +73,10 @@ impl Report {
     }
 
     fn most_common_bit(array: &Vec<Vec<bool>>, pos: usize) -> Result<bool, NoMostCommon> {
-        let mut counts: HashMap<bool, u32> = HashMap::new();
-        for row in array {
-            let count = counts.entry(row[pos]).or_insert(0);
-            *count += 1;
-        }
+        let counts = Counter::new(array.iter().map(|row| row[pos]));
         let n_false = *counts.get(&false).unwrap_or(&0);
         let n_true = *counts.get(&true).unwrap_or(&0);
-        if  n_false > n_true {
+        if n_false > n_true {
             Ok(false)
         } else if n_false < n_true {
             Ok(true)
@@ -95,19 +85,24 @@ impl Report {
         }
     }
 
-    fn calculate_most_common_bits(& mut self) {
+    fn calculate_most_common_bits(&mut self) {
         self.most_common_bits = (0..self.len)
-            .map(|i| Report::most_common_bit(&self.chars, i)
-                .expect("Should always be most common bit in whole array"))
+            .map(|i| {
+                Report::most_common_bit(&self.chars, i)
+                    .expect("Should always be most common bit in whole array")
+            })
             .collect()
-    
     }
-    
+
     fn least_common_bits(&self) -> Vec<bool> {
-        self.most_common_bits.clone().into_iter().map(|c| !c).collect()
+        self.most_common_bits
+            .clone()
+            .into_iter()
+            .map(|c| !c)
+            .collect()
     }
-    
-    fn calculate_rates(& mut self) {
+
+    fn calculate_rates(&mut self) {
         self.calculate_most_common_bits();
         let gamma_chars = self.most_common_bits.clone();
         let epsilon_chars = self.least_common_bits();
@@ -131,26 +126,26 @@ impl Report {
             for i in 0..self.len {
                 let most_common = Report::most_common_bit(&valid, i);
                 let filter_bit = match most_common {
-                    Ok(most_common) => if use_most_common {
-                            most_common }
-                        else{
+                    Ok(most_common) => {
+                        if use_most_common {
+                            most_common
+                        } else {
                             !most_common
-                        },
+                        }
+                    }
                     Err(NoMostCommon) => use_most_common,
                 };
-                valid = valid.into_iter()
+                valid = valid
+                    .into_iter()
                     .filter(|line| line[i] == filter_bit)
                     .collect();
-                if valid.len() == 1{
+                if valid.len() == 1 {
                     return valid[0].clone();
                 }
             }
         }
     }
-
 }
-
 
 #[cfg(test)]
 mod test;
-
