@@ -25,7 +25,7 @@ where
     T: Eq + Hash;
 
 impl<T: Eq + Hash> Counter<T> {
-    pub fn new(input: impl Iterator<Item = T>) -> Self {
+    pub fn new(input: impl IntoIterator<Item = T>) -> Self {
         let mut counts: HashMap<T, u64> = HashMap::new();
         for item in input {
             let count = counts.entry(item).or_insert(0);
@@ -40,5 +40,11 @@ impl<T: Eq + Hash> Deref for Counter<T> {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<T: Eq + Hash + Clone> Counter<T> {
+    pub fn map(self) -> HashMap<T, u64> {
+        self.0
     }
 }
