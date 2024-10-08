@@ -9,29 +9,31 @@ struct Board {
 }
 
 impl Board {
-
     fn from_strs(s: Vec<String>) -> Result<Self, fmt::Error> {
-        let numbers = grid::Grid::new_from(s.iter()
-            .map(|s| s.split_whitespace().map(|x| x.parse()).collect())
-            .collect::<Result<Vec<Vec<u16>>, ParseIntError>>()
-            .map_err(|_| fmt::Error)?
+        let numbers = grid::Grid::new_from(
+            s.iter()
+                .map(|s| s.split_whitespace().map(|x| x.parse()).collect())
+                .collect::<Result<Vec<Vec<u16>>, ParseIntError>>()
+                .map_err(|_| fmt::Error)?,
         );
         let (x, y) = (numbers.n_rows(), numbers.n_cols());
-        Ok(Self{
+        Ok(Self {
             numbers,
-            matched: grid::Grid::full(x, y, false)
+            matched: grid::Grid::full(x, y, false),
         })
     }
 
     fn has_won(&self) -> bool {
-        let row_win = self.matched
+        let row_win = self
+            .matched
             .row_iter()
             .map(|row| row.iter().all(|x| *x))
             .any(|x| x);
-        let col_win = self.matched
-        .col_iter()
-        .map(|col| col.iter().all(|x| **x))
-        .any(|x| x);
+        let col_win = self
+            .matched
+            .col_iter()
+            .map(|col| col.iter().all(|x| **x))
+            .any(|x| x);
         col_win || row_win
     }
 
@@ -39,7 +41,6 @@ impl Board {
         if let Some(c) = self.numbers.find_c(n) {
             self.matched.set_c(&c, true);
         }
-
     }
 
     fn total_unmarked(&self) -> u16 {
@@ -63,21 +64,15 @@ struct Winner {
 }
 
 impl Game {
-
     fn from_strs(s: Vec<String>) -> Result<Self, fmt::Error> {
-        let mut tokens = s.split(|x| x==&"");
+        let mut tokens = s.split(|x| x == &"");
         let calls = tokens.next().ok_or(fmt::Error)?.get(0).ok_or(fmt::Error)?;
         let boards = tokens
             .map(|b| Board::from_strs(b.to_vec()))
             .collect::<Result<Vec<Board>, fmt::Error>>()?;
-        let calls: Vec<u16> = calls
-            .split(',')
-            .map(|s| s.parse::<u16>())
-            .collect::<Result<Vec<u16>, ParseIntError>>()
-            .map_err(|_| fmt::Error)?;
+        let calls: Vec<u16> = utils::csv_line(calls).map_err(|_| fmt::Error)?;
 
-
-        Ok(Self{
+        Ok(Self {
             calls,
             boards: RefCell::new(boards),
         })
@@ -94,16 +89,16 @@ impl Game {
                 let boards = self.boards.borrow();
                 let board = &boards[board_ind];
                 if board.has_won() {
-                    winners.push(Winner{
+                    winners.push(Winner {
                         board: board.clone(),
                         last_call: *number,
                     });
-                } else{
+                } else {
                     new_play.push(board_ind);
                 }
             }
             to_play = new_play;
-        };
+        }
         winners
     }
 
@@ -128,9 +123,7 @@ fn main() {
     let part_2_answer = last_winner.board.total_unmarked() * last_winner.last_call;
 
     println!("Day 4, Part 1 answer: {}", part_2_answer);
-
 }
 
 #[cfg(test)]
 mod test;
-
