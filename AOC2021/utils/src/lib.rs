@@ -1,4 +1,6 @@
-use std::{collections::HashMap, fs, hash::Hash, num::ParseIntError, ops::Deref};
+use std::{collections::HashMap, fs, hash::Hash, ops::Deref};
+
+use num;
 
 pub mod grid;
 
@@ -14,10 +16,12 @@ pub fn string_input_lines(data: &str) -> Vec<String> {
     data.lines().map(String::from).collect()
 }
 
-pub fn csv_line(line: &str) -> Result<Vec<u16>, ParseIntError> {
+pub fn csv_line<T: num::PrimInt + std::str::FromStr>(
+    line: &str,
+) -> Result<Vec<T>, <T as std::str::FromStr>::Err> {
     line.split(',')
-        .map(|s| s.parse::<u16>())
-        .collect::<Result<Vec<u16>, ParseIntError>>()
+        .map(|s| s.parse::<T>())
+        .collect::<Result<Vec<T>, _>>()
 }
 
 pub struct Counter<T>(HashMap<T, u64>)
