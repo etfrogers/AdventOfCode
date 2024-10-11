@@ -1,0 +1,11 @@
+[package]
+name = "day24"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+utils = { path = "../utils" }
+num = "0.4"
+
+[dev-dependencies]
+rstest = "0.23.0"
