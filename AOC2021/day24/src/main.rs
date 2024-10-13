@@ -161,9 +161,11 @@ fn main() {
     let program = utils::input_lines(24);
     let alu = ALU::new();
     let program = Program::build(program, &alu);
-    let mut input = vec![9; 14];
+    let mut input: Vec<i128> = vec![9; 14];
     input[13] = 10; // for first decrement to work
+    let mut j = 0;
     loop {
+        j += 1;
         let mut i = 13;
         loop {
             input[i] -= 1;
@@ -174,17 +176,19 @@ fn main() {
                 i -= 1;
             }
         }
-        if DEBUG {
+        if DEBUG && j % 10000000 == 0 {
             println!("{:?}", input);
         }
-        program.run(input.clone().into_iter().map(|x| BigInt::from(x)).collect());
-        if *alu.z.borrow() == BigInt::from(0) {
+        if prog::program3(&input) {
             break;
         }
+        // if *alu.z.borrow() == BigInt::from(0) {
+        //     break;
+        // }
     }
 
-    let part_1_answer = 0;
-    println!("Day 24, Part 1 answer: {}", part_1_answer);
+    let part_1_answer = input;
+    println!("Day 24, Part 1 answer: {:?}", part_1_answer);
 }
 
 #[cfg(test)]
