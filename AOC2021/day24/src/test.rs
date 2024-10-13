@@ -1,4 +1,5 @@
 use super::*;
+use prog::{program, program2, program3};
 use rstest::rstest;
 
 const TEST_NEG: &str = "inp x
@@ -45,9 +46,29 @@ fn test_binary(#[case] input: NumberType, #[case] output: &[NumberType]) {
 }
 
 #[test]
-fn test_part1() {
-    let input = utils::input_lines(24);
+fn test_hypothesis_part1() {
+    let hypothesis = vec![4, 1, 2, 9, 9, 9, 9, 4, 8, 7, 9, 9, 5, 9];
+    assert!(program3(&hypothesis));
+    assert!(program2(VecDeque::from(hypothesis.clone())));
+    assert!(program(VecDeque::from(hypothesis.clone())));
 
-    let part_1_answer = 0;
-    assert_eq!(part_1_answer, 1);
+    let program = utils::input_lines(24);
+    let alu = ALU::new();
+    let program = Program::build(program, &alu);
+    program.run(hypothesis);
+    assert_eq!(*alu.z.borrow(), 0);
+}
+
+#[test]
+fn test_hypothesis_part2() {
+    let hypothesis = vec![1, 1, 1, 8, 9, 5, 6, 1, 1, 1, 3, 2, 1, 6];
+    assert!(program3(&hypothesis));
+    assert!(program2(VecDeque::from(hypothesis.clone())));
+    assert!(program(VecDeque::from(hypothesis.clone())));
+
+    let program = utils::input_lines(24);
+    let alu = ALU::new();
+    let program = Program::build(program, &alu);
+    program.run(hypothesis);
+    assert_eq!(*alu.z.borrow(), 0);
 }

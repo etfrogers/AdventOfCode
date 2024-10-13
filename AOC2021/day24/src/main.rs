@@ -3,7 +3,7 @@ use std::{cell::RefCell, collections::VecDeque, fmt};
 use utils;
 
 type Register = RefCell<NumberType>;
-type NumberType = BigInt;
+type NumberType = i128;
 
 mod prog;
 
@@ -16,7 +16,8 @@ struct ALU {
 
 impl ALU {
     fn new() -> Self {
-        let init = || RefCell::new(BigInt::from(0));
+        // let init = || RefCell::new(BigInt::from(0));
+        let init = || RefCell::new(0);
         ALU {
             w: init(),
             x: init(),
@@ -164,21 +165,22 @@ fn main() {
     let mut input: Vec<i128> = vec![9; 14];
     input[13] = 10; // for first decrement to work
     let mut j = 0;
+
     loop {
-        j += 1;
-        let mut i = 13;
-        loop {
-            input[i] -= 1;
-            if input[i] > 0 {
-                break;
-            } else {
-                input[i] = 9;
-                i -= 1;
-            }
-        }
-        if DEBUG && j % 10000000 == 0 {
-            println!("{:?}", input);
-        }
+        // j += 1;
+        // let mut i = 13;
+        // loop {
+        //     input[i] -= 1;
+        //     if input[i] > 0 {
+        //         break;
+        //     } else {
+        //         input[i] = 9;
+        //         i -= 1;
+        //     }
+        // }
+        // if DEBUG && j % 10000000 == 0 {
+        //     println!("{:?}", input);
+        // }
         if prog::program3(&input) {
             break;
         }
