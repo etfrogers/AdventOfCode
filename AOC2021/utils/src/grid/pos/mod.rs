@@ -1,5 +1,8 @@
 // use std::collections::HashMap;
 
+use core::fmt;
+use std::str::FromStr;
+
 use super::{Coord, CoordType};
 // use super::direction::Direction;
 
@@ -10,20 +13,50 @@ use super::{Coord, CoordType};
 // 	(Direction::Up,    Pos::new(0, -1)),
 // ])
 
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Pos {
-	x: i32,
-	y: i32,
+    x: i32,
+    y: i32,
 }
 
 impl Pos {
-	pub fn new(x: i32, y: i32) -> Pos { return Pos{x, y} }
-	pub fn x(&self) -> i32 { return self.x }
-	pub fn y(&self) -> i32 { return self.y }
+    pub fn new(x: i32, y: i32) -> Pos {
+        return Pos { x, y };
+    }
+    pub fn x(&self) -> i32 {
+        return self.x;
+    }
+    pub fn y(&self) -> i32 {
+        return self.y;
+    }
 }
 
-impl Coord for Pos{
-	fn xc(&self) -> CoordType { return self.x.try_into().unwrap() }
-	fn yc(&self) -> CoordType   { return self.y.try_into().unwrap() }
+impl Coord for Pos {
+    fn xc(&self) -> CoordType {
+        return self.x.try_into().unwrap();
+    }
+    fn yc(&self) -> CoordType {
+        return self.y.try_into().unwrap();
+    }
+}
+
+impl FromStr for Pos {
+    type Err = fmt::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut tokens = s.split(",");
+        let x = tokens
+            .next()
+            .ok_or_else(|| fmt::Error)?
+            .parse::<i32>()
+            .map_err(|_| fmt::Error)?;
+        let y = tokens
+            .next()
+            .ok_or_else(|| fmt::Error)?
+            .parse::<i32>()
+            .map_err(|_| fmt::Error)?;
+        Ok(Self { x, y })
+    }
 }
 
 // fn (p *Pos) Add(other Pos) {
@@ -64,22 +97,22 @@ impl Coord for Pos{
 const Y_FACTOR int = 10_000_000
 
 type XYNode struct {
-	Pos
+    Pos
 }
 
 fn NewNode(x, y int) XYNode {
-	return XYNode{New(x, y)}
+    return XYNode{New(x, y)}
 }
 
 fn (n XYNode) ID() (id int64) {
-	return GenerateID(n.x, n.y)
+    return GenerateID(n.x, n.y)
 }
 
 fn GenerateID(x, y int) (id int64) {
-	return int64(y*Y_FACTOR + x)
+    return int64(y*Y_FACTOR + x)
 }
 
 fn (n *XYNode) Clone() XYNode {
-	return XYNode{n.Pos}
+    return XYNode{n.Pos}
 }
 */
