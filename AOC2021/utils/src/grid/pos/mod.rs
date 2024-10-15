@@ -1,7 +1,10 @@
 // use std::collections::HashMap;
 
 use core::fmt;
-use std::str::FromStr;
+use std::{
+    ops::{Add, AddAssign, Sub},
+    str::FromStr,
+};
 
 use super::{Coord, CoordType};
 // use super::direction::Direction;
@@ -13,7 +16,7 @@ use super::{Coord, CoordType};
 // 	(Direction::Up,    Pos::new(0, -1)),
 // ])
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Pos {
     x: i32,
     y: i32,
@@ -23,11 +26,37 @@ impl Pos {
     pub fn new(x: i32, y: i32) -> Pos {
         return Pos { x, y };
     }
+
     pub fn x(&self) -> i32 {
         return self.x;
     }
+
     pub fn y(&self) -> i32 {
         return self.y;
+    }
+
+    pub fn scale(&self, factor: i32) -> Pos {
+        Pos {
+            x: self.x * factor,
+            y: self.y * factor,
+        }
+    }
+
+    pub fn scale_assign(&mut self, factor: i32) {
+        self.x *= factor;
+        self.y *= factor;
+    }
+
+    pub fn div(&self, factor: i32) -> Pos {
+        Pos {
+            x: self.x / factor,
+            y: self.y / factor,
+        }
+    }
+
+    pub fn div_assign(&mut self, factor: i32) {
+        self.x /= factor;
+        self.y /= factor;
     }
 }
 
@@ -56,6 +85,35 @@ impl FromStr for Pos {
             .parse::<i32>()
             .map_err(|_| fmt::Error)?;
         Ok(Self { x, y })
+    }
+}
+
+impl Add for Pos {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Pos {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl AddAssign for Pos {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
+    }
+}
+
+impl Sub for Pos {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Pos {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
     }
 }
 

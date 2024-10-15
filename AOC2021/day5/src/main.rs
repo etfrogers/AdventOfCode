@@ -1,5 +1,5 @@
 use core::fmt;
-use std::str::FromStr;
+use std::{cmp::max, str::FromStr};
 
 use utils::{
     self,
@@ -22,10 +22,11 @@ impl FromStr for Line {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
 enum LineDir {
     Horz,
     Vert,
-    Other,
+    Diagonal,
 }
 
 impl Line {
@@ -35,7 +36,7 @@ impl Line {
         } else if self.from.y() == self.to.y() {
             LineDir::Horz
         } else {
-            LineDir::Other
+            LineDir::Diagonal
         }
     }
 
@@ -44,51 +45,39 @@ impl Line {
     }
 }
 
-struct LineIterator<'a> {
-    line: &'a Line,
-    fixed_coord: i32,
-    curr_move: i32,
-    target: i32,
-    inc: i32,
+struct LineIterator {
+    curr_pos: Pos,
+    target: Pos,
+    inc: Pos,
     exhausted: bool,
 }
 
-impl<'a> LineIterator<'a> {
-    fn new(line: &'a Line) -> Self {
-        let (fixed_coord, curr_move, target) = match line.direction() {
-            LineDir::Horz => (line.from.y(), line.from.x(), line.to.x()),
-            LineDir::Vert => (line.from.x(), line.from.y(), line.to.y()),
-            LineDir::Other => (0, 0, 0),
-        };
-        let inc = if target > curr_move { 1 } else { -1 };
+impl LineIterator {
+    fn new(line: &Line) -> Self {
+        let mut inc = line.to - line.from;
+        inc.div_assign(max(inc.x().abs(), inc.y().abs()));
         Self {
-            line,
-            fixed_coord,
-            curr_move,
-            target,
+            // subtract inc below, so that we can add it at the start of next()
+            curr_pos: line.from - inc,
+            target: line.to,
             inc,
             exhausted: false,
         }
     }
 }
 
-impl<'a> Iterator for LineIterator<'a> {
+impl Iterator for LineIterator {
     type Item = Pos;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.exhausted {
             return None;
         }
-        if self.curr_move == self.target {
+        self.curr_pos += self.inc;
+        if self.curr_pos == self.target {
             self.exhausted = true;
         }
-        let new_pos = match self.line.direction() {
-            LineDir::Horz => Some(Pos::new(self.curr_move, self.fixed_coord)),
-            LineDir::Vert => Some(Pos::new(self.fixed_coord, self.curr_move)),
-            LineDir::Other => None,
-        };
-        self.curr_move += self.inc;
-        new_pos
+        Some(self.curr_pos)
     }
 }
 
@@ -98,10 +87,13 @@ struct VentMap {
 }
 
 impl VentMap {
-    pub fn build(input: Vec<String>) -> Self {
+    pub fn build(input: &Vec<String>, ignore_diagonal: bool) -> Self {
         let lines: Vec<_> = input.iter().map(|s| Line::from_str(s).unwrap()).collect();
         let mut data = SparseGrid::new();
         for line in lines.iter() {
+            if ignore_diagonal && line.direction() == LineDir::Diagonal {
+                continue;
+            }
             for coord in line.iter() {
                 let count = data.entry(coord).or_insert(0);
                 *count += 1
@@ -120,10 +112,13 @@ impl VentMap {
 
 fn main() {
     let input = utils::input_lines(5);
-    let vm = VentMap::build(input);
-
+    let vm = VentMap::build(&input, true);
     let part_1_answer = vm.n_overlaps();
     println!("Day 5, Part 1 answer: {}", part_1_answer);
+
+    let vm = VentMap::build(&input, false);
+    let part_2_answer = vm.n_overlaps();
+    println!("Day 5, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]

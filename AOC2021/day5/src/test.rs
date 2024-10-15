@@ -19,21 +19,30 @@ fn input() -> Vec<String> {
 
 #[rstest]
 fn test_build(input: Vec<String>) {
-    let map = VentMap::build(input);
+    let map = VentMap::build(&input, true);
     assert_eq!(map._lines.len(), 10);
 }
 
 #[rstest]
 fn test_overlaps(input: Vec<String>) {
-    let map = VentMap::build(input);
+    let map = VentMap::build(&input, true);
     assert_eq!(map.n_overlaps(), 5)
 }
 
 #[test]
 fn test_part1() {
     let input = utils::input_lines(5);
-    let vm = VentMap::build(input);
+    let vm = VentMap::build(&input, true);
 
     let part_1_answer = vm.n_overlaps();
     assert_eq!(part_1_answer, 6397);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(5);
+    let vm = VentMap::build(&input, false);
+
+    let part_1_answer = vm.n_overlaps();
+    assert_eq!(part_1_answer, 22335);
 }
