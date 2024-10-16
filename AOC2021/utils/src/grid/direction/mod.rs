@@ -1,18 +1,17 @@
-
 #[derive(PartialEq, Eq, Hash)]
 pub enum Direction {
-	North,
-	East,
-	South,
-	West,
+    North,
+    East,
+    South,
+    West,
 }
 
 #[allow(non_upper_case_globals)]
 impl Direction {
-	pub const Up: Direction = Direction::North;
-	pub const Down: Direction = Direction::South;
-	pub const  Left: Direction = Direction::West;
-	pub const  Right: Direction = Direction::East;
+    pub const Up: Direction = Direction::North;
+    pub const Down: Direction = Direction::South;
+    pub const Left: Direction = Direction::West;
+    pub const Right: Direction = Direction::East;
 }
 
 // static all: Vec<Direction> = []Direction{NORTH, EAST, SOUTH, WEST}

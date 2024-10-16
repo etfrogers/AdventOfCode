@@ -1,20 +1,21 @@
-// use std::collections::HashMap;
-
 use core::fmt;
+use lazy_static::lazy_static;
 use std::{
+    collections::HashMap,
     ops::{Add, AddAssign, Sub},
     str::FromStr,
 };
 
-use super::{Coord, CoordType};
-// use super::direction::Direction;
+use super::direction::Direction;
 
-// const MOVES: HashMap<Direction, Pos> = HashMap::from([
-// 	(Direction::Right, Pos::new( 1, 0)),
-// 	(Direction::Left,  Pos::new(-1, 0)),
-// 	(Direction::Down,  Pos::new(0,  1)),
-// 	(Direction::Up,    Pos::new(0, -1)),
-// ])
+lazy_static! {
+    pub static ref MOVES: HashMap<Direction, Pos> = HashMap::from([
+        (Direction::Right, Pos::new(1, 0)),
+        (Direction::Left, Pos::new(-1, 0)),
+        (Direction::Down, Pos::new(0, 1)),
+        (Direction::Up, Pos::new(0, -1)),
+    ]);
+}
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Pos {
@@ -57,15 +58,6 @@ impl Pos {
     pub fn div_assign(&mut self, factor: i32) {
         self.x /= factor;
         self.y /= factor;
-    }
-}
-
-impl Coord for Pos {
-    fn xc(&self) -> CoordType {
-        return self.x.try_into().unwrap();
-    }
-    fn yc(&self) -> CoordType {
-        return self.y.try_into().unwrap();
     }
 }
 

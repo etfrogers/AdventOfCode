@@ -3,7 +3,7 @@ use std::{
     fmt::{self, Display},
 };
 
-use pos::Pos;
+use pos::{Pos, MOVES};
 
 pub mod direction;
 pub mod pos;
@@ -11,9 +11,17 @@ pub mod sparse;
 
 type CoordType = usize;
 
-pub trait Coord {
-    fn xc(&self) -> CoordType;
-    fn yc(&self) -> CoordType;
+struct Coord {
+    x: CoordType,
+    y: CoordType,
+}
+impl Coord {
+    fn from(p: &Pos) -> Option<Self> {
+        Some(Self {
+            x: p.x().try_into().ok()?,
+            y: p.y().try_into().ok()?,
+        })
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -39,24 +47,30 @@ impl<'a, E> Grid<E> {
         &self.data[y][x]
     }
 
-    pub fn get_c<C: Coord>(&self, coord: &C) -> &E {
-        &self.data[coord.xc()][coord.yc()]
+    pub fn get_c(&self, coord: &Pos) -> &E {
+        let coord = Coord::from(&coord).expect("Coord out of bounds - probably negative");
+        &self.data[coord.y][coord.x]
     }
 
     pub fn is_inside(&self, x: CoordType, y: CoordType) -> bool {
         x < self.n_cols() && y < self.n_rows()
     }
 
-    pub fn inside_c(&self, c: &impl Coord) -> bool {
-        self.is_inside(c.xc(), c.yc())
+    pub fn inside_c(&self, coord: &Pos) -> bool {
+        if let Some(c) = Coord::from(&coord) {
+            self.is_inside(c.x, c.y)
+        } else {
+            false
+        }
     }
 
     pub fn set(&mut self, x: CoordType, y: CoordType, val: E) {
         self.data[y][x] = val;
     }
 
-    pub fn set_c(&mut self, c: &impl Coord, val: E) {
-        self.data[c.yc()][c.xc()] = val;
+    pub fn set_c(&mut self, coord: &Pos, val: E) {
+        let coord = Coord::from(&coord).expect("Coord out of bounds - probably negative");
+        self.data[coord.y][coord.x] = val;
     }
 
     // Can edit the returned values to set elements
@@ -147,21 +161,30 @@ impl<'a, E> Grid<E> {
         ColumnIterator::new(&self)
     }
 
-    pub fn map<F, T: Clone>(&self, fun: F) -> Grid<T>
+    pub fn map<F, T>(&self, fun: F) -> Grid<T>
     where
         F: Fn(&E) -> T,
+        T: Clone + Default,
     {
-        let mut new = Grid::full(self.n_cols(), self.n_rows(), fun(self.get(0, 0)));
-        let ind_it = self.ind_iter(false, false);
-        for (x, y) in ind_it {
-            let elem = self.get(x, y);
-            new.set(x, y, fun(elem));
+        let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
+        let ind_it = self.coord_iter(false, false);
+        for c in ind_it {
+            let elem = self.get_c(&c);
+            new.set_c(&c, fun(elem));
         }
         new
     }
 
-    pub fn ind_iter(&self, invert: bool, col_major: bool) -> IndIterator<E> {
+    pub fn coord_iter(&self, invert: bool, col_major: bool) -> IndIterator<E> {
         return IndIterator::new(self, invert, col_major);
+    }
+
+    pub fn neighbours(&self, coord: &Pos) -> NeighbourIterator<E> {
+        NeighbourIterator::new(self, *coord)
+    }
+
+    pub fn neighbour_coords(&self, coord: &Pos) -> NeighbourCoordIterator<E> {
+        NeighbourCoordIterator::new(self, *coord)
     }
 }
 
@@ -227,10 +250,10 @@ impl<'a, E> IndIterator<'a, E> {
 }
 
 impl<'a, E> Iterator for IndIterator<'a, E> {
-    type Item = (CoordType, CoordType);
+    type Item = Pos;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_y == self.grid.n_cols() {
+        if self.current_y == self.grid.n_rows() {
             return None;
         }
 
@@ -240,7 +263,10 @@ impl<'a, E> Iterator for IndIterator<'a, E> {
             self.current_x = 0;
             self.current_y += 1;
         }
-        Some(inds)
+        Some(Pos::new(
+            inds.0.try_into().unwrap(),
+            inds.1.try_into().unwrap(),
+        ))
     }
 }
 
@@ -260,8 +286,8 @@ impl<'a, E> Iterator for GridIterator<'a, E> {
     type Item = &'a E;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (x, y) = self.ind_iter.next()?;
-        let item = self.ind_iter.grid.get(x, y);
+        let c = self.ind_iter.next()?;
+        let item = self.ind_iter.grid.get_c(&c);
         Some(item)
     }
 }
@@ -359,18 +385,14 @@ impl<E: PartialEq> Grid<E> {
     // Returns x and y coords of first occurence of the input val
     // If the value is not found, None
     pub fn find(&self, val: E) -> Option<(CoordType, CoordType)> {
-        for (x, y) in self.ind_iter(false, false) {
-            if *self.get(x, y) == val {
-                return Some((x, y));
-            }
-        }
-        None
+        let c = self.find_c(val)?;
+        Some((c.x().try_into().unwrap(), c.y().try_into().unwrap()))
     }
 
     pub fn find_c(&self, val: E) -> Option<Pos> {
-        for (x, y) in self.ind_iter(false, false) {
-            if *self.get(x, y) == val {
-                return Some(pos::Pos::new(x.try_into().unwrap(), y.try_into().unwrap()));
+        for c in self.coord_iter(false, false) {
+            if *self.get_c(&c) == val {
+                return Some(c);
             }
         }
         None
@@ -384,5 +406,64 @@ impl<E: Clone> Grid<E> {
             data.push(vec![content.clone(); x])
         }
         Grid { data }
+    }
+}
+
+pub struct NeighbourCoordIterator<'a, E> {
+    current_ind: usize,
+    positions: Vec<Pos>,
+    coord: Pos,
+    // current_x: CoordType,
+    // current_y: CoordType,
+    grid: &'a Grid<E>,
+    // _invert: bool,
+    // _col_major: bool,
+}
+
+impl<'a, E> NeighbourCoordIterator<'a, E> {
+    fn new(grid: &'a Grid<E>, coord: Pos) -> Self {
+        Self {
+            current_ind: 0,
+            coord,
+            positions: MOVES.values().copied().collect(),
+            grid,
+        }
+    }
+}
+
+impl<'a, E> Iterator for NeighbourCoordIterator<'a, E> {
+    type Item = Pos;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current_ind == self.positions.len() {
+            return None;
+        }
+        let p = self.coord + self.positions[self.current_ind];
+        self.current_ind += 1;
+        if self.grid.inside_c(&p) {
+            Some(p)
+        } else {
+            self.next()
+        }
+    }
+}
+
+pub struct NeighbourIterator<'a, E> {
+    n: NeighbourCoordIterator<'a, E>,
+}
+
+impl<'a, E> NeighbourIterator<'a, E> {
+    fn new(grid: &'a Grid<E>, coord: Pos) -> Self {
+        NeighbourIterator {
+            n: NeighbourCoordIterator::new(grid, coord),
+        }
+    }
+}
+
+impl<'a, E> Iterator for NeighbourIterator<'a, E> {
+    type Item = &'a E;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(self.n.grid.get_c(&self.n.next()?))
     }
 }
