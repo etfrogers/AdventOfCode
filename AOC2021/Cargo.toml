@@ -10,6 +10,7 @@ members = [
     "day6",
     "day7",
     "day9",
+    "day10",
     "day24",
     "templater",
     "utils",
