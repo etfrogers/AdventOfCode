@@ -30,10 +30,30 @@ fn test_total_risk(input: Vec<String>) {
     assert_eq!(hm.total_risk(), 15)
 }
 
+#[rstest]
+fn test_basins(input: Vec<String>) {
+    let hm = HeightMap::build(input);
+    assert_eq!(hm.basins().collect::<Vec<_>>(), vec![3, 9, 14, 9]);
+}
+
+#[rstest]
+fn test_basin_checksum(input: Vec<String>) {
+    let hm = HeightMap::build(input);
+    assert_eq!(hm.basin_checksum(), 1134);
+}
+
 #[test]
 fn test_part1() {
     let input = utils::input_lines(9);
     let hm = HeightMap::build(input);
     let part_1_answer = hm.total_risk();
     assert_eq!(part_1_answer, 526);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(9);
+    let hm = HeightMap::build(input);
+    let part_1_answer = hm.basin_checksum();
+    assert_eq!(part_1_answer, 1123524);
 }

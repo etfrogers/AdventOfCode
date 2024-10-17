@@ -1,7 +1,20 @@
-use utils::{self, grid::Grid};
+use std::{collections::HashSet, ops::Deref};
+
+use utils::{
+    self,
+    grid::{pos::Pos, Grid},
+};
 
 struct HeightMap {
     data: Grid<u32>,
+}
+
+impl Deref for HeightMap {
+    type Target = Grid<u32>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
 }
 
 impl HeightMap {
@@ -11,15 +24,15 @@ impl HeightMap {
         }
     }
 
+    fn low_point_coords(&self) -> impl Iterator<Item = Pos> + '_ {
+        self.coord_iter(false, false).filter(|c| {
+            let lp_value = self.get_c(c);
+            self.neighbours(&c).all(|v| v > lp_value)
+        })
+    }
+
     fn low_points(&self) -> impl Iterator<Item = u32> + '_ {
-        self.data
-            .coord_iter(false, false)
-            .filter(|c| {
-                let lp_value = self.data.get_c(c);
-                self.data.neighbours(&c).all(|v| v > lp_value)
-            })
-            .map(|c| self.data.get_c(&c))
-            .copied()
+        self.low_point_coords().map(|c| self.get_c(&c)).copied()
     }
 
     fn risk_levels(&self) -> impl Iterator<Item = u32> + '_ {
@@ -29,6 +42,29 @@ impl HeightMap {
     fn total_risk(&self) -> u32 {
         self.risk_levels().sum()
     }
+
+    fn basins(&self) -> impl Iterator<Item = u32> + '_ {
+        self.low_point_coords().map(|c| {
+            let mut to_visit = vec![c];
+            let mut members = HashSet::<Pos>::from([c]);
+            while to_visit.len() > 0 {
+                let coord = to_visit.pop().unwrap();
+                members.insert(coord);
+                for candiate in self.neighbour_coords(&coord) {
+                    if !members.contains(&candiate) && *self.get_c(&candiate) < 9 {
+                        to_visit.push(candiate);
+                    }
+                }
+            }
+            members.len().try_into().unwrap()
+        })
+    }
+
+    fn basin_checksum(&self) -> u32 {
+        let mut sizes: Vec<_> = self.basins().collect();
+        sizes.sort();
+        sizes[sizes.len() - 3..].iter().product()
+    }
 }
 
 fn main() {
@@ -36,6 +72,8 @@ fn main() {
     let hm = HeightMap::build(input);
     let part_1_answer = hm.total_risk();
     println!("Day 9, Part 1 answer: {}", part_1_answer);
+    let part_2_answer = hm.basin_checksum();
+    println!("Day 9, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
