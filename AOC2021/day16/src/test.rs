@@ -94,6 +94,19 @@ fn test_version_sum(#[case] input: &str, #[case] sum: u64) {
     assert_eq!(Packet::from_str(input).unwrap().version_sum(), sum)
 }
 
+#[rstest]
+#[case("C200B40A82", 3)]
+#[case("04005AC33890", 54)]
+#[case("880086C3E88112", 7)]
+#[case("CE00C43D881120", 9)]
+#[case("D8005AC2A8F0", 1)]
+#[case("F600BC2D8F", 0)]
+#[case("9C005AC2F8F0", 0)]
+#[case("9C0141080250320F1802104A08", 1)]
+fn test_value(#[case] input: &str, #[case] val: u64) {
+    assert_eq!(Packet::from_str(input).unwrap().value(), val)
+}
+
 #[test]
 fn test_part1() {
     let input = &utils::input_lines(16)[0];
@@ -101,4 +114,13 @@ fn test_part1() {
     let part_1_answer = pkt.version_sum();
 
     assert_eq!(part_1_answer, 860);
+}
+
+#[test]
+fn test_part2() {
+    let input = &utils::input_lines(16)[0];
+    let pkt = Packet::from_str(input).unwrap();
+    let part_2_answer = pkt.value();
+
+    assert_eq!(part_2_answer, 470949537659);
 }

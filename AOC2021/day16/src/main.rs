@@ -154,6 +154,39 @@ impl Packet {
         };
         sub_sum + self.version
     }
+
+    fn value(&self) -> u64 {
+        match &self.content {
+            PacketContent::Literal(val) => *val,
+            PacketContent::Operator {
+                length_type: _,
+                subpackets,
+            } => {
+                let pkt_iter = subpackets.iter().map(|p| p.value());
+                let check_is_two_long = || assert!(subpackets.len() == 2);
+                let to_int = |x: bool| if x { 1_u64 } else { 0 };
+                match self.type_id {
+                    0 => pkt_iter.sum(),     //sum
+                    1 => pkt_iter.product(), //product
+                    2 => pkt_iter.min().unwrap(),
+                    3 => pkt_iter.max().unwrap(),
+                    5 => {
+                        check_is_two_long();
+                        to_int(subpackets[0].value() > subpackets[1].value())
+                    }
+                    6 => {
+                        check_is_two_long();
+                        to_int(subpackets[0].value() < subpackets[1].value())
+                    }
+                    7 => {
+                        check_is_two_long();
+                        to_int(subpackets[0].value() == subpackets[1].value())
+                    }
+                    n => panic!("Unexpected value of type_id: {}", n),
+                }
+            }
+        }
+    }
 }
 
 impl FromStr for Packet {
@@ -170,6 +203,8 @@ fn main() {
     let pkt = Packet::from_str(input).unwrap();
     let part_1_answer = pkt.version_sum();
     println!("Day 16, Part 1 answer: {}", part_1_answer);
+    let part_2_answer = pkt.value();
+    println!("Day 16, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
