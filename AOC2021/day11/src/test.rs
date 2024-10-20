@@ -132,10 +132,19 @@ fn test_100_steps() {
     assert_eq!(octs.n_flashes, 1656);
 }
 
+#[rstest]
+fn test_synchro() {
+    let mut octs = Octopuses::build(utils::string_input_lines(TEST_2));
+    assert_eq!(octs.find_synchronised_flashes(), 195)
+}
+
 #[test]
 fn test_part1() {
     let input = utils::input_lines(11);
-
-    let part_1_answer = 0;
-    assert_eq!(part_1_answer, 1);
+    let mut octs = Octopuses::build(input);
+    for _ in 0..100 {
+        octs.step();
+    }
+    let part_1_answer = octs.n_flashes;
+    assert_eq!(part_1_answer, 1681);
 }

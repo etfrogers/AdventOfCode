@@ -37,7 +37,7 @@ impl Octopuses {
         str_grid.map(|s| String::from(*s).parse::<u8>().unwrap())
     }
 
-    fn step(&mut self) {
+    fn step(&mut self) -> bool {
         self.apply(|v| v + 1);
         let mut flashed = Grid::full(self.n_cols(), self.n_rows(), false);
         let mut new_flashes = true;
@@ -61,6 +61,15 @@ impl Octopuses {
                     self[c] = 0
                 }
             });
+        flashed.iter().all(|v| *v)
+    }
+
+    fn find_synchronised_flashes(&mut self) -> u64 {
+        let mut i = 1;
+        while !self.step() {
+            i += 1
+        }
+        i
     }
 }
 
@@ -77,12 +86,16 @@ impl FromStr for Octopuses {
 
 fn main() {
     let input = utils::input_lines(11);
-    let mut octs = Octopuses::build(input);
+    let mut octs = Octopuses::build(input.clone());
     for _ in 0..100 {
         octs.step();
     }
     let part_1_answer = octs.n_flashes;
     println!("Day 11, Part 1 answer: {}", part_1_answer);
+
+    let mut octs = Octopuses::build(input);
+    let part_2_answer = octs.find_synchronised_flashes();
+    println!("Day 11, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
