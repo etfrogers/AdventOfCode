@@ -39,7 +39,7 @@ impl Board {
 
     fn call_number(&mut self, n: u16) {
         if let Some(c) = self.numbers.find_c(n) {
-            self.matched.set_c(&c, true);
+            self.matched[c] = true;
         }
     }
 

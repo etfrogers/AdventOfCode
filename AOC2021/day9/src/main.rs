@@ -26,13 +26,13 @@ impl HeightMap {
 
     fn low_point_coords(&self) -> impl Iterator<Item = Pos> + '_ {
         self.coord_iter(false, false).filter(|c| {
-            let lp_value = self.get_c(c);
-            self.neighbours(&c).all(|v| v > lp_value)
+            let lp_value = self[*c];
+            self.neighbours(&c).all(|v| *v > lp_value)
         })
     }
 
     fn low_points(&self) -> impl Iterator<Item = u32> + '_ {
-        self.low_point_coords().map(|c| self.get_c(&c)).copied()
+        self.low_point_coords().map(|c| self[c])
     }
 
     fn risk_levels(&self) -> impl Iterator<Item = u32> + '_ {
@@ -51,7 +51,7 @@ impl HeightMap {
                 let coord = to_visit.pop().unwrap();
                 members.insert(coord);
                 for candiate in self.neighbour_coords(&coord) {
-                    if !members.contains(&candiate) && *self.get_c(&candiate) < 9 {
+                    if !members.contains(&candiate) && self[candiate] < 9 {
                         to_visit.push(candiate);
                     }
                 }

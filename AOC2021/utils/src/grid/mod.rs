@@ -1,6 +1,7 @@
 use std::{
     error::Error,
     fmt::{self, Display},
+    ops::{Index, IndexMut},
 };
 
 use pos::{Pos, MOVES};
@@ -43,15 +44,6 @@ impl fmt::Display for IndexError {
 }
 
 impl<'a, E> Grid<E> {
-    pub fn get(&self, x: CoordType, y: CoordType) -> &E {
-        &self.data[y][x]
-    }
-
-    pub fn get_c(&self, coord: &Pos) -> &E {
-        let coord = Coord::from(&coord).expect("Coord out of bounds - probably negative");
-        &self.data[coord.y][coord.x]
-    }
-
     pub fn is_inside(&self, x: CoordType, y: CoordType) -> bool {
         x < self.n_cols() && y < self.n_rows()
     }
@@ -62,15 +54,6 @@ impl<'a, E> Grid<E> {
         } else {
             false
         }
-    }
-
-    pub fn set(&mut self, x: CoordType, y: CoordType, val: E) {
-        self.data[y][x] = val;
-    }
-
-    pub fn set_c(&mut self, coord: &Pos, val: E) {
-        let coord = Coord::from(&coord).expect("Coord out of bounds - probably negative");
-        self.data[coord.y][coord.x] = val;
     }
 
     // Can edit the returned values to set elements
@@ -169,8 +152,8 @@ impl<'a, E> Grid<E> {
         let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
         let ind_it = self.coord_iter(false, false);
         for c in ind_it {
-            let elem = self.get_c(&c);
-            new.set_c(&c, fun(elem));
+            let elem = &self[c];
+            new[c] = fun(elem);
         }
         new
     }
@@ -185,6 +168,22 @@ impl<'a, E> Grid<E> {
 
     pub fn neighbour_coords(&self, coord: &Pos) -> NeighbourCoordIterator<E> {
         NeighbourCoordIterator::new(self, *coord)
+    }
+}
+
+impl<E> Index<Pos> for Grid<E> {
+    type Output = E;
+
+    fn index(&self, index: Pos) -> &Self::Output {
+        let coord = Coord::from(&index).expect("Coord out of bounds - probably negative");
+        &self.data[coord.y][coord.x]
+    }
+}
+
+impl<E> IndexMut<Pos> for Grid<E> {
+    fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
+        let coord = Coord::from(&index).expect("Coord out of bounds - probably negative");
+        &mut self.data[coord.y][coord.x]
     }
 }
 
@@ -287,7 +286,7 @@ impl<'a, E> Iterator for GridIterator<'a, E> {
 
     fn next(&mut self) -> Option<Self::Item> {
         let c = self.ind_iter.next()?;
-        let item = self.ind_iter.grid.get_c(&c);
+        let item = &self.ind_iter.grid[c];
         Some(item)
     }
 }
@@ -391,7 +390,7 @@ impl<E: PartialEq> Grid<E> {
 
     pub fn find_c(&self, val: E) -> Option<Pos> {
         for c in self.coord_iter(false, false) {
-            if *self.get_c(&c) == val {
+            if self[c] == val {
                 return Some(c);
             }
         }
@@ -464,6 +463,6 @@ impl<'a, E> Iterator for NeighbourIterator<'a, E> {
     type Item = &'a E;
 
     fn next(&mut self) -> Option<Self::Item> {
-        Some(self.n.grid.get_c(&self.n.next()?))
+        Some(&self.n.grid[self.n.next()?])
     }
 }
