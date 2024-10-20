@@ -1,5 +1,5 @@
-use super::Grid;
 use super::{pos::MOVES, CoordType, Pos};
+use super::{Coord, Grid};
 
 impl<'a, E> Grid<E> {
     pub fn iter(&'a self) -> GridIterator<'a, E> {
@@ -15,34 +15,36 @@ impl<'a, E> Grid<E> {
         ColumnIterator::new(&self)
     }
 
-    pub fn coord_iter(&self, invert: bool, col_major: bool) -> IndIterator<E> {
+    pub fn coord_iter(&self, invert: bool, col_major: bool) -> IndIterator {
         return IndIterator::new(self, invert, col_major);
     }
 
-    pub fn neighbours(&self, coord: &Pos) -> NeighbourIterator<E> {
+    pub fn neighbours(&self, coord: &Coord) -> NeighbourIterator<E> {
         NeighbourIterator::new(self, *coord)
     }
 
-    pub fn neighbour_coords(&self, coord: &Pos) -> NeighbourCoordIterator<E> {
+    pub fn neighbour_coords(&self, coord: &Coord) -> NeighbourCoordIterator<E> {
         NeighbourCoordIterator::new(self, *coord)
     }
 }
 
-pub struct IndIterator<'a, E> {
+pub struct IndIterator {
     current_x: CoordType,
     current_y: CoordType,
-    grid: &'a Grid<E>,
+    n_rows: usize,
+    n_cols: usize,
     _invert: bool,
     _col_major: bool,
 }
 
-impl<'a, E> IndIterator<'a, E> {
-    fn new(g: &'a Grid<E>, invert: bool, col_major: bool) -> Self {
+impl IndIterator {
+    fn new<E>(g: &Grid<E>, invert: bool, col_major: bool) -> Self {
         match (invert, col_major) {
             (false, false) => Self {
                 current_x: 0,
                 current_y: 0,
-                grid: g,
+                n_rows: g.n_rows(),
+                n_cols: g.n_cols(),
                 _invert: false,
                 _col_major: false,
             },
@@ -89,35 +91,34 @@ impl<'a, E> IndIterator<'a, E> {
     */
 }
 
-impl<'a, E> Iterator for IndIterator<'a, E> {
-    type Item = Pos;
+impl Iterator for IndIterator {
+    type Item = Coord;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.current_y == self.grid.n_rows() {
+        if self.current_y == self.n_rows {
             return None;
         }
 
         let inds = (self.current_x, self.current_y);
         self.current_x += 1;
-        if self.current_x == self.grid.n_cols() {
+        if self.current_x == self.n_cols {
             self.current_x = 0;
             self.current_y += 1;
         }
-        Some(Pos::new(
-            inds.0.try_into().unwrap(),
-            inds.1.try_into().unwrap(),
-        ))
+        Some(Coord::new(inds.0, inds.1))
     }
 }
 
 pub struct GridIterator<'a, E> {
-    ind_iter: IndIterator<'a, E>,
+    ind_iter: IndIterator,
+    grid: &'a Grid<E>,
 }
 
 impl<'a, E> GridIterator<'a, E> {
     fn new(g: &'a Grid<E>, invert: bool, col_major: bool) -> Self {
         GridIterator {
             ind_iter: IndIterator::new(g, invert, col_major),
+            grid: g,
         }
     }
 }
@@ -127,7 +128,7 @@ impl<'a, E> Iterator for GridIterator<'a, E> {
 
     fn next(&mut self) -> Option<Self::Item> {
         let c = self.ind_iter.next()?;
-        let item = &self.ind_iter.grid[c];
+        let item = &self.grid[c];
         Some(item)
     }
 }
@@ -189,7 +190,7 @@ impl<'a, E> Iterator for ColumnIterator<'a, E> {
 pub struct NeighbourCoordIterator<'a, E> {
     current_ind: usize,
     positions: Vec<Pos>,
-    coord: Pos,
+    coord: Coord,
     // current_x: CoordType,
     // current_y: CoordType,
     grid: &'a Grid<E>,
@@ -198,7 +199,7 @@ pub struct NeighbourCoordIterator<'a, E> {
 }
 
 impl<'a, E> NeighbourCoordIterator<'a, E> {
-    fn new(grid: &'a Grid<E>, coord: Pos) -> Self {
+    fn new(grid: &'a Grid<E>, coord: Coord) -> Self {
         Self {
             current_ind: 0,
             coord,
@@ -230,7 +231,7 @@ pub struct NeighbourIterator<'a, E> {
 }
 
 impl<'a, E> NeighbourIterator<'a, E> {
-    fn new(grid: &'a Grid<E>, coord: Pos) -> Self {
+    fn new(grid: &'a Grid<E>, coord: Coord) -> Self {
         NeighbourIterator {
             n: NeighbourCoordIterator::new(grid, coord),
         }

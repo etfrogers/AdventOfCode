@@ -1,7 +1,8 @@
 use std::{
     error::Error,
     fmt::{self, Display},
-    ops::{Index, IndexMut},
+    ops::{Add, Index, IndexMut},
+    str::FromStr,
 };
 
 use pos::Pos;
@@ -13,16 +14,32 @@ pub mod sparse;
 
 type CoordType = usize;
 
-struct Coord {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Coord {
     x: CoordType,
     y: CoordType,
 }
+
 impl Coord {
-    fn from(p: &Pos) -> Option<Self> {
+    fn new(x: CoordType, y: CoordType) -> Self {
+        Self { x, y }
+    }
+
+    pub fn from(p: &Pos) -> Option<Self> {
         Some(Self {
             x: p.x().try_into().ok()?,
             y: p.y().try_into().ok()?,
         })
+    }
+}
+
+impl Add<Pos> for Coord {
+    type Output = Pos;
+
+    fn add(self, rhs: Pos) -> Self::Output {
+        let x: i32 = self.x.try_into().expect("Overflow error");
+        let y: i32 = self.y.try_into().expect("Overflow error");
+        Pos::new(x + rhs.x(), y + rhs.y())
     }
 }
 
@@ -145,6 +162,13 @@ impl<'a, E> Grid<E> {
         }
         new
     }
+
+    pub fn apply(&mut self, fun: impl Fn(&E) -> E) {
+        let iter = self.coord_iter(false, false);
+        for pos in iter {
+            self.data[pos.y][pos.x] = fun(&self[pos])
+        }
+    }
 }
 
 impl<E> Index<Pos> for Grid<E> {
@@ -163,13 +187,37 @@ impl<E> IndexMut<Pos> for Grid<E> {
     }
 }
 
+impl<E> Index<Coord> for Grid<E> {
+    type Output = E;
+
+    fn index(&self, index: Coord) -> &Self::Output {
+        &self.data[index.y][index.x]
+    }
+}
+
+impl<E> IndexMut<Coord> for Grid<E> {
+    fn index_mut(&mut self, index: Coord) -> &mut Self::Output {
+        &mut self.data[index.y][index.x]
+    }
+}
+
+impl FromStr for Grid<char> {
+    type Err = fmt::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::new_from_strings(
+            s.lines().map(String::from).collect(),
+        ))
+    }
+}
+
 impl Grid<char> {
     pub fn new_from_strings(lines: Vec<String>) -> Self {
         let mut data = Vec::with_capacity(lines.len());
         for line in lines {
             data.push(line.chars().collect())
         }
-        Grid { data }
+        Grid::new_from(data)
     }
 }
 
@@ -203,10 +251,10 @@ impl<E: PartialEq> Grid<E> {
     // If the value is not found, None
     pub fn find(&self, val: E) -> Option<(CoordType, CoordType)> {
         let c = self.find_c(val)?;
-        Some((c.x().try_into().unwrap(), c.y().try_into().unwrap()))
+        Some((c.x, c.y))
     }
 
-    pub fn find_c(&self, val: E) -> Option<Pos> {
+    pub fn find_c(&self, val: E) -> Option<Coord> {
         for c in self.coord_iter(false, false) {
             if self[c] == val {
                 return Some(c);
