@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-pub fn program(mut input: VecDeque<i128>) -> bool {
+pub fn program(input: VecDeque<i128>) -> bool {
     let i = input.clone();
     // let (mut w, mut x, mut y, mut z) = (0, 0, 0, 0);
 
@@ -150,7 +150,7 @@ pub fn program(mut input: VecDeque<i128>) -> bool {
     stack.is_empty()
 }
 
-pub fn program2(mut input: VecDeque<i128>) -> bool {
+pub fn program2(input: VecDeque<i128>) -> bool {
     let i = input.clone();
 
     let mut stack = Vec::with_capacity(input.len());

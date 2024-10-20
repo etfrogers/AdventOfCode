@@ -1,10 +1,11 @@
-use num::BigInt;
+#![allow(dead_code)]
 use std::{cell::RefCell, collections::VecDeque, fmt};
 use utils;
 
 type Register = RefCell<NumberType>;
 type NumberType = i128;
 
+#[allow(dead_code)]
 mod prog;
 
 struct ALU {
@@ -161,10 +162,10 @@ const DEBUG: bool = true;
 fn main() {
     let program = utils::input_lines(24);
     let alu = ALU::new();
-    let program = Program::build(program, &alu);
+    let _program = Program::build(program, &alu);
     let mut input: Vec<i128> = vec![9; 14];
     input[13] = 10; // for first decrement to work
-    let mut j = 0;
+    let mut _j = 0;
 
     loop {
         // j += 1;
