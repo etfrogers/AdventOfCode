@@ -153,10 +153,6 @@ impl<'a, E> Grid<E> {
         GridIterator::new(&self, false, false)
     }
 
-    pub fn iter_mut(&'a mut self) -> GridIteratorMut<'a, E> {
-        GridIteratorMut::new(self)
-    }
-
     pub fn row_iter(&'a self) -> RowIterator<'a, E> {
         RowIterator::new(&self)
     }
@@ -198,12 +194,6 @@ pub struct IndIterator<'a, E> {
     grid: &'a Grid<E>,
     _invert: bool,
     _col_major: bool,
-}
-
-pub struct IndIteratorMut<'a, E> {
-    current_x: CoordType,
-    current_y: CoordType,
-    grid: &'a mut Grid<E>,
 }
 
 impl<'a, E> IndIterator<'a, E> {
@@ -259,38 +249,7 @@ impl<'a, E> IndIterator<'a, E> {
     */
 }
 
-impl<'a, E> IndIteratorMut<'a, E> {
-    fn new(g: &'a mut Grid<E>) -> Self {
-        Self {
-            current_x: 0,
-            current_y: 0,
-            grid: g,
-        }
-    }
-}
-
 impl<'a, E> Iterator for IndIterator<'a, E> {
-    type Item = Pos;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.current_y == self.grid.n_rows() {
-            return None;
-        }
-
-        let inds = (self.current_x, self.current_y);
-        self.current_x += 1;
-        if self.current_x == self.grid.n_cols() {
-            self.current_x = 0;
-            self.current_y += 1;
-        }
-        Some(Pos::new(
-            inds.0.try_into().unwrap(),
-            inds.1.try_into().unwrap(),
-        ))
-    }
-}
-
-impl<'a, E> Iterator for IndIteratorMut<'a, E> {
     type Item = Pos;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -315,10 +274,6 @@ pub struct GridIterator<'a, E> {
     ind_iter: IndIterator<'a, E>,
 }
 
-pub struct GridIteratorMut<'a, E> {
-    ind_iter: IndIteratorMut<'a, E>,
-}
-
 impl<'a, E> GridIterator<'a, E> {
     fn new(g: &'a Grid<E>, invert: bool, col_major: bool) -> Self {
         GridIterator {
@@ -334,25 +289,6 @@ impl<'a, E> Iterator for GridIterator<'a, E> {
         let c = self.ind_iter.next()?;
         let item = self.ind_iter.grid.get_c(&c);
         Some(item)
-    }
-}
-
-impl<'a, E> GridIteratorMut<'a, E> {
-    fn new(g: &'a mut Grid<E>) -> Self {
-        GridIteratorMut {
-            ind_iter: IndIteratorMut::new(g),
-        }
-    }
-}
-
-impl<'a, E> Iterator for GridIteratorMut<'a, E> {
-    type Item = &'a mut E;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let c = self.ind_iter.next()?;
-        let coord = Coord::from(&c).unwrap();
-        let ptr = &self.ind_iter.grid.data[coord.y].as_mut_ptr();
-        unsafe { Some(&mut *ptr.add(coord.x)) }
     }
 }
 
