@@ -1,4 +1,5 @@
-use super::{pos::MOVES, CoordType, Pos};
+use super::pos::DIAGONAL_MOVES;
+use super::{pos::ORTHOGONAL_MOVES, CoordType, Pos};
 use super::{Coord, Grid};
 
 impl<'a, E> Grid<E> {
@@ -19,12 +20,16 @@ impl<'a, E> Grid<E> {
         return IndIterator::new(self, invert, col_major);
     }
 
-    pub fn neighbours(&self, coord: &Coord) -> NeighbourIterator<E> {
-        NeighbourIterator::new(self, *coord)
+    pub fn neighbours(&self, coord: &Coord, include_diagonals: bool) -> NeighbourIterator<E> {
+        NeighbourIterator::new(self, *coord, include_diagonals)
     }
 
-    pub fn neighbour_coords(&self, coord: &Coord) -> NeighbourCoordIterator<E> {
-        NeighbourCoordIterator::new(self, *coord)
+    pub fn neighbour_coords(
+        &self,
+        coord: &Coord,
+        include_diagonals: bool,
+    ) -> NeighbourCoordIterator {
+        NeighbourCoordIterator::new(self, *coord, include_diagonals)
     }
 }
 
@@ -187,29 +192,31 @@ impl<'a, E> Iterator for ColumnIterator<'a, E> {
     }
 }
 
-pub struct NeighbourCoordIterator<'a, E> {
+pub struct NeighbourCoordIterator {
     current_ind: usize,
     positions: Vec<Pos>,
     coord: Coord,
-    // current_x: CoordType,
-    // current_y: CoordType,
-    grid: &'a Grid<E>,
-    // _invert: bool,
-    // _col_major: bool,
+    n_rows: usize,
+    n_cols: usize,
 }
 
-impl<'a, E> NeighbourCoordIterator<'a, E> {
-    fn new(grid: &'a Grid<E>, coord: Coord) -> Self {
+impl NeighbourCoordIterator {
+    fn new<E>(grid: &Grid<E>, coord: Coord, include_diagonals: bool) -> Self {
+        let mut positions: Vec<_> = ORTHOGONAL_MOVES.values().copied().collect();
+        if include_diagonals {
+            positions.append(&mut DIAGONAL_MOVES.clone());
+        }
         Self {
             current_ind: 0,
             coord,
-            positions: MOVES.values().copied().collect(),
-            grid,
+            positions,
+            n_cols: grid.n_cols(),
+            n_rows: grid.n_rows(),
         }
     }
 }
 
-impl<'a, E> Iterator for NeighbourCoordIterator<'a, E> {
+impl Iterator for NeighbourCoordIterator {
     type Item = Pos;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -218,8 +225,13 @@ impl<'a, E> Iterator for NeighbourCoordIterator<'a, E> {
         }
         let p = self.coord + self.positions[self.current_ind];
         self.current_ind += 1;
-        if self.grid.inside_c(&p) {
-            Some(p)
+        // conversion to Coord deals with possible negative values - will return none
+        if let Some(coord) = Coord::from(&p) {
+            if coord.x < self.n_cols && coord.y < self.n_rows {
+                Some(p)
+            } else {
+                self.next()
+            }
         } else {
             self.next()
         }
@@ -227,13 +239,15 @@ impl<'a, E> Iterator for NeighbourCoordIterator<'a, E> {
 }
 
 pub struct NeighbourIterator<'a, E> {
-    n: NeighbourCoordIterator<'a, E>,
+    n: NeighbourCoordIterator,
+    grid: &'a Grid<E>,
 }
 
 impl<'a, E> NeighbourIterator<'a, E> {
-    fn new(grid: &'a Grid<E>, coord: Coord) -> Self {
+    fn new(grid: &'a Grid<E>, coord: Coord, include_diagonals: bool) -> Self {
         NeighbourIterator {
-            n: NeighbourCoordIterator::new(grid, coord),
+            n: NeighbourCoordIterator::new(grid, coord, include_diagonals),
+            grid,
         }
     }
 }
@@ -242,6 +256,6 @@ impl<'a, E> Iterator for NeighbourIterator<'a, E> {
     type Item = &'a E;
 
     fn next(&mut self) -> Option<Self::Item> {
-        Some(&self.n.grid[self.n.next()?])
+        Some(&self.grid[self.n.next()?])
     }
 }

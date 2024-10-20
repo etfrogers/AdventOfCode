@@ -9,11 +9,20 @@ use std::{
 use super::direction::Direction;
 
 lazy_static! {
-    pub static ref MOVES: HashMap<Direction, Pos> = HashMap::from([
+    pub static ref ORTHOGONAL_MOVES: HashMap<Direction, Pos> = HashMap::from([
         (Direction::Right, Pos::new(1, 0)),
         (Direction::Left, Pos::new(-1, 0)),
         (Direction::Down, Pos::new(0, 1)),
         (Direction::Up, Pos::new(0, -1)),
+    ]);
+}
+
+lazy_static! {
+    pub static ref DIAGONAL_MOVES: Vec<Pos> = Vec::from([
+        Pos::new(-1, -1),
+        Pos::new(-1, 1),
+        Pos::new(1, -1),
+        Pos::new(1, 1),
     ]);
 }
 

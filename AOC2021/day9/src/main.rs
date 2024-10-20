@@ -2,7 +2,7 @@ use std::{collections::HashSet, ops::Deref};
 
 use utils::{
     self,
-    grid::{pos::Pos, Grid},
+    grid::{Coord, Grid},
 };
 
 struct HeightMap {
@@ -24,10 +24,10 @@ impl HeightMap {
         }
     }
 
-    fn low_point_coords(&self) -> impl Iterator<Item = Pos> + '_ {
+    fn low_point_coords(&self) -> impl Iterator<Item = Coord> + '_ {
         self.coord_iter(false, false).filter(|c| {
             let lp_value = self[*c];
-            self.neighbours(&c).all(|v| *v > lp_value)
+            self.neighbours(c, false).all(|v| *v > lp_value)
         })
     }
 
@@ -46,13 +46,14 @@ impl HeightMap {
     fn basins(&self) -> impl Iterator<Item = u32> + '_ {
         self.low_point_coords().map(|c| {
             let mut to_visit = vec![c];
-            let mut members = HashSet::<Pos>::from([c]);
+            let mut members = HashSet::<Coord>::from([c]);
             while to_visit.len() > 0 {
                 let coord = to_visit.pop().unwrap();
                 members.insert(coord);
-                for candiate in self.neighbour_coords(&coord) {
-                    if !members.contains(&candiate) && self[candiate] < 9 {
-                        to_visit.push(candiate);
+                for pos in self.neighbour_coords(&coord, false) {
+                    let candidate = Coord::from(&pos).unwrap();
+                    if !members.contains(&candidate) && self[candidate] < 9 {
+                        to_visit.push(candidate);
                     }
                 }
             }
