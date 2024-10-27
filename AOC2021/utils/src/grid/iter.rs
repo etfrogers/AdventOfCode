@@ -1,6 +1,8 @@
+use super::pos::Coord;
+use super::pos::CoordType;
 use super::pos::DIAGONAL_MOVES;
-use super::{pos::ORTHOGONAL_MOVES, CoordType, Pos};
-use super::{Coord, Grid};
+use super::Grid;
+use super::{pos::ORTHOGONAL_MOVES, Pos};
 
 impl<'a, E> Grid<E> {
     pub fn iter(&'a self) -> GridIterator<'a, E> {
@@ -223,11 +225,11 @@ impl Iterator for NeighbourCoordIterator {
         if self.current_ind == self.positions.len() {
             return None;
         }
-        let p = self.coord + self.positions[self.current_ind];
+        let p = self.coord.as_pos().unwrap() + self.positions[self.current_ind];
         self.current_ind += 1;
         // conversion to Coord deals with possible negative values - will return none
         if let Some(coord) = Coord::from(&p) {
-            if coord.x < self.n_cols && coord.y < self.n_rows {
+            if coord.x() < self.n_cols && coord.y() < self.n_rows {
                 Some(p)
             } else {
                 self.next()

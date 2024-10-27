@@ -1,47 +1,46 @@
 use std::{
     error::Error,
     fmt::{self, Display},
-    ops::{Add, Index, IndexMut},
+    ops::{Deref, Index, IndexMut},
+    slice::SliceIndex,
     str::FromStr,
 };
 
-use pos::Pos;
+use num::PrimInt;
+use pos::{Coord, CoordType, Pos};
 
+pub mod coord;
 pub mod direction;
 mod iter;
 pub mod pos;
 pub mod sparse;
 
-type CoordType = usize;
+pub trait GridTrait<'a, E>: Index<Pos> + IndexMut<Pos> + From<Self::SliceType>
+where
+    Self: 'a,
+{
+    type SliceType;
+    type CoordType: PrimInt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Coord {
-    x: CoordType,
-    y: CoordType,
+    fn is_inside(&self, coord: &Pos) -> bool;
+    fn size(&self) -> (CoordType, CoordType);
+    fn n_elem(&self) -> CoordType;
+    fn map<'b, F, T: 'b>(&'b self, fun: F) -> impl GridTrait<T>
+    where
+        F: Fn(&E) -> T,
+        T: Clone + Default + Copy;
+    fn apply(&mut self, fun: impl Fn(&E) -> E);
+    // fn slice<'a, R1, R2>(&'a self, index: (R1, R2)) -> Self::SliceType<'a>
+    // where
+    //     R1: 'a + RangeBounds<Self::CoordType> + SliceIndex<[E], Output = [E]> + Clone,
+    //     R2: 'a + RangeBounds<Self::CoordType> + SliceIndex<[E], Output = [E]> + Clone,
+    //     E: Copy;
 }
 
-impl Coord {
-    fn new(x: CoordType, y: CoordType) -> Self {
-        Self { x, y }
-    }
-
-    pub fn from(p: &Pos) -> Option<Self> {
-        Some(Self {
-            x: p.x().try_into().ok()?,
-            y: p.y().try_into().ok()?,
-        })
-    }
-}
-
-impl Add<Pos> for Coord {
-    type Output = Pos;
-
-    fn add(self, rhs: Pos) -> Self::Output {
-        let x: i32 = self.x.try_into().expect("Overflow error");
-        let y: i32 = self.y.try_into().expect("Overflow error");
-        Pos::new(x + rhs.x(), y + rhs.y())
-    }
-}
+// pub trait SliceTrait<E> {
+//     type GridType: GridTrait<E>;
+//     fn to_grid(self) -> Self::GridType;
+// }
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Grid<E> {
@@ -61,19 +60,64 @@ impl fmt::Display for IndexError {
     }
 }
 
-impl<'a, E> Grid<E> {
-    pub fn is_inside(&self, x: CoordType, y: CoordType) -> bool {
-        x < self.n_cols() && y < self.n_rows()
-    }
-
-    pub fn inside_c(&self, coord: &Pos) -> bool {
+impl<'a, E: 'a> GridTrait<'a, E> for Grid<E> {
+    fn is_inside(&self, coord: &Pos) -> bool {
         if let Some(c) = Coord::from(&coord) {
-            self.is_inside(c.x, c.y)
+            c.x() < self.n_cols() && c.y() < self.n_rows()
         } else {
             false
         }
     }
 
+    fn size(&self) -> (CoordType, CoordType) {
+        (self.n_cols(), self.n_rows())
+    }
+
+    fn n_elem(&self) -> CoordType {
+        self.n_cols() * self.n_rows()
+    }
+
+    #[allow(refining_impl_trait)]
+    fn map<'b, F, T: 'b>(&'b self, fun: F) -> Grid<T>
+    where
+        F: Fn(&E) -> T,
+        T: Clone + Default,
+    {
+        let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
+        let ind_it = self.coord_iter(false, false);
+        for c in ind_it {
+            let elem = &self[c];
+            new[c] = fun(elem);
+        }
+        new
+    }
+
+    fn apply(&mut self, fun: impl Fn(&E) -> E) {
+        let iter = self.coord_iter(false, false);
+        for pos in iter {
+            self.data[pos.y()][pos.x()] = fun(&self[pos])
+        }
+    }
+    type CoordType = usize;
+    type SliceType = GridSlice<'a, E> where E: 'a;
+}
+
+impl<E> Grid<E> {
+    fn slice<'b, R1, R2>(&'b self, index: (R1, R2)) -> <Grid<E> as GridTrait<E>>::SliceType
+    where
+        R1: 'b + SliceIndex<[E], Output = [E]> + Clone,
+        R2: 'b + SliceIndex<[Vec<E>], Output = [Vec<E>]> + Clone,
+    {
+        let data: Vec<&[E]> = self.data[index.1]
+            .iter()
+            .enumerate()
+            .map(|(_, v)| &v[index.0.clone()])
+            .collect();
+        GridSlice(data)
+    }
+}
+
+impl<'a, E> Grid<E> {
     // Can edit the returned values to set elements
     pub fn get_row(&self, y: CoordType) -> &Vec<E> {
         &self.data[y]
@@ -126,14 +170,6 @@ impl<'a, E> Grid<E> {
         self.data.len()
     }
 
-    pub fn size(&self) -> (CoordType, CoordType) {
-        (self.n_cols(), self.n_rows())
-    }
-
-    pub fn n_elem(&self) -> CoordType {
-        self.n_cols() * self.n_rows()
-    }
-
     fn check_lengths(&self) {
         let base_len = self.data[0].len();
         for row in self.data.iter() {
@@ -148,27 +184,6 @@ impl<'a, E> Grid<E> {
         g.check_lengths();
         g
     }
-
-    pub fn map<F, T>(&self, fun: F) -> Grid<T>
-    where
-        F: Fn(&E) -> T,
-        T: Clone + Default,
-    {
-        let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
-        let ind_it = self.coord_iter(false, false);
-        for c in ind_it {
-            let elem = &self[c];
-            new[c] = fun(elem);
-        }
-        new
-    }
-
-    pub fn apply(&mut self, fun: impl Fn(&E) -> E) {
-        let iter = self.coord_iter(false, false);
-        for pos in iter {
-            self.data[pos.y][pos.x] = fun(&self[pos])
-        }
-    }
 }
 
 impl<E> Index<Pos> for Grid<E> {
@@ -176,14 +191,14 @@ impl<E> Index<Pos> for Grid<E> {
 
     fn index(&self, index: Pos) -> &Self::Output {
         let coord = Coord::from(&index).expect("Coord out of bounds - probably negative");
-        &self.data[coord.y][coord.x]
+        &self.data[coord.y()][coord.x()]
     }
 }
 
 impl<E> IndexMut<Pos> for Grid<E> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
         let coord = Coord::from(&index).expect("Coord out of bounds - probably negative");
-        &mut self.data[coord.y][coord.x]
+        &mut self.data[coord.y()][coord.x()]
     }
 }
 
@@ -191,13 +206,13 @@ impl<E> Index<Coord> for Grid<E> {
     type Output = E;
 
     fn index(&self, index: Coord) -> &Self::Output {
-        &self.data[index.y][index.x]
+        &self.data[index.y()][index.x()]
     }
 }
 
 impl<E> IndexMut<Coord> for Grid<E> {
     fn index_mut(&mut self, index: Coord) -> &mut Self::Output {
-        &mut self.data[index.y][index.x]
+        &mut self.data[index.y()][index.x()]
     }
 }
 
@@ -218,6 +233,10 @@ impl Grid<char> {
             data.push(line.chars().collect())
         }
         Grid::new_from(data)
+    }
+
+    pub fn new_from_string_slices(lines: Vec<&str>) -> Self {
+        Grid::new_from_strings(lines.into_iter().map(String::from).collect())
     }
 }
 
@@ -251,7 +270,7 @@ impl<E: PartialEq> Grid<E> {
     // If the value is not found, None
     pub fn find(&self, val: E) -> Option<(CoordType, CoordType)> {
         let c = self.find_c(val)?;
-        Some((c.x, c.y))
+        Some((c.x(), c.y()))
     }
 
     pub fn find_c(&self, val: E) -> Option<Coord> {
@@ -273,3 +292,56 @@ impl<E: Clone> Grid<E> {
         Grid { data }
     }
 }
+
+pub struct GridSlice<'a, E>(Vec<&'a [E]>);
+
+// impl<'a, E> SliceTrait<E> for GridSlice<'a, E> {
+//     fn to_grid(self) -> Self::GridType {
+//         todo!()
+//     }
+
+//     type GridType = Grid<E>;
+// }
+
+impl<'a, E> From<GridSlice<'a, E>> for Grid<E> {
+    fn from(value: GridSlice<'a, E>) -> Self {
+        todo!()
+    }
+}
+
+impl<'a, E> Deref for GridSlice<'a, E> {
+    type Target = Vec<&'a [E]>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+// impl<E> Grid<E> {
+//     fn slice<'a, R1, R2>(&self, index: (R1, R2)) -> GridSlice<'a, E>
+//     where
+//         R1: 'a + RangeBounds<usize> + SliceIndex<[E], Output = [E]> + Copy,
+//         R2: 'a + RangeBounds<usize>,
+//     {
+//         // let len_slice_1 = index.1.end_bound()
+//         let mut data = Vec::<&[E]>::with_capacity(self.n_rows());
+//         for i in 0..self.n_rows() {
+//             if index.1.contains(&i) {
+//                 data.push(&self.data[i][index.0]);
+//             }
+//         }
+//         // let temp: &dyn SliceIndex<&[E], Output = &[E]> = .. as &SliceIndex<&[E], Output = &[E]>;
+//         // let a = &self.data[temp];
+//         // let temp: &[E] = &self.data[1][index.0];
+//         // let data: Vec<&[E]> = self
+//         //     .data //[index.1]
+//         //     .iter()
+//         //     .enumerate()
+//         //     .filter(|(i, _)| index.1.contains(&i))
+//         //     .map(|(_, v)| &v[index.0])
+//         //     .collect();
+//         GridSlice(vec![])
+//     }
+// }
+#[cfg(test)]
+mod test;

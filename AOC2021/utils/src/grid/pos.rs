@@ -2,7 +2,7 @@ use core::fmt;
 use lazy_static::lazy_static;
 use std::{
     collections::HashMap,
-    ops::{Add, AddAssign, Sub},
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub},
     str::FromStr,
 };
 
@@ -26,51 +26,111 @@ lazy_static! {
     ]);
 }
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub struct Pos {
-    x: i32,
-    y: i32,
+pub type CoordType = usize;
+pub type Coord = Pos<usize>;
+
+impl Coord {
+    pub fn from(p: &Pos<i32>) -> Option<Self> {
+        Some(Self {
+            x: p.x().try_into().ok()?,
+            y: p.y().try_into().ok()?,
+        })
+    }
+
+    pub fn as_pos(&self) -> Option<Pos<i32>> {
+        Some(Pos {
+            x: self.x().try_into().ok()?,
+            y: self.y().try_into().ok()?,
+        })
+    }
 }
 
-impl Pos {
-    pub fn new(x: i32, y: i32) -> Pos {
+impl Pos<i32> {
+    pub fn from(p: &Coord) -> Option<Self> {
+        Some(Self {
+            x: p.x().try_into().ok()?,
+            y: p.y().try_into().ok()?,
+        })
+    }
+
+    pub fn as_coord(&self) -> Option<Coord> {
+        Some(Coord {
+            x: self.x().try_into().ok()?,
+            y: self.y().try_into().ok()?,
+        })
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub struct Pos<T: num::PrimInt = i32> {
+    x: T,
+    y: T,
+}
+
+impl<T: num::PrimInt> Pos<T> {
+    pub fn new(x: T, y: T) -> Self {
         return Pos { x, y };
     }
 
-    pub fn x(&self) -> i32 {
+    pub fn x(&self) -> T {
         return self.x;
     }
 
-    pub fn y(&self) -> i32 {
+    pub fn y(&self) -> T {
         return self.y;
     }
 
-    pub fn scale(&self, factor: i32) -> Pos {
+    pub fn tuple(&self) -> (T, T) {
+        (self.x, self.y)
+    }
+}
+
+impl<T> From<(T, T)> for Pos<T>
+where
+    T: num::PrimInt,
+{
+    fn from(value: (T, T)) -> Self {
+        Pos::new(value.0, value.1)
+    }
+}
+
+impl<T: num::PrimInt> Mul<T> for Pos<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: T) -> Self::Output {
         Pos {
-            x: self.x * factor,
-            y: self.y * factor,
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
+}
 
-    pub fn scale_assign(&mut self, factor: i32) {
-        self.x *= factor;
-        self.y *= factor;
+impl<T: num::PrimInt + MulAssign> MulAssign<T> for Pos<T> {
+    fn mul_assign(&mut self, rhs: T) {
+        self.x *= rhs;
+        self.y *= rhs;
     }
+}
 
-    pub fn div(&self, factor: i32) -> Pos {
+impl<T: num::PrimInt> Div<T> for Pos<T> {
+    type Output = Self;
+
+    fn div(self, factor: T) -> Self {
         Pos {
             x: self.x / factor,
             y: self.y / factor,
         }
     }
+}
 
-    pub fn div_assign(&mut self, factor: i32) {
+impl<T: num::PrimInt + DivAssign> DivAssign<T> for Pos<T> {
+    fn div_assign(&mut self, factor: T) {
         self.x /= factor;
         self.y /= factor;
     }
 }
 
-impl FromStr for Pos {
+impl<T: num::PrimInt + FromStr> FromStr for Pos<T> {
     type Err = fmt::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -78,18 +138,18 @@ impl FromStr for Pos {
         let x = tokens
             .next()
             .ok_or_else(|| fmt::Error)?
-            .parse::<i32>()
+            .parse::<T>()
             .map_err(|_| fmt::Error)?;
         let y = tokens
             .next()
             .ok_or_else(|| fmt::Error)?
-            .parse::<i32>()
+            .parse::<T>()
             .map_err(|_| fmt::Error)?;
         Ok(Self { x, y })
     }
 }
 
-impl Add for Pos {
+impl<T: num::PrimInt> Add for Pos<T> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -100,14 +160,14 @@ impl Add for Pos {
     }
 }
 
-impl AddAssign for Pos {
+impl<T: num::PrimInt + AddAssign> AddAssign for Pos<T> {
     fn add_assign(&mut self, rhs: Self) {
         self.x += rhs.x;
         self.y += rhs.y;
     }
 }
 
-impl Sub for Pos {
+impl<T: num::PrimInt> Sub for Pos<T> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
