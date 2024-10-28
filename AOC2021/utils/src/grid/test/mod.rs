@@ -37,4 +37,11 @@ where
     assert_eq!(actual, expected)
 }
 
+#[rstest]
+fn test_slice_rount_trip() {
+    let grid = Grid::new_from_string_slices(vec!["ABC", "DEF", "GHI"]);
+    let actual: Grid<char> = grid.slice((.., ..)).into();
+    assert_eq!(actual, grid)
+}
+
 mod test_sparse;

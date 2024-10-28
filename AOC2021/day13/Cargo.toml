@@ -1,12 +1,12 @@
 [package]
-name = "utils"
+name = "day13"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-num = "0.4.3"
+utils = { path = "../utils" }
+regex = "1.11"
 lazy_static = "1.5.0"
-take_mut = "0.2.2"
 
 [dev-dependencies]
 rstest = "0.23.0"

@@ -1,13 +1,17 @@
 use std::{
     collections::HashMap,
+    fmt::Display,
     ops::{Deref, DerefMut, Index, IndexMut, RangeBounds},
 };
 
-use super::{GridTrait, Pos};
+use crate::grid::Grid;
 
-#[derive(Debug, PartialEq)]
+use super::{GridBounds, GridTrait, Pos};
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct SparseGrid<E> {
     data: HashMap<Pos, E>,
+    default: Option<E>,
 }
 
 impl<E> Deref for SparseGrid<E> {
@@ -19,8 +23,6 @@ impl<E> Deref for SparseGrid<E> {
 }
 
 impl<E> DerefMut for SparseGrid<E> {
-    // type Target = HashMap<Pos, E>;
-
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.data
     }
@@ -30,13 +32,17 @@ impl<E> SparseGrid<E> {
     pub fn new() -> Self {
         Self {
             data: HashMap::<Pos, E>::new(),
+            default: None,
         }
     }
 }
 
 impl<E> From<HashMap<Pos, E>> for SparseGrid<E> {
     fn from(data: HashMap<Pos, E>) -> Self {
-        Self { data }
+        Self {
+            data,
+            default: None,
+        }
     }
 }
 
@@ -45,11 +51,31 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
         true
     }
 
+    fn bounds(&self) -> GridBounds<Self::CoordType> {
+        if self.len() == 0 {
+            GridBounds {
+                min_x: 0,
+                min_y: 0,
+                max_x: 0,
+                max_y: 0,
+            }
+        } else {
+            let (xs, ys): (Vec<_>, Vec<_>) = self.data.keys().map(|p| p.tuple()).unzip();
+            GridBounds {
+                min_x: *xs.iter().min().unwrap(),
+                min_y: *ys.iter().min().unwrap(),
+                max_x: *xs.iter().max().unwrap(),
+                max_y: *ys.iter().max().unwrap(),
+            }
+        }
+    }
+
     fn size(&self) -> (super::CoordType, super::CoordType) {
-        let (xs, ys): (Vec<_>, Vec<_>) = self.data.keys().map(|p| p.tuple()).unzip();
-        let width = xs.iter().max().unwrap() - xs.iter().min().unwrap();
-        let height = ys.iter().max().unwrap() - ys.iter().min().unwrap();
-        (width.try_into().unwrap(), height.try_into().unwrap())
+        let bounds = self.bounds();
+        (
+            (1 + bounds.max_x - bounds.min_x).try_into().unwrap(),
+            (1 + bounds.max_y - bounds.min_y).try_into().unwrap(),
+        )
     }
 
     fn n_elem(&self) -> super::CoordType {
@@ -91,6 +117,20 @@ impl<E> SparseGrid<E> {
             .filter(move |(k, _)| index.0.contains(&k.x()) && index.1.contains(&k.y()))
             .map(move |(k, v)| (*k, v));
         SparseSlice(Box::new(mapped))
+    }
+
+    pub fn default(&self) -> &Option<E> {
+        &self.default
+    }
+
+    pub fn set_default(&mut self, value: E) {
+        self.default = Some(value)
+    }
+
+    pub fn shift(&mut self, shift: Pos) {
+        take_mut::take(&mut self.data, |data| {
+            data.into_iter().map(|(p, v)| (p + shift, v)).collect()
+        });
     }
 }
 
@@ -141,5 +181,19 @@ impl<E> Index<(i32, i32)> for SparseGrid<E> {
 impl<'a, E: Default> IndexMut<(i32, i32)> for SparseGrid<E> {
     fn index_mut(&mut self, index: (i32, i32)) -> &mut Self::Output {
         &mut self[Into::<Pos>::into(index)]
+    }
+}
+
+impl<E: Display + Default + Copy> Display for SparseGrid<E> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.default.is_none() {
+            write!(f, "Unable to display Sparse grid without default value")
+        } else {
+            if let Ok(grid) = TryInto::<Grid<E>>::try_into(self.clone()) {
+                write!(f, "{}", grid)
+            } else {
+                write!(f, "Unable to format grid")
+            }
+        }
     }
 }

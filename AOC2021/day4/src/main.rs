@@ -10,7 +10,7 @@ struct Board {
 
 impl Board {
     fn from_strs(s: Vec<String>) -> Result<Self, fmt::Error> {
-        let numbers = grid::Grid::new_from(
+        let numbers = grid::Grid::from(
             s.iter()
                 .map(|s| s.split_whitespace().map(|x| x.parse()).collect())
                 .collect::<Result<Vec<Vec<u16>>, ParseIntError>>()
