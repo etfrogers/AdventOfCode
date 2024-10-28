@@ -111,3 +111,20 @@ fn test_part1() {
     let part_1_answer = paper.n_dots();
     assert_eq!(part_1_answer, 684);
 }
+
+static PART_2_ANSWER: &str = "..##.###..####.###..#.....##..#..#.#..#
+...#.#..#....#.#..#.#....#..#.#.#..#..#
+...#.#..#...#..###..#....#....##...####
+...#.###...#...#..#.#....#.##.#.#..#..#
+#..#.#.#..#....#..#.#....#..#.#.#..#..#
+.##..#..#.####.###..####..###.#..#.#..#
+";
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(13);
+    let (coords, folds) = parse_input(input);
+    let mut paper = Paper::build(&coords);
+    paper.multi_fold(&folds);
+    assert_eq!(paper.to_string(), PART_2_ANSWER)
+}

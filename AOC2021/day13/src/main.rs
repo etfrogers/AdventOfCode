@@ -122,6 +122,12 @@ impl Paper {
         }
         count
     }
+
+    fn multi_fold(&mut self, folds: &Vec<Fold>) {
+        for fold in folds {
+            self.fold(fold);
+        }
+    }
 }
 
 impl Display for Paper {
@@ -138,11 +144,13 @@ fn main() {
     let input = utils::input_lines(13);
     let (coords, folds) = parse_input(input);
     let mut paper = Paper::build(&coords);
-    // println!("{}\n\n", paper.n_dots());
     paper.fold(&folds[0]);
-    // println!("{}", paper.n_dots());
     let part_1_answer = paper.n_dots();
     println!("Day 13, Part 1 answer: {}", part_1_answer);
+    let mut paper = Paper::build(&coords);
+    paper.multi_fold(&folds);
+    println!("Day 13, Part 2 answer:\n{}", paper);
+    //JRZBLGKH
 }
 
 #[cfg(test)]
