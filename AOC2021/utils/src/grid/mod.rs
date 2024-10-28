@@ -62,7 +62,7 @@ impl fmt::Display for IndexError {
 
 impl<'a, E: 'a> GridTrait<'a, E> for Grid<E> {
     fn is_inside(&self, coord: &Pos) -> bool {
-        if let Some(c) = Coord::from(&coord) {
+        if let Ok(c) = Coord::try_from(*coord) {
             c.x() < self.n_cols() && c.y() < self.n_rows()
         } else {
             false
@@ -190,14 +190,14 @@ impl<E> Index<Pos> for Grid<E> {
     type Output = E;
 
     fn index(&self, index: Pos) -> &Self::Output {
-        let coord = Coord::from(&index).expect("Coord out of bounds - probably negative");
+        let coord = Coord::try_from(index).expect("Coord out of bounds - probably negative");
         &self.data[coord.y()][coord.x()]
     }
 }
 
 impl<E> IndexMut<Pos> for Grid<E> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
-        let coord = Coord::from(&index).expect("Coord out of bounds - probably negative");
+        let coord = Coord::try_from(index).expect("Coord out of bounds - probably negative");
         &mut self.data[coord.y()][coord.x()]
     }
 }

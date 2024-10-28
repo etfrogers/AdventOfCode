@@ -225,10 +225,10 @@ impl Iterator for NeighbourCoordIterator {
         if self.current_ind == self.positions.len() {
             return None;
         }
-        let p = self.coord.as_pos().unwrap() + self.positions[self.current_ind];
+        let p = TryInto::<Pos>::try_into(self.coord).unwrap() + self.positions[self.current_ind];
         self.current_ind += 1;
         // conversion to Coord deals with possible negative values - will return none
-        if let Some(coord) = Coord::from(&p) {
+        if let Ok(coord) = Coord::try_from(p) {
             if coord.x() < self.n_cols && coord.y() < self.n_rows {
                 Some(p)
             } else {

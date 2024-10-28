@@ -2,7 +2,7 @@ use std::{collections::HashSet, ops::Deref};
 
 use utils::{
     self,
-    grid::{Coord, Grid},
+    grid::{pos::Coord, Grid, GridTrait},
 };
 
 struct HeightMap {
@@ -51,7 +51,7 @@ impl HeightMap {
                 let coord = to_visit.pop().unwrap();
                 members.insert(coord);
                 for pos in self.neighbour_coords(&coord, false) {
-                    let candidate = Coord::from(&pos).unwrap();
+                    let candidate = Coord::try_from(pos).unwrap();
                     if !members.contains(&candidate) && self[candidate] < 9 {
                         to_visit.push(candidate);
                     }

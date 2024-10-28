@@ -2,6 +2,7 @@ use core::fmt;
 use lazy_static::lazy_static;
 use std::{
     collections::HashMap,
+    num::TryFromIntError,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub},
     str::FromStr,
 };
@@ -29,34 +30,24 @@ lazy_static! {
 pub type CoordType = usize;
 pub type Coord = Pos<usize>;
 
-impl Coord {
-    pub fn from(p: &Pos<i32>) -> Option<Self> {
-        Some(Self {
-            x: p.x().try_into().ok()?,
-            y: p.y().try_into().ok()?,
-        })
-    }
+impl TryFrom<Pos<i32>> for Coord {
+    type Error = TryFromIntError;
 
-    pub fn as_pos(&self) -> Option<Pos<i32>> {
-        Some(Pos {
-            x: self.x().try_into().ok()?,
-            y: self.y().try_into().ok()?,
+    fn try_from(value: Pos<i32>) -> Result<Self, Self::Error> {
+        Ok(Self {
+            x: value.x().try_into()?,
+            y: value.y().try_into()?,
         })
     }
 }
 
-impl Pos<i32> {
-    pub fn from(p: &Coord) -> Option<Self> {
-        Some(Self {
-            x: p.x().try_into().ok()?,
-            y: p.y().try_into().ok()?,
-        })
-    }
+impl TryFrom<Coord> for Pos<i32> {
+    type Error = TryFromIntError;
 
-    pub fn as_coord(&self) -> Option<Coord> {
-        Some(Coord {
-            x: self.x().try_into().ok()?,
-            y: self.y().try_into().ok()?,
+    fn try_from(value: Coord) -> Result<Self, Self::Error> {
+        Ok(Self {
+            x: value.x().try_into()?,
+            y: value.y().try_into()?,
         })
     }
 }
@@ -178,19 +169,9 @@ impl<T: num::PrimInt> Sub for Pos<T> {
     }
 }
 
-// fn (p *Pos) Add(other Pos) {
-// 	// return Pos{p.x + other.x, p.y + other.y}
-// 	p.x += other.x
-// 	p.y += other.y
-// }
-
 // fn (p *Pos) Move(dirn dir.Direction) {
 // 	move := moves[dirn]
 // 	p.Add(move)
-// }
-
-// fn (p *Pos) Clone() Pos {
-// 	return Pos{p.x, p.y}
 // }
 
 // fn (p *Pos) DirectionFrom(to grid.Coord) (dirn dir.Direction) {
@@ -210,28 +191,3 @@ impl<T: num::PrimInt> Sub for Pos<T> {
 // 	}
 // 	return
 // }
-
-// --------------------
-/*
-const Y_FACTOR int = 10_000_000
-
-type XYNode struct {
-    Pos
-}
-
-fn NewNode(x, y int) XYNode {
-    return XYNode{New(x, y)}
-}
-
-fn (n XYNode) ID() (id int64) {
-    return GenerateID(n.x, n.y)
-}
-
-fn GenerateID(x, y int) (id int64) {
-    return int64(y*Y_FACTOR + x)
-}
-
-fn (n *XYNode) Clone() XYNode {
-    return XYNode{n.Pos}
-}
-*/

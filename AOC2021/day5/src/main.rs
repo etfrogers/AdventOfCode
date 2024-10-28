@@ -55,7 +55,7 @@ struct LineIterator {
 impl LineIterator {
     fn new(line: &Line) -> Self {
         let mut inc = line.to - line.from;
-        inc.div_assign(max(inc.x().abs(), inc.y().abs()));
+        inc /= max(inc.x().abs(), inc.y().abs());
         Self {
             // subtract inc below, so that we can add it at the start of next()
             curr_pos: line.from - inc,

@@ -4,7 +4,10 @@ use std::{
     str::FromStr,
 };
 
-use utils::{self, grid::Grid};
+use utils::{
+    self,
+    grid::{Grid, GridTrait},
+};
 
 struct Octopuses {
     data: Grid<u8>,
