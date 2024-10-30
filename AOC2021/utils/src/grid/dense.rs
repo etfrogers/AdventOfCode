@@ -186,6 +186,20 @@ impl<E> IndexMut<Coord> for Grid<E> {
     }
 }
 
+impl<E> Index<(usize, usize)> for Grid<E> {
+    type Output = E;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.data[index.1][index.0]
+    }
+}
+
+impl<E> IndexMut<(usize, usize)> for Grid<E> {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.data[index.1][index.0]
+    }
+}
+
 impl FromStr for Grid<char> {
     type Err = fmt::Error;
 

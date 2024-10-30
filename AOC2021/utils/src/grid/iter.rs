@@ -219,7 +219,7 @@ impl NeighbourCoordIterator {
 }
 
 impl Iterator for NeighbourCoordIterator {
-    type Item = Pos;
+    type Item = Coord;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.current_ind == self.positions.len() {
@@ -230,7 +230,7 @@ impl Iterator for NeighbourCoordIterator {
         // conversion to Coord deals with possible negative values - will return none
         if let Ok(coord) = Coord::try_from(p) {
             if coord.x() < self.n_cols && coord.y() < self.n_rows {
-                Some(p)
+                Some(coord)
             } else {
                 self.next()
             }
