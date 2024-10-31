@@ -146,6 +146,28 @@ impl<E> Grid<E> {
             }
         }
     }
+
+    pub fn horz_cat(&mut self, other: Grid<E>) {
+        assert_eq!(
+            self.n_rows(),
+            other.n_rows(),
+            "horz_cat is only valid on arrays with the same numbers of rows."
+        );
+        for (row, other_row) in self.data.iter_mut().zip(other.data.into_iter()) {
+            row.extend(other_row);
+        }
+        self.check_lengths();
+    }
+
+    pub fn vert_cat(&mut self, other: Grid<E>) {
+        assert_eq!(
+            self.n_cols(),
+            other.n_cols(),
+            "vert_cat is only valid on arrays with the same numbers of columns."
+        );
+        self.data.extend(other.data);
+        self.check_lengths();
+    }
 }
 
 impl<E: Clone> From<Vec<Vec<E>>> for Grid<E> {

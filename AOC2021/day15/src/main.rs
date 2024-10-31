@@ -87,14 +87,38 @@ impl RiskLevel {
         }
         None
     }
+
+    fn replicate(&mut self, n: usize) {
+        let mut new_map = self.map.clone();
+        let new_value = |v: &usize| {
+            let mut n = (*v + 1) % 10;
+            if n == 0 {
+                n = 1;
+            };
+            n
+        };
+        for _ in 0..n {
+            new_map = new_map.map(new_value);
+            self.map.horz_cat(new_map.clone());
+        }
+        let mut new_map = self.map.clone();
+        for _ in 0..n {
+            new_map = new_map.map(new_value);
+            self.map.vert_cat(new_map.clone());
+        }
+    }
 }
 
 fn main() {
     let input = utils::input_lines(15);
-    let rl = RiskLevel::build(input);
+    let mut rl = RiskLevel::build(input);
     let path = rl.find_lowest_risk_path().unwrap();
     let part_1_answer = path.total_risk;
     println!("Day 15, Part 1 answer: {}", part_1_answer);
+    rl.replicate(4);
+    let path2 = rl.find_lowest_risk_path().unwrap();
+    let part_2_answer = path2.total_risk;
+    println!("Day 15, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
