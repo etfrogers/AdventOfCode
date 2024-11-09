@@ -48,7 +48,7 @@ impl<T: Eq + Hash> Deref for Counter<T> {
 }
 
 impl<T: Eq + Hash + Clone> Counter<T> {
-    pub fn map(self) -> HashMap<T, u64> {
+    pub fn data(self) -> HashMap<T, u64> {
         self.0
     }
 }

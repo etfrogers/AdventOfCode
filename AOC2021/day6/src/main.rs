@@ -23,7 +23,7 @@ impl Index<u16> for School {
 impl School {
     fn new(lifetimes: Vec<u16>) -> Self {
         let data = Counter::new(lifetimes);
-        Self { data: data.map() }
+        Self { data: data.data() }
     }
 
     fn evolve(&mut self, days: u64) {
