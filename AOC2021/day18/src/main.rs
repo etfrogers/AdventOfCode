@@ -32,74 +32,37 @@ impl SnailfishNumber {
     fn try_explode(&mut self) -> bool {
         let tgt = Self::dig(&self, None, 0, 4, u8::MAX);
         println!("{:?}", tgt.unwrap());
-        false
-        // let mut sn = self;
-        // let mut depth = depth;
-        // match sn {
-        //     SnailfishNumber::Regular(_) => (),
-        //     Self::Pair(a, b) => {
-        //         depth += 1;
-        //         sn = &mut *a
-        //     }
-        // };
-        // false
+        true
     }
 
     fn dig<'a>(
         sfn: &'a SnailfishNumber,
-        // parent: Option<&'a SnailfishNumber>,
         mut left_number: Option<&'a u8>,
         mut depth: u8,
-        // pred: T,
         max_depth: u8,
         max_value: u8,
-    ) -> Option<Dug<'a>>
-// where
-    //     T: Fn(&SnailfishNumber, u32) -> bool,
-    {
+    ) -> Option<Dug<'a>> {
         println!("Entering dig\nArgs: {sfn:?}\n      {left_number:?}\n      {depth}");
-        // let mut depth = 0;
-        // let mut left_number: Option<&'a u8> = None;
         let mut right_number: Option<&'a u8> = None;
-        // let stack = vec![sfn];
         let current = sfn;
-        // let mut result: Option<Dug> = None;
-        // while stack.len() > 0 {
-
-        // let current = *stack.last().unwrap();
         if depth == max_depth || matches!(current, SnailfishNumber::Regular(a) if *a>=max_value) {
             Some(Dug {
                 left_number,
                 right_number: None,
-                // parent: parent.unwrap(),
                 target: &current,
             })
         } else {
             match current {
-                SnailfishNumber::Regular(_) => {
-                    // left_number = Some(&a); // case where this is a match is handled above
-                    None
-                }
+                SnailfishNumber::Regular(_) => None,
                 Self::Pair(a, b) => {
                     depth += 1;
                     if let SnailfishNumber::Regular(a) = a.as_ref() {
                         left_number = Some(a);
                     } else {
-                        // stack.push(a);
-                        // continue;
                         let res = Self::dig(&(*a), left_number, depth, max_depth, max_value);
                         if res.is_some() {
                             return res;
                         }
-                        // if let a =
-                        //     Self::dig(&(*a), left_number, depth, max_depth, max_value)
-                        // {
-                        //     if res_left.left_number.is_none() {
-                        //         res_left.left_number = left_number;
-                        //     }
-                        //     result = Some(res_left);
-                        //     // break;
-                        // }
                     }
                     if let SnailfishNumber::Regular(_) = b.as_ref() {
                         // left_number = Some(b);
@@ -108,47 +71,11 @@ impl SnailfishNumber {
                         if res.is_some() {
                             return res;
                         }
-                        // {
-                        // if res_right.left_number.is_none() {
-                        //     res_right.left_number = left_number;
-                        // }
-                        // result = Some(res_right);
-                        // // break;
                     }
                     None
                 }
             }
-            //     None
         }
-        // end of match pred loop
-        // result
-        // None
-        // if pred(sfn, depth) {
-        //     Some(Dug {
-        //         left_number,
-        //         right_number: None,
-        //         parent: parent.unwrap(),
-        //         target: &sfn,
-        //     })
-        // } else {
-        //     match sfn {
-        //         SnailfishNumber::Regular(a) => {
-        //             left_number = Some(a); // case where this is a match is handled above
-        //         }
-        //         Self::Pair(a, b) => {
-        //             depth += 1;
-        //             let res_left = Self::dig(&(*a), Some(sfn), left_number, depth, &pred);
-        //             if res_left.is_some() {
-        //                 return res_left;
-        //             }
-        //             let res_right = Self::dig(&(*b), Some(sfn), left_number, depth, &pred);
-        //             if res_right.is_some() {
-        //                 return res_right;
-        //             }
-        //         }
-        //     };
-        //     None
-        // }
     }
 
     fn try_split(&mut self) -> bool {
