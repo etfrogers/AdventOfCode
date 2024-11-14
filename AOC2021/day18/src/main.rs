@@ -1,3 +1,4 @@
+use assert_matches::assert_matches;
 use std::{fmt, u8};
 use std::{ops::Add, str::FromStr};
 
@@ -30,49 +31,82 @@ impl SnailfishNumber {
     }
 
     fn try_explode(&mut self) -> bool {
-        let tgt = Self::dig(&self, None, 0, 4, u8::MAX);
-        println!("{:?}", tgt.unwrap());
-        true
+        let tgt = Self::dig(self, Dug::empty(), 0, 4, u8::MAX);
+        if let Some(target) = tgt.target {
+            // println!("{:?}", tgt);
+            if let SnailfishNumber::Pair(a, b) = target {
+                if let SnailfishNumber::Regular(left_value) = **a {
+                    if let SnailfishNumber::Regular(right_value) = **b {
+                        if let Some(left_number) = tgt.left_number {
+                            *left_number += left_value
+                        }
+                        if let Some(right_number) = tgt.right_number {
+                            *right_number += right_value
+                        }
+                        *target = SnailfishNumber::Regular(0);
+                    } else {
+                        panic!("Target should be a pair of regular numbers")
+                    }
+                } else {
+                    panic!("Target should be a pair of regular numbers")
+                }
+            } else {
+                panic!("Target should be a pair of regular numbers")
+            }
+
+            true
+        } else {
+            false
+        }
     }
 
     fn dig<'a>(
-        sfn: &'a SnailfishNumber,
-        mut left_number: Option<&'a u8>,
+        sfn: &'a mut SnailfishNumber,
+        // mut left_number: &Option<&'a mut u8>,
+        mut result: Dug<'a>,
         mut depth: u8,
         max_depth: u8,
         max_value: u8,
-    ) -> Option<Dug<'a>> {
-        println!("Entering dig\nArgs: {sfn:?}\n      {left_number:?}\n      {depth}");
-        let mut right_number: Option<&'a u8> = None;
-        let current = sfn;
-        if depth == max_depth || matches!(current, SnailfishNumber::Regular(a) if *a>=max_value) {
-            Some(Dug {
-                left_number,
-                right_number: None,
-                target: &current,
-            })
+    ) -> Dug<'a> {
+        // println!("Entering dig\nArgs: {sfn:?}\n      {left_number:?}\n      {depth}");
+        // let mut right_number: Option<&'a u8> = None;
+
+        if result.target.is_some() && result.right_number.is_some() {
+            return result;
+        }
+
+        if result.target.is_none() && depth == max_depth
+            || matches!(sfn, SnailfishNumber::Regular(a) if *a>=max_value)
+        {
+            result.target = Some(sfn);
+            result
         } else {
-            match current {
-                SnailfishNumber::Regular(_) => None,
-                Self::Pair(a, b) => {
+            // let mut result: Option<Dug> = None;
+            match sfn {
+                SnailfishNumber::Regular(_) => result,
+                Self::Pair(ref mut a, b) => {
                     depth += 1;
-                    if let SnailfishNumber::Regular(a) = a.as_ref() {
-                        left_number = Some(a);
-                    } else {
-                        let res = Self::dig(&(*a), left_number, depth, max_depth, max_value);
-                        if res.is_some() {
-                            return res;
+                    if let SnailfishNumber::Regular(ref mut a) = **a {
+                        if result.target.is_some() {
+                            if result.right_number.is_none() {
+                                result.right_number = Some(a);
+                            }
+                        } else {
+                            result.left_number = Some(a);
                         }
-                    }
-                    if let SnailfishNumber::Regular(_) = b.as_ref() {
-                        // left_number = Some(b);
                     } else {
-                        let res = Self::dig(&(*b), left_number, depth, max_depth, max_value);
-                        if res.is_some() {
-                            return res;
-                        }
+                        result = Self::dig(&mut (*a), result, depth, max_depth, max_value);
                     }
-                    None
+                    if let SnailfishNumber::Regular(ref mut b) = **b {
+                        if result.target.is_some() {
+                            if result.right_number.is_none() {
+                                result.right_number = Some(b);
+                            }
+                        }
+                    } else {
+                        result = Self::dig(&mut (*b), result, depth, max_depth, max_value);
+                    }
+                    result
                 }
             }
         }
@@ -92,10 +126,20 @@ impl SnailfishNumber {
 
 #[derive(Debug)]
 struct Dug<'a> {
-    left_number: Option<&'a u8>,
-    right_number: Option<&'a u8>,
+    left_number: Option<&'a mut u8>,
+    right_number: Option<&'a mut u8>,
     // parent: &'a SnailfishNumber,
-    target: &'a SnailfishNumber,
+    target: Option<&'a mut SnailfishNumber>,
+}
+
+impl<'a> Dug<'a> {
+    fn empty() -> Self {
+        Self {
+            left_number: None,
+            right_number: None,
+            target: None,
+        }
+    }
 }
 
 impl Add for SnailfishNumber {
