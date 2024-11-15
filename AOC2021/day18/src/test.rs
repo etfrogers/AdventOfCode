@@ -1,5 +1,4 @@
 use super::*;
-use assert_matches::assert_matches;
 use rstest::{fixture, rstest};
 
 const TEST_BUILD: &str = "[1,2]
@@ -53,11 +52,40 @@ fn test_add() {
     "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"
 )]
 #[case("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[7,0]]]]")]
-fn test_explode(#[case] input_str: &str, #[case] expected: &str) {
-    let mut sfn = SnailfishNumber::from_str(input_str).unwrap();
+fn test_explode(#[case] mut sfn: SnailfishNumber, #[case] expected: SnailfishNumber) {
     assert!(sfn.try_explode());
-    let expected = SnailfishNumber::from_str(expected).unwrap();
     assert_eq!(sfn, expected)
+}
+
+#[rstest]
+// #[case("[10,1]", "[[5,5],1]")]
+#[case("[9,1]", "[9,1]")]
+fn test_split(#[case] mut sfn: SnailfishNumber, #[case] expected: SnailfishNumber) {
+    assert!(!sfn.try_split());
+    assert_eq!(sfn, expected);
+    if let SnailfishNumber::Pair(ref mut a, _) = sfn {
+        if let SnailfishNumber::Regular(ref mut val) = **a {
+            *val += 1;
+        }
+    }
+    assert!(sfn.try_split());
+    let expected = SnailfishNumber::from_str("[[5,5],1]").unwrap();
+    assert_eq!(sfn, expected);
+}
+
+#[rstest]
+#[case(
+    "[[[[4,3],4],4],[7,[[8,4],9]]]",
+    "[1,1]",
+    "[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"
+)]
+fn test_add_reduce(
+    #[case] a: SnailfishNumber,
+    #[case] b: SnailfishNumber,
+    #[case] expected: SnailfishNumber,
+) {
+    let actual = a + b;
+    assert_eq!(actual, expected)
 }
 
 #[rstest]
