@@ -2,11 +2,12 @@ use std::fmt::Display;
 use std::{fmt, u8};
 use std::{ops::Add, str::FromStr};
 
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
 use utils;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum SnailfishNumber {
     Pair(Box<SnailfishNumber>, Box<SnailfishNumber>),
     Regular(u8),
@@ -225,7 +226,7 @@ impl Display for SnailfishNumber {
 struct Homework(Vec<SnailfishNumber>);
 
 impl Homework {
-    fn new(input: Vec<String>) -> Self {
+    fn new(input: &Vec<String>) -> Self {
         Homework(
             input
                 .iter()
@@ -236,6 +237,15 @@ impl Homework {
 
     fn sum(self) -> SnailfishNumber {
         self.0.into_iter().reduce(|a, b| a + b).unwrap()
+    }
+
+    fn max_mag_pairwise_sum(&self) -> u64 {
+        self.0
+            .iter()
+            .permutations(2)
+            .map(|sfns| (sfns[0].clone() + sfns[1].clone()).magnitude())
+            .max()
+            .unwrap()
     }
 }
 
@@ -251,10 +261,14 @@ impl FromStr for Homework {
 
 fn main() {
     let input = utils::input_lines(18);
-    let hw = Homework::new(input);
+    let hw = Homework::new(&input);
     let hw_answer = hw.sum();
     let part_1_answer = hw_answer.magnitude();
     println!("Day 18, Part 1 answer: {}", part_1_answer);
+
+    let hw = Homework::new(&input);
+    let part_2_answer = hw.max_mag_pairwise_sum();
+    println!("Day 18, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
