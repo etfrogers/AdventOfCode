@@ -1,5 +1,5 @@
-use assert_matches::assert_matches;
-use std::{fmt, result, u8};
+use std::fmt::Display;
+use std::{fmt, u8};
 use std::{ops::Add, str::FromStr};
 
 use lazy_static::lazy_static;
@@ -27,8 +27,9 @@ impl SnailfishNumber {
     }
 
     fn reduce(&mut self) {
+        // println!("Reducing {}", self);
         loop {
-            println!("{:?}", self);
+            // println!("  {}", self);
             if self.try_explode() {
                 continue;
             }
@@ -37,11 +38,13 @@ impl SnailfishNumber {
             }
             break;
         }
+        // println!("Finished reducing")
     }
 
     fn try_explode(&mut self) -> bool {
         let tgt = Self::dig(self, Dug::empty(), 0, 4, u8::MAX);
         if let Some(target) = tgt.target {
+            // println!("    Exploding {}", target);
             if let SnailfishNumber::Pair(a, b) = target {
                 if let SnailfishNumber::Regular(left_value) = **a {
                     if let SnailfishNumber::Regular(right_value) = **b {
@@ -70,6 +73,7 @@ impl SnailfishNumber {
     fn try_split(&mut self) -> bool {
         let tgt = Self::dig(self, Dug::empty(), 0, u8::MAX, 10);
         if let Some(target) = tgt.target {
+            // println!("    Splitting {}", target);
             if let SnailfishNumber::Regular(old_val) = target {
                 let (a, b) = halves(*old_val);
                 *target = SnailfishNumber::new_pair_of_regular(a, b);
@@ -89,16 +93,16 @@ impl SnailfishNumber {
         max_depth: u8,
         max_value: u8,
     ) -> Dug<'a> {
-        println!("Entering dig\nArgs: {sfn:?}\n      {result:?}\n      {depth}");
-
+        // println!("Entering dig\nArgs: {sfn}\n      {result:?}\n      {depth}");
         if result.target.is_none() || result.right_number.is_none() {
             if result.target.is_none()
-                && (depth == max_depth && matches!(sfn, SnailfishNumber::Pair(_, _)))
-                || matches!(sfn, SnailfishNumber::Regular(a) if *a>=max_value)
+                && ((depth == max_depth && matches!(sfn, SnailfishNumber::Pair(_, _)))
+                    || matches!(sfn, SnailfishNumber::Regular(a) if *a>=max_value))
             {
+                // println!("!! Setting target to {sfn}");
+                // println!("!! Current result: {result:?}");
                 result.target = Some(sfn);
             } else {
-                // let mut result: Option<Dug> = None;
                 match sfn {
                     SnailfishNumber::Regular(ref mut val) => {
                         if result.target.is_some() {
@@ -117,7 +121,7 @@ impl SnailfishNumber {
                 }
             }
         }
-        println!("Exiting dig\nArgs: \n      {result:?}\n      {depth}");
+        // println!("Exiting dig\nArgs: \n      {result:?}\n      {depth}");
         result
     }
 
@@ -209,9 +213,47 @@ impl FromStr for SnailfishNumber {
     }
 }
 
+impl Display for SnailfishNumber {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SnailfishNumber::Regular(a) => write!(f, "{}", a),
+            SnailfishNumber::Pair(a, b) => write!(f, "[{},{}]", *a, *b),
+        }
+    }
+}
+
+struct Homework(Vec<SnailfishNumber>);
+
+impl Homework {
+    fn new(input: Vec<String>) -> Self {
+        Homework(
+            input
+                .iter()
+                .map(|s| SnailfishNumber::from_str(&s).unwrap())
+                .collect(),
+        )
+    }
+
+    fn sum(self) -> SnailfishNumber {
+        self.0.into_iter().reduce(|a, b| a + b).unwrap()
+    }
+}
+
+impl FromStr for Homework {
+    type Err = fmt::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let data: Result<Vec<SnailfishNumber>, fmt::Error> =
+            s.lines().map(|s| SnailfishNumber::from_str(s)).collect();
+        Ok(Homework(data?))
+    }
+}
+
 fn main() {
     let input = utils::input_lines(18);
-    let part_1_answer = 0;
+    let hw = Homework::new(input);
+    let hw_answer = hw.sum();
+    let part_1_answer = hw_answer.magnitude();
     println!("Day 18, Part 1 answer: {}", part_1_answer);
 }
 
