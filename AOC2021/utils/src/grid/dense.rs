@@ -2,11 +2,14 @@ use std::{
     collections::HashMap,
     error::Error,
     fmt::{self, Display},
+    hash::Hash,
     num::TryFromIntError,
     ops::{Deref, Index, IndexMut},
     slice::SliceIndex,
     str::FromStr,
 };
+
+use crate::Counter;
 
 use super::{
     pos::{Coord, CoordType, Pos},
@@ -170,6 +173,12 @@ impl<E> Grid<E> {
     }
 }
 
+impl<E: Eq + Hash + Copy> Grid<E> {
+    pub fn counter(&self) -> Counter<E> {
+        Counter::new(self.clone().into_iter())
+    }
+}
+
 impl<E: Clone> From<Vec<Vec<E>>> for Grid<E> {
     fn from(value: Vec<Vec<E>>) -> Self {
         let g = Grid { data: value };
@@ -318,10 +327,23 @@ impl<E: Clone> Grid<E> {
         }
         Grid { data }
     }
+
+    pub fn full_like<T>(other: &Grid<T>, content: E) -> Grid<E> {
+        Grid::full(other.n_cols(), other.n_rows(), content)
+    }
+
+    pub fn insert_row_of(&mut self, x: CoordType, data: E) -> Result<(), IndexError> {
+        self.insert_row(x, vec![data; self.n_cols()])
+    }
+
+    pub fn insert_col_of(&mut self, x: CoordType, data: E) -> Result<(), IndexError> {
+        self.insert_col(x, vec![data; self.n_rows()])
+    }
 }
 
 // ############################
 
+#[derive(Debug)]
 pub struct GridSlice<'a, E>(Vec<&'a [E]>);
 
 impl<'a, E: Clone> From<GridSlice<'a, E>> for Grid<E> {

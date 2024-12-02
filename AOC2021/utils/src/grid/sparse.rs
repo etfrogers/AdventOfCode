@@ -134,6 +134,22 @@ impl<E> SparseGrid<E> {
     }
 }
 
+impl<E: PartialEq + Copy> SparseGrid<E> {
+    pub fn from_dense(dense: Grid<E>, default: E) -> Self {
+        let mut map = HashMap::<Pos, E>::new();
+        for pos in dense.coord_iter(false, false) {
+            let pos: Pos<i32> = pos.try_into().unwrap();
+            if dense[pos] != default {
+                map.insert(pos, default);
+            }
+        }
+        SparseGrid {
+            data: map,
+            default: Some(default),
+        }
+    }
+}
+
 pub struct SparseSlice<'a, E: 'a>(Box<dyn Iterator<Item = (Pos, &'a E)> + 'a>);
 
 impl<'a, E: Copy> From<SparseSlice<'a, E>> for SparseGrid<E> {

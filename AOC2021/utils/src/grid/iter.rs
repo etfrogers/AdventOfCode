@@ -4,6 +4,18 @@ use super::pos::DIAGONAL_MOVES;
 use super::Grid;
 use super::{pos::ORTHOGONAL_MOVES, Pos};
 
+impl<'a, E> IntoIterator for Grid<E>
+where
+    E: Copy,
+{
+    type IntoIter = GridIntoIterator<E>;
+    type Item = E;
+
+    fn into_iter(self) -> Self::IntoIter {
+        GridIntoIterator::new(self, false, false)
+    }
+}
+
 impl<'a, E> Grid<E> {
     pub fn iter(&'a self) -> GridIterator<'a, E> {
         // two args: invert, and colMajor, both bool, default false
@@ -123,7 +135,7 @@ pub struct GridIterator<'a, E> {
 
 impl<'a, E> GridIterator<'a, E> {
     fn new(g: &'a Grid<E>, invert: bool, col_major: bool) -> Self {
-        GridIterator {
+        Self {
             ind_iter: IndIterator::new(g, invert, col_major),
             grid: g,
         }
@@ -140,6 +152,38 @@ impl<'a, E> Iterator for GridIterator<'a, E> {
     }
 }
 
+pub struct GridIntoIterator<E>
+where
+    E: Copy,
+{
+    ind_iter: IndIterator,
+    grid: Grid<E>,
+}
+
+impl<'a, E> GridIntoIterator<E>
+where
+    E: Copy,
+{
+    fn new(g: Grid<E>, invert: bool, col_major: bool) -> Self {
+        Self {
+            ind_iter: IndIterator::new(&g, invert, col_major),
+            grid: g,
+        }
+    }
+}
+
+impl<'a, E> Iterator for GridIntoIterator<E>
+where
+    E: Copy,
+{
+    type Item = E;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let c = self.ind_iter.next()?;
+        let item = self.grid[c];
+        Some(item)
+    }
+}
 pub struct RowIterator<'a, E> {
     grid: &'a Grid<E>,
     current_row: usize,
