@@ -100,6 +100,12 @@ impl Image {
         }
     }
 
+    fn enhance_n(&mut self, algo: &EnhancementAlgorithm, n: u32) {
+        for _ in 0..n {
+            self.enhance(algo);
+        }
+    }
+
     fn enhance(&mut self, algo: &EnhancementAlgorithm) {
         let old_size = self.size();
         let mut new = self.clone();
@@ -169,11 +175,16 @@ fn parse_input(input: Vec<String>) -> (EnhancementAlgorithm, Image) {
 
 fn main() {
     let input = utils::input_lines(20);
-    let (algo, mut img) = parse_input(input);
-    img.enhance(&algo);
-    img.enhance(&algo);
+    let (algo, mut img) = parse_input(input.clone());
+
+    img.enhance_n(&algo, 2);
     let part_1_answer = img.counter()[&Pixel::LIGHT];
     println!("Day 20, Part 1 answer: {}", part_1_answer);
+
+    let (_, mut img2) = parse_input(input);
+    img2.enhance_n(&algo, 50);
+    let part_2_answer = img2.counter()[&Pixel::LIGHT];
+    println!("Day 20, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
