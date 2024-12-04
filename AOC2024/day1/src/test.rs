@@ -19,10 +19,24 @@ fn test_total_diff(input: Vec<String>) {
     assert_eq!(total_diff(&l1, &l2), 11)
 }
 
+#[rstest]
+fn test_similarity_score(input: Vec<String>) {
+    let (l1, l2) = parse_input(input);
+    assert_eq!(similarity_score(&l1, &l2), 31)
+}
+
 #[test]
 fn test_part1() {
     let input = utils::input_lines(1);
+    let (l1, l2) = parse_input(input);
+    let part_1_answer = total_diff(&l1, &l2);
+    assert_eq!(part_1_answer, 2113135);
+}
 
-    let part_1_answer = 0;
-    assert_eq!(part_1_answer, 1);
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(1);
+    let (l1, l2) = parse_input(input);
+    let part_2_answer = similarity_score(&l1, &l2);
+    assert_eq!(part_2_answer, 19097157);
 }
