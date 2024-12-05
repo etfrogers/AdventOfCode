@@ -20,10 +20,27 @@ impl Report {
         a as i32 - b as i32
     }
 
-    fn is_safe(&self) -> bool {
-        let vs = &self.0;
+    fn is_safe(&self, with_dampener: bool) -> bool {
+        let orig = Self::is_safe_vec(&self.0);
+        if !with_dampener {
+            orig
+        } else if orig {
+            true
+        } else {
+            for i in 0..self.0.len() {
+                let mut short = self.0.clone();
+                short.remove(i);
+                if Self::is_safe_vec(&short) {
+                    return true;
+                }
+            }
+            false
+        }
+    }
+
+    fn is_safe_vec(vs: &Vec<u32>) -> bool {
         let increasing: bool = Self::diff(vs[0], vs[1]) < 0;
-        for i in 1..self.0.len() {
+        for i in 1..vs.len() {
             let curr = vs[i];
             let prev = vs[i - 1];
             let d = Self::diff(curr, prev);
@@ -35,18 +52,20 @@ impl Report {
     }
 }
 
-fn n_safe(reports: Vec<Report>) -> usize {
+fn n_safe(reports: &Vec<Report>, with_dampener: bool) -> usize {
     reports
         .iter()
-        .map(|r| if r.is_safe() { 1 } else { 0 })
+        .map(|r| if r.is_safe(with_dampener) { 1 } else { 0 })
         .sum()
 }
 
 fn main() {
     let input = utils::input_lines(2);
     let reports = Report::new_list(input);
-    let part_1_answer = n_safe(reports);
+    let part_1_answer = n_safe(&reports, false);
     println!("Day 2, Part 1 answer: {}", part_1_answer);
+    let part_2_answer = n_safe(&reports, true);
+    println!("Day 2, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
