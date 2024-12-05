@@ -1,0 +1,11 @@
+[package]
+name = "day3"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+utils = { path = "../../AOC2021/utils" }
+regex = "1.11.1"
+
+[dev-dependencies]
+rstest = "0.23.0"
