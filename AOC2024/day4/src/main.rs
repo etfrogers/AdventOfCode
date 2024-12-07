@@ -34,6 +34,34 @@ impl Wordsearch {
         }
         n
     }
+
+    fn n_x_mas(&self) -> u32 {
+        let mut n = 0;
+        let diags: Vec<Pos> = vec![
+            Pos::new(-1, -1),
+            Pos::new(-1, 1),
+            Pos::new(1, 1),
+            Pos::new(1, -1),
+        ];
+        for p in self.coord_iter(false, false) {
+            if self[p] == 'A' {
+                let mut n_diags = 0;
+                for dir in &diags {
+                    let nb = p + *dir;
+                    if self.is_inside(&nb) && self[nb] == 'M' {
+                        let opp_nb = p - *dir;
+                        if self.is_inside(&opp_nb) && self[opp_nb] == 'S' {
+                            n_diags += 1;
+                        }
+                    }
+                }
+                if n_diags == 2 {
+                    n += 1;
+                }
+            }
+        }
+        n
+    }
 }
 
 impl Deref for Wordsearch {
@@ -49,6 +77,8 @@ fn main() {
     let ws = Wordsearch::new(input);
     let part_1_answer = ws.n_words("XMAS");
     println!("Day 4, Part 1 answer: {}", part_1_answer);
+    let part_2_answer = ws.n_x_mas();
+    println!("Day 4, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]

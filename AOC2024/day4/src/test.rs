@@ -23,10 +23,24 @@ fn test_n_words(input: Vec<String>) {
     assert_eq!(ws.n_words("XMAS"), 18);
 }
 
+#[rstest]
+fn test_n_x(input: Vec<String>) {
+    let ws = Wordsearch::new(input);
+    assert_eq!(ws.n_x_mas(), 9);
+}
+
 #[test]
 fn test_part1() {
     let input = utils::input_lines(4);
+    let ws = Wordsearch::new(input);
+    let part_1_answer = ws.n_words("XMAS");
+    assert_eq!(part_1_answer, 2591);
+}
 
-    let part_1_answer = 0;
-    assert_eq!(part_1_answer, 1);
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(4);
+    let ws = Wordsearch::new(input);
+    let part_2_answer = ws.n_x_mas();
+    assert_eq!(part_2_answer, 1880);
 }

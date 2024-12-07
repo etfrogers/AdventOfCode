@@ -96,6 +96,15 @@ impl<T: num::PrimInt> Mul<T> for Pos<T> {
     }
 }
 
+impl Mul<usize> for Pos<i32> {
+    type Output = Self;
+
+    fn mul(self, factor: usize) -> Self::Output {
+        let factor: i32 = factor.try_into().unwrap();
+        self * factor
+    }
+}
+
 impl<T: num::PrimInt + MulAssign> MulAssign<T> for Pos<T> {
     fn mul_assign(&mut self, rhs: T) {
         self.x *= rhs;
@@ -158,7 +167,7 @@ impl<T: num::PrimInt + AddAssign> AddAssign for Pos<T> {
     }
 }
 
-impl<T: num::PrimInt> Sub for Pos<T> {
+impl<T: num::PrimInt> Sub<Pos<T>> for Pos<T> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -166,6 +175,30 @@ impl<T: num::PrimInt> Sub for Pos<T> {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
         }
+    }
+}
+
+impl Sub<Pos<i32>> for Pos<usize> {
+    type Output = Pos<i32>;
+
+    fn sub(self, rhs: Pos<i32>) -> Self::Output {
+        let old_x: i32 = self.x.try_into().unwrap();
+        let old_y: i32 = self.y.try_into().unwrap();
+        let x = old_x - rhs.x;
+        let y = old_y - rhs.y;
+        Pos { x, y }
+    }
+}
+
+impl Add<Pos<i32>> for Pos<usize> {
+    type Output = Pos<i32>;
+
+    fn add(self, rhs: Pos<i32>) -> Self::Output {
+        let old_x: i32 = self.x.try_into().unwrap();
+        let old_y: i32 = self.y.try_into().unwrap();
+        let x = old_x + rhs.x;
+        let y = old_y + rhs.y;
+        Pos { x, y }
     }
 }
 
