@@ -51,6 +51,12 @@ fn test_checksum(input: Vec<String>) {
 }
 
 #[rstest]
+fn test_checksum_incorrect(input: Vec<String>) {
+    let (rules, mut updates) = parse_input(input);
+    assert_eq!(updates.checksum_incorrect(&rules), 123)
+}
+
+#[rstest]
 #[case(0, 61)]
 #[case(1, 53)]
 #[case(2, 29)]
@@ -65,4 +71,12 @@ fn test_part1() {
     let (rules, updates) = parse_input(input);
     let part_1_answer = updates.checksum(&rules);
     assert_eq!(part_1_answer, 4578);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(5);
+    let (rules, mut updates) = parse_input(input);
+    let part_1_answer = updates.checksum_incorrect(&rules);
+    assert_eq!(part_1_answer, 6179);
 }

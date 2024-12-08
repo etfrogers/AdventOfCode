@@ -67,12 +67,6 @@ impl UpdatePages {
             };
             for r in *rs {
                 assert!(r.0 == *p || r.1 == *p);
-                // if i == 1 && *p == 97 {
-                //     println!();
-                //     println!("{:?}", r);
-                //     println!("{:?}", self.0);
-                //     println!("{:?}", &self.0[..i]);
-                // }
                 if r.0 == *p && self.0[..i].contains(&r.1) {
                     return false;
                 } else if r.1 == *p && self.0[i + 1..].contains(&r.0) {
@@ -89,9 +83,41 @@ impl UpdatePages {
         let index = (len - 1) / 2;
         self.0[index]
     }
+
+    fn correct(&mut self, rules: &RuleSet, rule_map: Option<&RuleMap>) {
+        let rule_map = match rule_map {
+            Some(rm) => rm,
+            None => &rules.rule_map(),
+        };
+        'correction: loop {
+            for (i, p) in self.0.iter().enumerate() {
+                let rs = &rule_map.get(p);
+                let Some(rs) = rs else {
+                    continue;
+                };
+                for r in *rs {
+                    assert!(r.0 == *p || r.1 == *p);
+                    if r.0 == *p && self.0[..i].contains(&r.1) {
+                        let index = self.0.iter().position(|n| *n == r.1).unwrap();
+                        let old = self.0.remove(index);
+                        // note that we've removed an element before i, so p has move to i-1
+                        self.0.insert(i, old);
+                        continue 'correction;
+                    } else if r.1 == *p && self.0[i + 1..].contains(&r.0) {
+                        let index = self.0.iter().position(|n| *n == r.1).unwrap();
+                        let old = self.0.remove(index);
+                        self.0.insert(i - 1, old);
+                        continue 'correction;
+                    }
+                }
+            }
+            break;
+        }
+    }
 }
 
 impl UpdateSet {
+    #[allow(dead_code)]
     fn valid_updates(&self, rules: &RuleSet) -> Vec<bool> {
         self.0
             .iter()
@@ -100,11 +126,23 @@ impl UpdateSet {
     }
 
     fn checksum(&self, rules: &RuleSet) -> u32 {
-        let rm = Some(rules.rule_map());
+        let rule_map = Some(rules.rule_map());
         self.0
             .iter()
-            .filter(|p| p.is_valid(rules, rm.as_ref()))
+            .filter(|p| p.is_valid(rules, rule_map.as_ref()))
             .map(|p| p.middle_number())
+            .sum()
+    }
+
+    fn checksum_incorrect(&mut self, rules: &RuleSet) -> u32 {
+        let rule_map = Some(rules.rule_map());
+        self.0
+            .iter_mut()
+            .filter(|p| !p.is_valid(rules, rule_map.as_ref()))
+            .map(|p| {
+                p.correct(rules, rule_map.as_ref());
+                p.middle_number()
+            })
             .sum()
     }
 }
@@ -134,9 +172,12 @@ fn parse_input(input: Vec<String>) -> (RuleSet, UpdateSet) {
 
 fn main() {
     let input = utils::input_lines(5);
-    let (rules, updates) = parse_input(input);
+    let (rules, mut updates) = parse_input(input);
     let part_1_answer = updates.checksum(&rules);
     println!("Day 5, Part 1 answer: {}", part_1_answer);
+
+    let part_2_answer = updates.checksum_incorrect(&rules);
+    println!("Day 5, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
