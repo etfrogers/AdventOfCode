@@ -1,13 +1,21 @@
-use rstest::{rstest, fixture};
 use super::*;
+use rstest::{fixture, rstest};
 
-const TEST_1: &str = "...";
+const TEST_1: &str = "....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#...";
 
 #[fixture]
 fn input() -> Vec<String> {
     utils::string_input_lines(TEST_1)
 }
-
 
 #[test]
 fn test_part1() {

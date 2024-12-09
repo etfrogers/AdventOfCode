@@ -137,7 +137,7 @@ impl<E> SparseGrid<E> {
 impl<E: PartialEq + Copy> SparseGrid<E> {
     pub fn from_dense(dense: Grid<E>, default: E) -> Self {
         let mut map = HashMap::<Pos, E>::new();
-        for pos in dense.coord_iter(false, false) {
+        for pos in dense.coords(false, false) {
             let pos: Pos<i32> = pos.try_into().unwrap();
             if dense[pos] != default {
                 map.insert(pos, default);

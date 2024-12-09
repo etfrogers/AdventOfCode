@@ -30,7 +30,7 @@ impl<'a, E> Grid<E> {
         ColumnIterator::new(&self)
     }
 
-    pub fn coord_iter(&self, invert: bool, col_major: bool) -> IndIterator {
+    pub fn coords(&self, invert: bool, col_major: bool) -> IndIterator {
         return IndIterator::new(self, invert, col_major);
     }
 

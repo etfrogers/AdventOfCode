@@ -118,7 +118,7 @@ impl Image {
         let orig = new.clone();
 
         let (n_x, n_y) = new.size();
-        for pos in new.coord_iter(false, false) {
+        for pos in new.coords(false, false) {
             let x = pos.x();
             let y = pos.y();
             // if x == 0 || y == 0 || x == n_x - 1 || y == n_y - 1 {

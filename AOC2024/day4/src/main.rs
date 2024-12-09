@@ -15,7 +15,7 @@ impl Wordsearch {
     fn n_words(&self, word: &str) -> u32 {
         let chars: Vec<_> = word.chars().collect();
         let mut n = 0;
-        for p in self.coord_iter(false, false) {
+        for p in self.coords(false, false) {
             if self[p] == chars[0] {
                 'dir: for nb in self.neighbour_coords(&p, true) {
                     if self[nb] == chars[1] {
@@ -43,7 +43,7 @@ impl Wordsearch {
             Pos::new(1, 1),
             Pos::new(1, -1),
         ];
-        for p in self.coord_iter(false, false) {
+        for p in self.coords(false, false) {
             if self[p] == 'A' {
                 let mut n_diags = 0;
                 for dir in &diags {

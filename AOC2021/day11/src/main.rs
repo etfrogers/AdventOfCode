@@ -46,7 +46,7 @@ impl Octopuses {
         let mut new_flashes = true;
         while new_flashes {
             new_flashes = false;
-            for c in self.coord_iter(false, false) {
+            for c in self.coords(false, false) {
                 if self[c] > 9 && !flashed[c] {
                     new_flashes = true;
                     flashed[c] = true;
@@ -57,7 +57,7 @@ impl Octopuses {
                 }
             }
         }
-        self.coord_iter(false, false)
+        self.coords(false, false)
             .zip(flashed.iter())
             .for_each(|(c, elem_flashed)| {
                 if *elem_flashed {

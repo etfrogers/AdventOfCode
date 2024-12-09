@@ -57,7 +57,7 @@ impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
         T: Clone + Default,
     {
         let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
-        let ind_it = self.coord_iter(false, false);
+        let ind_it = self.coords(false, false);
         for c in ind_it {
             let elem = &self[c];
             new[c] = fun(elem);
@@ -66,7 +66,7 @@ impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
     }
 
     fn apply(&mut self, fun: impl Fn(&E) -> E) {
-        let iter = self.coord_iter(false, false);
+        let iter = self.coords(false, false);
         for pos in iter {
             self.data[pos.y()][pos.x()] = fun(&self[pos])
         }
@@ -310,7 +310,7 @@ impl<E: PartialEq> Grid<E> {
     }
 
     pub fn find_c(&self, val: E) -> Option<Coord> {
-        for c in self.coord_iter(false, false) {
+        for c in self.coords(false, false) {
             if self[c] == val {
                 return Some(c);
             }
