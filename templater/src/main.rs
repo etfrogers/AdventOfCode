@@ -68,7 +68,7 @@ version = \"0.1.0\"
 edition = \"2021\"
 
 [dependencies]
-utils = { path = \"../utils\" }
+utils = { path = \"../../utils\" }
 
 [dev-dependencies]
 rstest = \"0.23.0\"

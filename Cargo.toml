@@ -1,0 +1,6 @@
+[workspace]
+
+
+members = ["utils", "templater"]
+
+resolver = "2"

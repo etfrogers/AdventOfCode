@@ -18,91 +18,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 
 [[package]]
-name = "bit-set"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08807e080ed7f9d5433fa9b275196cfc35414f66a0c79d864dc51a0d825231a3"
-dependencies = [
- "bit-vec",
-]
-
-[[package]]
-name = "bit-vec"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
-
-[[package]]
 name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "day1"
-version = "0.1.0"
-dependencies = [
- "rstest",
- "utils",
-]
-
-[[package]]
-name = "day2"
-version = "0.1.0"
-dependencies = [
- "rstest",
- "utils",
-]
-
-[[package]]
-name = "day3"
-version = "0.1.0"
-dependencies = [
- "fancy-regex",
- "rstest",
- "utils",
-]
-
-[[package]]
-name = "day4"
-version = "0.1.0"
-dependencies = [
- "rstest",
- "utils",
-]
-
-[[package]]
-name = "day5"
-version = "0.1.0"
-dependencies = [
- "rstest",
- "utils",
-]
-
-[[package]]
-name = "day6"
-version = "0.1.0"
-dependencies = [
- "rstest",
- "utils",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
-
-[[package]]
-name = "fancy-regex"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e24cb5a94bcae1e5408b0effca5cd7172ea3c5755049c5f3af4cd283a165298"
-dependencies = [
- "bit-set",
- "regex-automata",
- "regex-syntax",
-]
 
 [[package]]
 name = "futures"
@@ -452,6 +377,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f764005d11ee5f36500a149ace24e00e3da98b0158b3e2d53a7495660d3f4d60"
 
 [[package]]
+name = "templater"
+version = "0.1.0"
+
+[[package]]
 name = "toml_datetime"
 version = "0.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -480,6 +409,7 @@ version = "0.1.0"
 dependencies = [
  "lazy_static",
  "num",
+ "rstest",
  "take_mut",
 ]
 
