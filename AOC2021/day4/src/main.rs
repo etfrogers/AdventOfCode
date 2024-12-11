@@ -38,15 +38,15 @@ impl Board {
     }
 
     fn call_number(&mut self, n: u16) {
-        if let Some(c) = self.numbers.find_c(n) {
+        if let Some(c) = self.numbers.find(n) {
             self.matched[c] = true;
         }
     }
 
     fn total_unmarked(&self) -> u16 {
         self.numbers
-            .iter()
-            .zip(self.matched.iter())
+            .values()
+            .zip(self.matched.values())
             .filter(|pair| !*pair.1)
             .map(|pair| *pair.0)
             .sum()

@@ -46,7 +46,7 @@ impl Octopuses {
         let mut new_flashes = true;
         while new_flashes {
             new_flashes = false;
-            for c in self.coords(false, false) {
+            for c in self.coords() {
                 if self[c] > 9 && !flashed[c] {
                     new_flashes = true;
                     flashed[c] = true;
@@ -57,14 +57,14 @@ impl Octopuses {
                 }
             }
         }
-        self.coords(false, false)
-            .zip(flashed.iter())
+        self.coords()
+            .zip(flashed.values())
             .for_each(|(c, elem_flashed)| {
                 if *elem_flashed {
                     self[c] = 0
                 }
             });
-        flashed.iter().all(|v| *v)
+        flashed.values().all(|v| *v)
     }
 
     fn find_synchronised_flashes(&mut self) -> u64 {

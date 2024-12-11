@@ -80,7 +80,7 @@ struct Chunk(Grid<Pixel>);
 
 impl Chunk {
     fn to_index(&self) -> usize {
-        let strs = self.0.iter().map(|v| v.to_int()).join("");
+        let strs = self.0.values().map(|v| v.to_int()).join("");
         usize::from_str_radix(&strs, 2).unwrap()
     }
 }
@@ -118,7 +118,7 @@ impl Image {
         let orig = new.clone();
 
         let (n_x, n_y) = new.size();
-        for pos in new.coords(false, false) {
+        for pos in new.coords() {
             let x = pos.x();
             let y = pos.y();
             // if x == 0 || y == 0 || x == n_x - 1 || y == n_y - 1 {

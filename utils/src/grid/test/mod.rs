@@ -1,16 +1,16 @@
 use rstest::rstest;
 use std::slice::SliceIndex;
 
-use super::Grid;
+use super::{iter::ColumnMajor, iter::Invert, Grid};
 
 #[rstest]
-#[case(false, false, "ABCD")]
-// 	{true, false, "DCBA"},
-// 	{false, true, "ACBD"},
-// 	{true, true, "DBCA"},
-fn test_iterator(#[case] _invert: bool, #[case] _col_major: bool, #[case] expected: &str) {
+#[case(Invert(false), ColumnMajor(false), "ABCD")]
+#[case(Invert(true), ColumnMajor(false), "DCBA")]
+#[case(Invert(false), ColumnMajor(true), "ACBD")]
+#[case(Invert(true), ColumnMajor(true), "DBCA")]
+fn test_iterator(#[case] invert: Invert, #[case] col_major: ColumnMajor, #[case] expected: &str) {
     let grid = Grid::new_from_string_slices(vec!["AB", "CD"]);
-    let vec_chars = grid.iter().collect::<Vec<_>>();
+    let vec_chars = grid.values_ordered(invert, col_major).collect::<Vec<_>>();
     let actual: String = vec_chars.into_iter().collect();
     assert_eq!(expected, actual);
 }

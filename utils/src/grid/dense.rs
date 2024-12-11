@@ -57,17 +57,14 @@ impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
         T: Clone + Default,
     {
         let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
-        let ind_it = self.coords(false, false);
-        for c in ind_it {
-            let elem = &self[c];
+        for (c, elem) in self.iter() {
             new[c] = fun(elem);
         }
         new
     }
 
     fn apply(&mut self, fun: impl Fn(&E) -> E) {
-        let iter = self.coords(false, false);
-        for pos in iter {
+        for pos in self.coords() {
             self.data[pos.y()][pos.x()] = fun(&self[pos])
         }
     }
@@ -175,7 +172,7 @@ impl<E> Grid<E> {
 
 impl<E: Eq + Hash + Copy> Grid<E> {
     pub fn counter(&self) -> Counter<E> {
-        Counter::new(self.clone().into_iter())
+        Counter::new(self.clone().into_values())
     }
 }
 
@@ -304,13 +301,8 @@ where
 impl<E: PartialEq> Grid<E> {
     // Returns x and y coords of first occurence of the input val
     // If the value is not found, None
-    pub fn find(&self, val: E) -> Option<(CoordType, CoordType)> {
-        let c = self.find_c(val)?;
-        Some((c.x(), c.y()))
-    }
-
-    pub fn find_c(&self, val: E) -> Option<Coord> {
-        for c in self.coords(false, false) {
+    pub fn find(&self, val: E) -> Option<Coord> {
+        for c in self.coords() {
             if self[c] == val {
                 return Some(c);
             }

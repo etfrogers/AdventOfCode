@@ -25,7 +25,7 @@ impl HeightMap {
     }
 
     fn low_point_coords(&self) -> impl Iterator<Item = Coord> + '_ {
-        self.coords(false, false).filter(|c| {
+        self.coords().filter(|c| {
             let lp_value = self[*c];
             self.neighbours(c, false).all(|v| *v > lp_value)
         })
