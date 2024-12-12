@@ -1,4 +1,3 @@
-use core::fmt;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::{fmt::Display, str::FromStr};
@@ -6,6 +5,7 @@ use std::{fmt::Display, str::FromStr};
 use utils::{
     self,
     grid::{pos::Pos, sparse::SparseGrid, GridTrait},
+    StringParseError,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -15,13 +15,13 @@ enum Orientation {
 }
 
 impl FromStr for Orientation {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "x" => Ok(Orientation::X),
             "y" => Ok(Orientation::Y),
-            _ => Err(fmt::Error),
+            s => Err(StringParseError::new(s)),
         }
     }
 }
@@ -37,11 +37,11 @@ lazy_static! {
 }
 
 impl FromStr for Fold {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let Some(matches) = FOLD_RE.captures(s) else {
-            return Err(fmt::Error);
+            return Err(StringParseError::new(s));
         };
         let orientation = Orientation::from_str(&matches.get(1).unwrap().as_str())?;
         let coord = matches
@@ -49,7 +49,7 @@ impl FromStr for Fold {
             .unwrap()
             .as_str()
             .parse()
-            .map_err(|_| fmt::Error)?;
+            .map_err(|_| StringParseError::new(s))?;
         Ok(Self { orientation, coord })
     }
 }

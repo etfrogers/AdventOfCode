@@ -1,6 +1,6 @@
-use std::{cell::RefCell, fmt, num::ParseIntError, u16};
+use std::{cell::RefCell, num::ParseIntError, u16};
 
-use utils::grid;
+use utils::{grid, StringParseError};
 
 #[derive(Clone)]
 struct Board {
@@ -9,12 +9,12 @@ struct Board {
 }
 
 impl Board {
-    fn from_strs(s: Vec<String>) -> Result<Self, fmt::Error> {
+    fn from_strs(s: Vec<String>) -> Result<Self, StringParseError> {
         let numbers = grid::Grid::from(
             s.iter()
                 .map(|s| s.split_whitespace().map(|x| x.parse()).collect())
                 .collect::<Result<Vec<Vec<u16>>, ParseIntError>>()
-                .map_err(|_| fmt::Error)?,
+                .map_err(|_| StringParseError::new(&s.join("\n")))?,
         );
         let (x, y) = (numbers.n_rows(), numbers.n_cols());
         Ok(Self {
@@ -64,13 +64,17 @@ struct Winner {
 }
 
 impl Game {
-    fn from_strs(s: Vec<String>) -> Result<Self, fmt::Error> {
+    fn from_strs(s: Vec<String>) -> Result<Self, StringParseError> {
         let mut tokens = s.split(|x| x == &"");
-        let calls = tokens.next().ok_or(fmt::Error)?.get(0).ok_or(fmt::Error)?;
+        let calls = tokens
+            .next()
+            .ok_or(StringParseError::new(&s.join("\n")))?
+            .get(0)
+            .ok_or(StringParseError::new(&s.join("\n")))?;
         let boards = tokens
             .map(|b| Board::from_strs(b.to_vec()))
-            .collect::<Result<Vec<Board>, fmt::Error>>()?;
-        let calls: Vec<u16> = utils::csv_line(calls).map_err(|_| fmt::Error)?;
+            .collect::<Result<Vec<Board>, StringParseError>>()?;
+        let calls: Vec<u16> = utils::csv_line(calls).map_err(|_| StringParseError::new(calls))?;
 
         Ok(Self {
             calls,

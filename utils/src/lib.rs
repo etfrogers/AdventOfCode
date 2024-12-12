@@ -1,8 +1,43 @@
-use std::{collections::HashMap, fs, hash::Hash, ops::Deref};
+use std::{collections::HashMap, error::Error, fmt::Display, fs, hash::Hash, ops::Deref};
 
 use num;
 
 pub mod grid;
+
+#[derive(Debug)]
+pub struct StringParseError {
+    item: String,
+}
+
+impl StringParseError {
+    pub fn new(s: &str) -> Self {
+        Self {
+            item: s.to_string(),
+        }
+    }
+}
+
+impl Display for StringParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Unable to parse String: {}", self.item)
+    }
+}
+
+impl Error for StringParseError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        "description() is deprecated; use Display"
+    }
+
+    fn cause(&self) -> Option<&dyn Error> {
+        self.source()
+    }
+
+    // fn provide<'a>(&'a self, request: &mut std::error::Requests<'a>) {}
+}
 
 pub fn input_lines(day: u8) -> Vec<String> {
     let data = match fs::read_to_string(format!("day{day}/input.txt")) {

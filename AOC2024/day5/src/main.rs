@@ -1,9 +1,8 @@
 use std::collections::HashMap;
-use std::fmt;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-use utils;
+use utils::{self, StringParseError};
 
 #[derive(Debug, Clone)]
 struct Rule(u32, u32);
@@ -15,12 +14,12 @@ struct UpdatePages(Vec<u32>);
 struct UpdateSet(Vec<UpdatePages>);
 
 impl FromStr for Rule {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (p, f) = s.split_once("|").ok_or(fmt::Error)?;
-        let p = p.parse().map_err(|_| fmt::Error)?;
-        let f = f.parse().map_err(|_| fmt::Error)?;
+        let (p, f) = s.split_once("|").ok_or(StringParseError::new(s))?;
+        let p = p.parse().map_err(|_| StringParseError::new(p))?;
+        let f = f.parse().map_err(|_| StringParseError::new(f))?;
         Ok(Self(p, f))
     }
 }
@@ -42,14 +41,14 @@ impl RuleSet {
 }
 
 impl FromStr for UpdatePages {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self(
             s.split(",")
                 .map(|v| v.parse::<u32>())
                 .collect::<Result<Vec<u32>, ParseIntError>>()
-                .map_err(|_| fmt::Error)?,
+                .map_err(|_| StringParseError::new(s))?,
         ))
     }
 }

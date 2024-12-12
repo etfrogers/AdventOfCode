@@ -5,6 +5,7 @@ use std::{ops::Deref, str::FromStr};
 use utils::{
     self,
     grid::{Grid, GridTrait},
+    StringParseError,
 };
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Hash, Eq)]
@@ -24,13 +25,13 @@ impl Pixel {
 }
 
 impl FromStr for Pixel {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "#" => Ok(Pixel::LIGHT),
             "." => Ok(Pixel::DARK),
-            _ => Err(fmt::Error),
+            _ => Err(StringParseError::new(s)),
         }
     }
 }

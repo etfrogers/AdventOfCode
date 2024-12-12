@@ -1,8 +1,7 @@
-use core::fmt;
 use std::{collections::HashMap, str::FromStr, usize};
 
 use lazy_static::lazy_static;
-use utils;
+use utils::StringParseError;
 
 lazy_static! {
     static ref DECODE: HashMap<char, Vec<u8>> = HashMap::from([
@@ -190,7 +189,7 @@ impl Packet {
 }
 
 impl FromStr for Packet {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let (pkt, _) = Self::build(&expand_hex(s), 0);

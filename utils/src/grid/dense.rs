@@ -9,7 +9,7 @@ use std::{
     str::FromStr,
 };
 
-use crate::Counter;
+use crate::{Counter, StringParseError};
 
 use super::{
     pos::{Coord, CoordType, Pos},
@@ -19,7 +19,7 @@ use super::{
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Grid<E> {
-    data: Vec<Vec<E>>,
+    pub(in crate::grid) data: Vec<Vec<E>>,
 }
 
 impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
@@ -229,7 +229,7 @@ impl<E> IndexMut<(usize, usize)> for Grid<E> {
 }
 
 impl FromStr for Grid<char> {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self::new_from_strings(

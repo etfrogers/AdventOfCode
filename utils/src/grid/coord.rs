@@ -38,7 +38,7 @@ impl FromStr for Coord {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let pos = Pos::from_str(&s)?;
-        Self::from(&pos).ok_or(fmt::Error)
+        Self::from(&pos).ok_or(StringParseError::new(s))
     }
 }
 

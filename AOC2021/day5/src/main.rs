@@ -1,9 +1,9 @@
-use core::fmt;
 use std::{cmp::max, str::FromStr};
 
 use utils::{
     self,
     grid::{pos::Pos, sparse::SparseGrid},
+    StringParseError,
 };
 
 struct Line {
@@ -12,7 +12,7 @@ struct Line {
 }
 
 impl FromStr for Line {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut tokens = s.split(" -> ");

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
-use std::{cell::RefCell, collections::VecDeque, fmt};
-use utils;
+use std::{cell::RefCell, collections::VecDeque};
+use utils::{input_lines, StringParseError};
 
 type Register = RefCell<NumberType>;
 type NumberType = i128;
@@ -102,10 +102,10 @@ enum Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
-    fn from_str(s: &str, alu: &'a ALU) -> Result<Self, fmt::Error> {
+    fn from_str(s: &str, alu: &'a ALU) -> Result<Self, StringParseError> {
         let mut tokens = s.split_ascii_whitespace();
-        let command = tokens.next().ok_or_else(|| fmt::Error)?;
-        let arg1 = tokens.next().ok_or_else(|| fmt::Error)?;
+        let command = tokens.next().ok_or_else(|| StringParseError::new(s))?;
+        let arg1 = tokens.next().ok_or_else(|| StringParseError::new(s))?;
         let arg2 = tokens.next();
 
         let arg1 = alu.get_register(Some(arg1)).unwrap();
@@ -160,7 +160,7 @@ impl<'a> Program<'a> {
 const DEBUG: bool = true;
 
 fn main() {
-    let program = utils::input_lines(24);
+    let program = input_lines(24);
     let alu = ALU::new();
     let _program = Program::build(program, &alu);
     let mut input: Vec<i128> = vec![9; 14];

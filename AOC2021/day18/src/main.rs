@@ -5,7 +5,7 @@ use std::{ops::Add, str::FromStr};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use regex::Regex;
-use utils;
+use utils::StringParseError;
 
 #[derive(Debug, PartialEq, Clone)]
 enum SnailfishNumber {
@@ -168,11 +168,13 @@ impl Add for SnailfishNumber {
 }
 
 impl FromStr for SnailfishNumber {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.len() == 1 {
-            Ok(SnailfishNumber::Regular(s.parse().map_err(|_| fmt::Error)?))
+            Ok(SnailfishNumber::Regular(
+                s.parse().map_err(|_| StringParseError::new(s))?,
+            ))
         } else {
             let inner1_start = 1;
             let mut inner1_end = 0;
@@ -250,10 +252,10 @@ impl Homework {
 }
 
 impl FromStr for Homework {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let data: Result<Vec<SnailfishNumber>, fmt::Error> =
+        let data: Result<Vec<SnailfishNumber>, StringParseError> =
             s.lines().map(|s| SnailfishNumber::from_str(s)).collect();
         Ok(Homework(data?))
     }

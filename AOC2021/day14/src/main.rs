@@ -1,4 +1,3 @@
-use core::fmt;
 use lazy_static::lazy_static;
 use std::{
     collections::{HashMap, HashSet},
@@ -7,7 +6,7 @@ use std::{
 };
 
 use regex::Regex;
-use utils::{self, Counter};
+use utils::{self, Counter, StringParseError};
 
 lazy_static! {
     static ref RULE_RE: Regex = Regex::new(r"([A-Z]{2}) -> ([A-Z])").unwrap();
@@ -21,7 +20,7 @@ struct Rule {
 }
 
 impl FromStr for Rule {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let groups = RULE_RE.captures(s).unwrap();
@@ -33,7 +32,7 @@ impl FromStr for Rule {
                 insert: groups[2].chars().into_iter().next().unwrap(),
             })
         } else {
-            Err(fmt::Error)
+            Err(StringParseError::new(s))
         }
     }
 }

@@ -1,4 +1,3 @@
-use core::fmt;
 use lazy_static::lazy_static;
 use std::{
     collections::HashMap,
@@ -6,6 +5,8 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub},
     str::FromStr,
 };
+
+use crate::StringParseError;
 
 use super::direction::Direction;
 
@@ -131,20 +132,20 @@ impl<T: num::PrimInt + DivAssign> DivAssign<T> for Pos<T> {
 }
 
 impl<T: num::PrimInt + FromStr> FromStr for Pos<T> {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut tokens = s.split(",");
         let x = tokens
             .next()
-            .ok_or_else(|| fmt::Error)?
+            .ok_or_else(|| StringParseError::new(s))?
             .parse::<T>()
-            .map_err(|_| fmt::Error)?;
+            .map_err(|_| StringParseError::new(s))?;
         let y = tokens
             .next()
-            .ok_or_else(|| fmt::Error)?
+            .ok_or_else(|| StringParseError::new(s))?
             .parse::<T>()
-            .map_err(|_| fmt::Error)?;
+            .map_err(|_| StringParseError::new(s))?;
         Ok(Self { x, y })
     }
 }

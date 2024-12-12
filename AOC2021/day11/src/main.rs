@@ -1,4 +1,3 @@
-use core::fmt;
 use std::{
     ops::{Deref, DerefMut},
     str::FromStr,
@@ -7,6 +6,7 @@ use std::{
 use utils::{
     self,
     grid::{Grid, GridTrait},
+    StringParseError,
 };
 
 struct Octopuses {
@@ -77,7 +77,7 @@ impl Octopuses {
 }
 
 impl FromStr for Octopuses {
-    type Err = fmt::Error;
+    type Err = StringParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self {
