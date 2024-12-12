@@ -61,15 +61,15 @@ pub struct Pos<T: num::PrimInt = i32> {
 
 impl<T: num::PrimInt> Pos<T> {
     pub fn new(x: T, y: T) -> Self {
-        return Pos { x, y };
+        Pos { x, y }
     }
 
     pub fn x(&self) -> T {
-        return self.x;
+        self.x
     }
 
     pub fn y(&self) -> T {
-        return self.y;
+        self.y
     }
 
     pub fn tuple(&self) -> (T, T) {

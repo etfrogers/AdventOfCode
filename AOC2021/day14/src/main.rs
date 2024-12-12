@@ -29,7 +29,7 @@ impl FromStr for Rule {
             Ok(Rule {
                 re: Regex::new(&pair).unwrap(),
                 // pair,
-                insert: groups[2].chars().into_iter().next().unwrap(),
+                insert: groups[2].chars().next().unwrap(),
             })
         } else {
             Err(StringParseError::new(s))
@@ -60,10 +60,9 @@ fn apply_rules(mut pattern: String, rules: &Rules) -> String {
         }
     }
     insertions.sort_by(|a, b| a.0.cmp(&b.0));
-    let mut offset = 0;
-    for insertion in insertions {
+
+    for (offset, insertion) in insertions.into_iter().enumerate() {
         pattern.insert(insertion.0 + offset, insertion.1);
-        offset += 1;
     }
     pattern
 }
@@ -75,7 +74,7 @@ fn repeat_apply(mut pattern: String, rules: &Rules, n: usize) -> String {
     pattern
 }
 
-fn checksum(string: &String) -> u64 {
+fn checksum(string: &str) -> u64 {
     checksum_of_map(&Counter::new(string.chars()))
 }
 
@@ -129,7 +128,7 @@ fn checksum_of_map(map: &CMType) -> u64 {
     max_count - min_count
 }
 
-fn build_counts(pattern: &String, rules: &Rules, n: u64) -> CountMap {
+fn build_counts(pattern: &str, rules: &Rules, n: u64) -> CountMap {
     let mut counts = CountMap(HashMap::new());
     let mut memo: MemoMap = HashMap::new();
     let n_pairs = pattern.len() - 1;

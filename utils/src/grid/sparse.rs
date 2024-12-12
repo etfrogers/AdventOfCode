@@ -37,6 +37,12 @@ impl<E> SparseGrid<E> {
     }
 }
 
+impl<E> Default for SparseGrid<E> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<E> From<HashMap<Pos, E>> for SparseGrid<E> {
     fn from(data: HashMap<Pos, E>) -> Self {
         Self {
@@ -79,14 +85,14 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
     }
 
     fn n_elem(&self) -> super::CoordType {
-        return self.data.len();
+        self.data.len()
     }
 
     #[allow(refining_impl_trait)]
-    fn map<'b, F, T: 'b>(&'b self, fun: F) -> SparseGrid<T>
+    fn map<'b, F, T>(&'b self, fun: F) -> SparseGrid<T>
     where
         F: Fn(&E) -> T,
-        T: Clone + Default + Copy,
+        T: 'b + Clone + Default + Copy,
     {
         let mut new_map = HashMap::<Pos, T>::new();
         for (key, value) in self.iter() {
@@ -163,13 +169,13 @@ impl<'a, E> Deref for SparseSlice<'a, E> {
     type Target = dyn Iterator<Item = (Pos, &'a E)> + 'a;
 
     fn deref(&self) -> &Self::Target {
-        return &(*self.0);
+        &(*self.0)
     }
 }
 
 impl<'a, E> DerefMut for SparseSlice<'a, E> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        return &mut (*self.0);
+        &mut (*self.0)
     }
 }
 impl<E> Index<Pos> for SparseGrid<E> {
@@ -180,9 +186,9 @@ impl<E> Index<Pos> for SparseGrid<E> {
     }
 }
 
-impl<'a, E: Default> IndexMut<Pos> for SparseGrid<E> {
+impl<E: Default> IndexMut<Pos> for SparseGrid<E> {
     fn index_mut(&mut self, index: Pos) -> &mut Self::Output {
-        self.data.entry(index).or_insert(E::default())
+        self.data.entry(index).or_default()
     }
 }
 
@@ -194,7 +200,7 @@ impl<E> Index<(i32, i32)> for SparseGrid<E> {
     }
 }
 
-impl<'a, E: Default> IndexMut<(i32, i32)> for SparseGrid<E> {
+impl<E: Default> IndexMut<(i32, i32)> for SparseGrid<E> {
     fn index_mut(&mut self, index: (i32, i32)) -> &mut Self::Output {
         &mut self[Into::<Pos>::into(index)]
     }
@@ -204,12 +210,10 @@ impl<E: Display + Default + Copy> Display for SparseGrid<E> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.default.is_none() {
             write!(f, "Unable to display Sparse grid without default value")
+        } else if let Ok(grid) = TryInto::<Grid<E>>::try_into(self.clone()) {
+            write!(f, "{}", grid)
         } else {
-            if let Ok(grid) = TryInto::<Grid<E>>::try_into(self.clone()) {
-                write!(f, "{}", grid)
-            } else {
-                write!(f, "Unable to format grid")
-            }
+            write!(f, "Unable to format grid")
         }
     }
 }

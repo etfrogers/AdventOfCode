@@ -185,7 +185,7 @@ pub fn program2(input: VecDeque<i128>) -> bool {
     stack.is_empty()
 }
 
-pub fn program3(i: &Vec<i128>) -> bool {
+pub fn program3(i: &[i128]) -> bool {
     // (i[2] + 12 - 5 == i[3])
     // && (i[1] + 11 - 3 == i[4])
     // && (i[6] + 11 - 16 == i[7])

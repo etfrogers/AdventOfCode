@@ -1,13 +1,11 @@
-use utils;
-
 fn sum_to_n(n: i64) -> i64 {
     n * (n + 1) / 2
 }
 
-fn fuel_to_get_to(starts: &Vec<u64>, target: u64, extra_fuel: bool) -> u64 {
+fn fuel_to_get_to(starts: &[u64], target: u64, extra_fuel: bool) -> u64 {
     let toi = |x: u64| i64::try_from(x).unwrap();
     starts
-        .into_iter()
+        .iter()
         .map(|x| {
             let dist = (toi(*x) - toi(target)).abs();
             if extra_fuel {
@@ -19,7 +17,7 @@ fn fuel_to_get_to(starts: &Vec<u64>, target: u64, extra_fuel: bool) -> u64 {
         .sum::<i64>() as u64
 }
 
-fn minimum_fuel(starts: &Vec<u64>, extra_fuel: bool) -> (u64, u64) {
+fn minimum_fuel(starts: &[u64], extra_fuel: bool) -> (u64, u64) {
     let positions: Vec<_> =
         (*starts.iter().min().unwrap()..*starts.iter().max().unwrap()).collect();
     // println!("{:?}", positions);

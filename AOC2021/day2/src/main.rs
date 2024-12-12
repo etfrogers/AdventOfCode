@@ -1,5 +1,4 @@
 use std::str::FromStr;
-use utils;
 
 #[derive(Debug, PartialEq)]
 enum Direction {
@@ -8,15 +7,14 @@ enum Direction {
     Up,
 }
 
-
 impl FromStr for Direction {
     type Err = ();
     fn from_str(input: &str) -> Result<Direction, Self::Err> {
         match input {
-            "forward"  => Ok(Direction::Forward),
-            "up"  => Ok(Direction::Up),
-            "down"  => Ok(Direction::Down),
-            _      => Err(()),
+            "forward" => Ok(Direction::Forward),
+            "up" => Ok(Direction::Up),
+            "down" => Ok(Direction::Down),
+            _ => Err(()),
         }
     }
 }
@@ -33,20 +31,22 @@ impl FromStr for Instruction {
         let mut parts = s.split_ascii_whitespace();
         let dir = match parts.next() {
             Some(s) => Direction::from_str(s)?,
-            None => return Err(())
+            None => return Err(()),
         };
         let distance: u32 = match parts.next() {
             Some(n) => n.parse().unwrap(),
-            None => return Err(())
+            None => return Err(()),
         };
-        Ok(Instruction{dir, distance})
+        Ok(Instruction { dir, distance })
     }
 }
 
 impl Instruction {
-    fn from_strs(strs: &Vec<String>) -> Vec<Instruction> {
-        strs.iter().map(|s| Instruction::from_str(s).unwrap()).collect()
-    } 
+    fn from_strs(strs: &[String]) -> Vec<Instruction> {
+        strs.iter()
+            .map(|s| Instruction::from_str(s).unwrap())
+            .collect()
+    }
 }
 
 fn total_distances(instructions: &Vec<Instruction>) -> (u32, u32) {
@@ -73,14 +73,17 @@ fn distances_with_aim(instructions: &Vec<Instruction>) -> (u32, u32) {
             Direction::Forward => {
                 horz += inst.distance;
                 depth += inst.distance * aim;
-            },
+            }
         }
     }
     (horz, depth)
 }
 fn checksum(instructions: &Vec<Instruction>, part1: bool) -> u32 {
-    let dists = if part1 {total_distances(instructions)} 
-                            else {distances_with_aim(instructions)};
+    let dists = if part1 {
+        total_distances(instructions)
+    } else {
+        distances_with_aim(instructions)
+    };
     dists.0 * dists.1
 }
 
@@ -92,14 +95,12 @@ fn main() {
 
     let cs2 = checksum(&instructions, false);
     print!("Day 2 Part 2  answer: {cs2}");
-
 }
-
 
 #[cfg(test)]
 mod test {
-    use utils;
     use super::*;
+    use utils;
 
     #[test]
     fn test_total_dists() {
@@ -130,22 +131,20 @@ mod test {
     }
 
     #[test]
-    fn test_part1(){
+    fn test_part1() {
         let instructions = Instruction::from_strs(&utils::input_lines(2));
         let cs = checksum(&instructions, true);
         assert_eq!(cs, 2322630)
     }
 
     #[test]
-    fn test_part2(){
+    fn test_part2() {
         let instructions = Instruction::from_strs(&utils::input_lines(2));
         let cs = checksum(&instructions, false);
         assert_eq!(cs, 2105273490)
     }
 
-
-    
-const TEST_DATA: &str = "forward 5
+    const TEST_DATA: &str = "forward 5
 down 5
 forward 8
 up 3

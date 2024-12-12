@@ -1,5 +1,3 @@
-use utils;
-
 struct Report(Vec<u32>);
 
 impl Report {
@@ -38,7 +36,7 @@ impl Report {
         }
     }
 
-    fn is_safe_vec(vs: &Vec<u32>) -> bool {
+    fn is_safe_vec(vs: &[u32]) -> bool {
         let increasing: bool = Self::diff(vs[0], vs[1]) < 0;
         for i in 1..vs.len() {
             let curr = vs[i];
@@ -52,7 +50,7 @@ impl Report {
     }
 }
 
-fn n_safe(reports: &Vec<Report>, with_dampener: bool) -> usize {
+fn n_safe(reports: &[Report], with_dampener: bool) -> usize {
     reports
         .iter()
         .map(|r| if r.is_safe(with_dampener) { 1 } else { 0 })

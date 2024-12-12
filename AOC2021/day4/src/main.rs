@@ -1,4 +1,4 @@
-use std::{cell::RefCell, num::ParseIntError, u16};
+use std::{cell::RefCell, num::ParseIntError};
 
 use utils::{grid, StringParseError};
 
@@ -65,11 +65,11 @@ struct Winner {
 
 impl Game {
     fn from_strs(s: Vec<String>) -> Result<Self, StringParseError> {
-        let mut tokens = s.split(|x| x == &"");
+        let mut tokens = s.split(|x| x.is_empty());
         let calls = tokens
             .next()
             .ok_or(StringParseError::new(&s.join("\n")))?
-            .get(0)
+            .first()
             .ok_or(StringParseError::new(&s.join("\n")))?;
         let boards = tokens
             .map(|b| Board::from_strs(b.to_vec()))
@@ -106,7 +106,7 @@ impl Game {
         winners
     }
 
-    fn call_number_on(n: u16, boards: &mut Vec<Board>, to_play: Vec<usize>) -> Vec<usize> {
+    fn call_number_on(n: u16, boards: &mut [Board], to_play: Vec<usize>) -> Vec<usize> {
         for b in boards.iter_mut() {
             b.call_number(n)
         }

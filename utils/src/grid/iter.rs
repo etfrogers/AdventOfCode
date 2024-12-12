@@ -34,12 +34,12 @@ where
 impl<'a, E> Grid<E> {
     pub fn iter(&'a self) -> GridIterator<'a, E> {
         // two args: invert, and colMajor, both bool, default false
-        GridIterator::new(&self, Invert(false), ColumnMajor(false))
+        GridIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
     pub fn values(&'a self) -> GridValueIterator<'a, E> {
         // two args: invert, and colMajor, both bool, default false
-        GridValueIterator::new(&self, Invert(false), ColumnMajor(false))
+        GridValueIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
     pub fn values_ordered(
@@ -48,24 +48,24 @@ impl<'a, E> Grid<E> {
         col_major: ColumnMajor,
     ) -> GridValueIterator<'a, E> {
         // two args: invert, and colMajor, both bool, default false
-        GridValueIterator::new(&self, invert, col_major)
+        GridValueIterator::new(self, invert, col_major)
     }
 
     pub fn iter_ordered(&'a self, invert: Invert, col_major: ColumnMajor) -> GridIterator<'a, E> {
         // two args: invert, and colMajor, both bool, default false
-        GridIterator::new(&self, invert, col_major)
+        GridIterator::new(self, invert, col_major)
     }
 
     pub fn row_iter(&'a self) -> RowIterator<'a, E> {
-        RowIterator::new(&self)
+        RowIterator::new(self)
     }
 
     pub fn col_iter(&'a self) -> ColumnIterator<'a, E> {
-        ColumnIterator::new(&self)
+        ColumnIterator::new(self)
     }
 
     pub fn coords(&self) -> IndIterator {
-        return IndIterator::new(self, Invert(false), ColumnMajor(false));
+        IndIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
     pub fn neighbours(&self, coord: &Coord, include_diagonals: bool) -> NeighbourIterator<E> {
@@ -225,7 +225,7 @@ where
     grid: Grid<E>,
 }
 
-impl<'a, E> GridIntoIterator<E>
+impl<E> GridIntoIterator<E>
 where
     E: Copy,
 {
@@ -237,7 +237,7 @@ where
     }
 }
 
-impl<'a, E> Iterator for GridIntoIterator<E>
+impl<E> Iterator for GridIntoIterator<E>
 where
     E: Copy,
 {
@@ -258,7 +258,7 @@ where
     grid: Grid<E>,
 }
 
-impl<'a, E> GridValueIntoIterator<E>
+impl<E> GridValueIntoIterator<E>
 where
     E: Copy,
 {
@@ -270,7 +270,7 @@ where
     }
 }
 
-impl<'a, E> Iterator for GridValueIntoIterator<E>
+impl<E> Iterator for GridValueIntoIterator<E>
 where
     E: Copy,
 {
@@ -290,10 +290,10 @@ pub struct RowIterator<'a, E> {
 
 impl<'a, E> RowIterator<'a, E> {
     fn new(grid: &'a Grid<E>) -> Self {
-        return RowIterator {
+        RowIterator {
             grid,
             current_row: 0,
-        };
+        }
     }
 }
 
@@ -317,10 +317,10 @@ pub struct ColumnIterator<'a, E> {
 
 impl<'a, E> ColumnIterator<'a, E> {
     fn new(grid: &'a Grid<E>) -> Self {
-        return ColumnIterator {
+        ColumnIterator {
             grid,
             current_col: 0,
-        };
+        }
     }
 }
 

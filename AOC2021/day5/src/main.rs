@@ -41,7 +41,7 @@ impl Line {
     }
 
     fn iter(&self) -> LineIterator {
-        LineIterator::new(&self)
+        LineIterator::new(self)
     }
 }
 
@@ -87,7 +87,7 @@ struct VentMap {
 }
 
 impl VentMap {
-    pub fn build(input: &Vec<String>, ignore_diagonal: bool) -> Self {
+    pub fn build(input: &[String], ignore_diagonal: bool) -> Self {
         let lines: Vec<_> = input.iter().map(|s| Line::from_str(s).unwrap()).collect();
         let mut data = SparseGrid::new();
         for line in lines.iter() {

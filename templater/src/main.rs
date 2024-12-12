@@ -18,9 +18,9 @@ fn main() {
     fs::create_dir(dirname).expect("Failed to create package dir");
     fs::create_dir(dirname.join("src")).expect("Failed to create src dir");
 
-    let toml_code = TOML_TEXT.replace("{#day#}", &day);
-    let test_code = TEST_TEXT.replace("{#day#}", &day);
-    let main_code = MAIN_TEXT.replace("{#day#}", &day);
+    let toml_code = TOML_TEXT.replace("{#day#}", day);
+    let test_code = TEST_TEXT.replace("{#day#}", day);
+    let main_code = MAIN_TEXT.replace("{#day#}", day);
 
     fs::write(dirname.join("src").join(fname), main_code).expect("Failed to write main");
     fs::write(dirname.join("src").join(test_name), test_code).expect("Failed to write test");

@@ -1,4 +1,4 @@
-use std::{collections::BinaryHeap, usize};
+use std::collections::BinaryHeap;
 
 use utils::{
     self,
@@ -31,12 +31,7 @@ impl Eq for Path {}
 
 impl PartialOrd for Path {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        other.total_risk.partial_cmp(&self.total_risk)
-        // match self.total_risk.partial_cmp(&other.total_risk) {
-        //     Some(core::cmp::Ordering::Equal) => {}
-        //     ord => return ord,
-        // }
-        // self.route.partial_cmp(&other.route)
+        Some(self.cmp(other))
     }
 }
 
@@ -62,7 +57,7 @@ impl RiskLevel {
             route: vec![start],
         });
         shortest_path_to[start] = 0;
-        while paths.len() > 0 {
+        while !paths.is_empty() {
             let curr_path = paths.pop().unwrap();
             let curr_pos = curr_path.current_pos();
             if curr_path.total_risk > shortest_path_to[*curr_pos] {
@@ -74,14 +69,12 @@ impl RiskLevel {
                     continue;
                 }
                 new_path.total_risk += self.map[n];
-                new_path.route.push(n.clone());
+                new_path.route.push(n);
                 if n.y() == self.map.n_rows() - 1 && n.x() == self.map.n_cols() - 1 {
                     return Some(new_path);
-                } else {
-                    if new_path.total_risk < shortest_path_to[n] {
-                        shortest_path_to[n] = new_path.total_risk;
-                        paths.push(new_path);
-                    }
+                } else if new_path.total_risk < shortest_path_to[n] {
+                    shortest_path_to[n] = new_path.total_risk;
+                    paths.push(new_path);
                 }
             }
         }

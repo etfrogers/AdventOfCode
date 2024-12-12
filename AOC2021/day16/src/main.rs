@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr, usize};
+use std::{collections::HashMap, str::FromStr};
 
 use lazy_static::lazy_static;
 use utils::StringParseError;
@@ -87,8 +87,8 @@ impl Packet {
         // let ptr = 0;
         let version;
         let type_id;
-        (version, ptr) = parse_int(&data, ptr, VERSION_SIZE).try_into().unwrap();
-        (type_id, ptr) = parse_int(&data, ptr, TYPE_SIZE).try_into().unwrap();
+        (version, ptr) = parse_int(data, ptr, VERSION_SIZE);
+        (type_id, ptr) = parse_int(data, ptr, TYPE_SIZE);
         let content = if type_id == 4 {
             let value;
             (value, ptr) = parse_literal(data, ptr);
@@ -120,7 +120,7 @@ impl Packet {
                     ptr += length;
                     let mut sub_ptr: usize = 0;
                     let mut pkts = Vec::new();
-                    while sub_ptr < length.into() {
+                    while sub_ptr < length {
                         let pkt;
                         (pkt, sub_ptr) = Packet::build(sub_data, sub_ptr);
                         pkts.push(pkt);

@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
 use lazy_static::lazy_static;
-use utils;
 
 enum LineState {
     Corrupted(char),
@@ -24,7 +23,7 @@ lazy_static! {
         HashMap::from([(')', 1), (']', 2), ('}', 3), ('>', 4),]);
 }
 
-fn process_line(line: &String) -> LineState {
+fn process_line(line: &str) -> LineState {
     let mut stack = Vec::with_capacity(line.len());
     let openers: HashSet<_> = PAIRS.keys().collect();
     let closers: HashSet<_> = PAIRS.values().collect();
@@ -40,19 +39,19 @@ fn process_line(line: &String) -> LineState {
             _ => panic!("unexpected char: {}", c),
         }
     }
-    if stack.len() == 0 {
+    if stack.is_empty() {
         LineState::Complete
     } else {
         stack.reverse();
-        let missing_chars = stack.iter().map(|c| PAIRS[&c]).collect();
+        let missing_chars = stack.iter().map(|c| PAIRS[c]).collect();
         LineState::Incomplete(missing_chars)
     }
 }
 
-fn corruption_score(lines: &Vec<String>) -> u32 {
+fn corruption_score(lines: &[String]) -> u32 {
     lines
         .iter()
-        .map(process_line)
+        .map(|s| process_line(s))
         .map(|status| match status {
             LineState::Corrupted(c) => CORRUPTION_SCORES[&c],
             _ => 0,
@@ -73,14 +72,11 @@ fn line_score(state: LineState) -> u64 {
     }
 }
 
-fn completion_score(lines: &Vec<String>) -> u64 {
+fn completion_score(lines: &[String]) -> u64 {
     let mut scores: Vec<_> = lines
         .iter()
-        .map(process_line)
-        .filter(|status| match status {
-            LineState::Incomplete(_) => true,
-            _ => false,
-        })
+        .map(|s: &String| process_line(s))
+        .filter(|status| matches!(status, LineState::Incomplete(_)))
         .map(line_score)
         .collect();
     scores.sort();

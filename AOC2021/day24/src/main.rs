@@ -8,18 +8,18 @@ type NumberType = i128;
 #[allow(dead_code)]
 mod prog;
 
-struct ALU {
+struct Alu {
     w: Register,
     x: Register,
     y: Register,
     z: Register,
 }
 
-impl ALU {
+impl Alu {
     fn new() -> Self {
         // let init = || RefCell::new(BigInt::from(0));
         let init = || RefCell::new(0);
-        ALU {
+        Alu {
             w: init(),
             x: init(),
             y: init(),
@@ -36,7 +36,9 @@ impl ALU {
                     "y" => &self.y,
                     "z" => &self.z,
                     r => {
-                        let val = r.parse().expect(&format!("Unexpected register: {}", r));
+                        let val = r
+                            .parse()
+                            .unwrap_or_else(|_| panic!("Unexpected register: {}", r));
                         return Some(Arg {
                             ptr: None,
                             data: Some(val),
@@ -75,9 +77,9 @@ impl<'a> Arg<'a> {
     fn get(&self) -> NumberType {
         self.check_validity();
         if self.ptr.is_some() {
-            self.ptr.unwrap().borrow().clone()
+            *self.ptr.unwrap().borrow()
         } else {
-            self.data.clone().unwrap()
+            self.data.unwrap()
         }
     }
 
@@ -102,7 +104,7 @@ enum Instruction<'a> {
 }
 
 impl<'a> Instruction<'a> {
-    fn from_str(s: &str, alu: &'a ALU) -> Result<Self, StringParseError> {
+    fn from_str(s: &str, alu: &'a Alu) -> Result<Self, StringParseError> {
         let mut tokens = s.split_ascii_whitespace();
         let command = tokens.next().ok_or_else(|| StringParseError::new(s))?;
         let arg1 = tokens.next().ok_or_else(|| StringParseError::new(s))?;
@@ -128,7 +130,7 @@ impl<'a> Instruction<'a> {
 }
 
 impl<'a> Program<'a> {
-    fn build(input: Vec<String>, alu: &'a ALU) -> Self {
+    fn build(input: Vec<String>, alu: &'a Alu) -> Self {
         Self {
             listing: input
                 .into_iter()
@@ -150,7 +152,7 @@ impl<'a> Program<'a> {
                 Instruction::Divide(reg, arg) => reg.set(reg.get() / arg.get()),
                 Instruction::Modulo(reg, arg) => reg.set(reg.get() % arg.get()),
                 Instruction::Equal(reg, arg) => {
-                    reg.set(TryInto::<NumberType>::try_into(reg.get() == arg.get()).unwrap())
+                    reg.set(Into::<NumberType>::into(reg.get() == arg.get()))
                 }
             }
         }
@@ -161,7 +163,7 @@ const DEBUG: bool = true;
 
 fn main() {
     let program = input_lines(24);
-    let alu = ALU::new();
+    let alu = Alu::new();
     let _program = Program::build(program, &alu);
     let mut input: Vec<i128> = vec![9; 14];
     input[13] = 10; // for first decrement to work

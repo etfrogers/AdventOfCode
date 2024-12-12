@@ -1,7 +1,6 @@
 use std::sync::LazyLock;
 
 use fancy_regex::Regex;
-use utils;
 
 static MUL_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"mul\((\d{1,3}),(\d{1,3})\)").unwrap());
@@ -9,11 +8,11 @@ static MUL_RE: LazyLock<Regex> =
 static COND_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(^|do(?!(n't)))(.*?)(don't|$)").unwrap());
 
-fn process_muls(input: &Vec<String>) -> u64 {
+fn process_muls(input: &[String]) -> u64 {
     mul_sum(&input.join(" "))
 }
 
-fn conditional_muls(input: &Vec<String>) -> u64 {
+fn conditional_muls(input: &[String]) -> u64 {
     COND_RE
         .captures_iter(&input.join(" "))
         .map(|c| {

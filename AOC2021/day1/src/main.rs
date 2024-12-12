@@ -1,5 +1,3 @@
-use utils;
-
 fn main() {
     let input = utils::input_lines(1);
     let data = parse_input(input);
@@ -10,20 +8,19 @@ fn main() {
     let windowed = windowed_sum(3, &data);
     let day2 = n_increases(&windowed);
     println!("Day 2 answer: {}", day2);
-
 }
 
-fn windowed_sum(size: usize, data: &Vec<i32>) -> Vec<i32> {
-    data.windows(size)
-        .map(|x| x.into_iter().sum())
-        .collect()
+fn windowed_sum(size: usize, data: &[i32]) -> Vec<i32> {
+    data.windows(size).map(|x| x.iter().sum()).collect()
 }
 
-fn n_increases(data: &Vec<i32>) -> i32 {
+fn n_increases(data: &[i32]) -> i32 {
     let mut n = 0;
     let mut prev = &data[0];
     for entry in &data[1..] {
-        if entry > prev { n += 1; }
+        if entry > prev {
+            n += 1;
+        }
         prev = entry
     }
     n

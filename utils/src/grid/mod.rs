@@ -24,10 +24,10 @@ where
     fn bounds(&self) -> GridBounds<Self::CoordType>;
     fn size(&self) -> (CoordType, CoordType);
     fn n_elem(&self) -> CoordType;
-    fn map<'b, F, T: 'b>(&'b self, fun: F) -> impl GridTrait<T>
+    fn map<'b, F, T>(&'b self, fun: F) -> impl GridTrait<T>
     where
         F: Fn(&E) -> T,
-        T: Clone + Default + Copy;
+        T: 'b + Clone + Default + Copy;
     fn apply(&mut self, fun: impl Fn(&E) -> E);
 }
 

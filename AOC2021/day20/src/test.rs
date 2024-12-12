@@ -18,11 +18,11 @@ fn input() -> Vec<String> {
 #[rstest]
 fn test_build(input: Vec<String>) {
     let (algo, img) = parse_input(input);
-    assert_eq!(algo[0], Pixel::DARK);
-    assert_eq!(algo[1], Pixel::DARK);
-    assert_eq!(algo[2], Pixel::LIGHT);
-    assert_eq!(*algo.last().unwrap(), Pixel::LIGHT);
-    assert_eq!(*img.counter().get(&Pixel::LIGHT).unwrap(), 10)
+    assert_eq!(algo[0], Pixel::Dark);
+    assert_eq!(algo[1], Pixel::Dark);
+    assert_eq!(algo[2], Pixel::Light);
+    assert_eq!(*algo.last().unwrap(), Pixel::Light);
+    assert_eq!(*img.counter().get(&Pixel::Light).unwrap(), 10)
 }
 
 #[rstest]
@@ -62,7 +62,7 @@ fn test_2_enhance(input: Vec<String>) {
     let (algo, mut img) = parse_input(input);
     img.enhance_n(&algo, 2);
     // println!("{img}");
-    assert_eq!(img.counter()[&Pixel::LIGHT], 35);
+    assert_eq!(img.counter()[&Pixel::Light], 35);
 }
 
 #[rstest]
@@ -70,7 +70,7 @@ fn test_50_enhance(input: Vec<String>) {
     let (algo, mut img) = parse_input(input);
     img.enhance_n(&algo, 50);
     // println!("{img}");
-    assert_eq!(img.counter()[&Pixel::LIGHT], 3351);
+    assert_eq!(img.counter()[&Pixel::Light], 3351);
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn test_part1() {
     let input = utils::input_lines(20);
     let (algo, mut img) = parse_input(input);
     img.enhance_n(&algo, 2);
-    let part_1_answer = img.counter()[&Pixel::LIGHT];
+    let part_1_answer = img.counter()[&Pixel::Light];
     assert_eq!(part_1_answer, 5291);
 }
 
@@ -87,6 +87,6 @@ fn test_part2() {
     let input = utils::input_lines(20);
     let (algo, mut img) = parse_input(input);
     img.enhance_n(&algo, 50);
-    let part_1_answer = img.counter()[&Pixel::LIGHT];
+    let part_1_answer = img.counter()[&Pixel::Light];
     assert_eq!(part_1_answer, 16665);
 }

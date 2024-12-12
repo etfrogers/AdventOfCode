@@ -66,9 +66,9 @@ impl UpdatePages {
             };
             for r in *rs {
                 assert!(r.0 == *p || r.1 == *p);
-                if r.0 == *p && self.0[..i].contains(&r.1) {
-                    return false;
-                } else if r.1 == *p && self.0[i + 1..].contains(&r.0) {
+                if (r.0 == *p && self.0[..i].contains(&r.1))
+                    || (r.1 == *p && self.0[i + 1..].contains(&r.0))
+                {
                     return false;
                 }
             }
@@ -147,7 +147,7 @@ impl UpdateSet {
 }
 
 fn parse_input(input: Vec<String>) -> (RuleSet, UpdateSet) {
-    let mut parts = input.split(|s| s == "");
+    let mut parts = input.split(|s| s.is_empty());
     let rule_strs = parts.next().unwrap();
     let update_strs = parts.next().unwrap();
     assert!(parts.next().is_none());

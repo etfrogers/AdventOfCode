@@ -35,7 +35,6 @@ impl School {
                     0 => (),
                     1..=8 => {
                         new_data.insert(i - 1, self.data[i]);
-                        ()
                     }
                     _ => panic!("Unexpected value"),
                 }

@@ -23,7 +23,7 @@ mod w 2";
 #[case(-789, 789)]
 fn test_negation(#[case] input: NumberType, #[case] output: NumberType) {
     let prog = utils::string_input_lines(TEST_NEG);
-    let alu = ALU::new();
+    let alu = Alu::new();
     let prog = Program::build(prog, &alu);
     prog.run(vec![input]);
     assert_eq!(*alu.x.borrow(), output);
@@ -36,7 +36,7 @@ fn test_negation(#[case] input: NumberType, #[case] output: NumberType) {
 #[case(0, &[0, 0, 0, 0])]
 fn test_binary(#[case] input: NumberType, #[case] output: &[NumberType]) {
     let prog = utils::string_input_lines(TEST_BINARY);
-    let alu = ALU::new();
+    let alu = Alu::new();
     let prog = Program::build(prog, &alu);
     prog.run(vec![input]);
     assert_eq!(*alu.w.borrow(), output[0]);
@@ -53,7 +53,7 @@ fn test_hypothesis_part1() {
     assert!(program(VecDeque::from(hypothesis.clone())));
 
     let program = utils::input_lines(24);
-    let alu = ALU::new();
+    let alu = Alu::new();
     let program = Program::build(program, &alu);
     program.run(hypothesis);
     assert_eq!(*alu.z.borrow(), 0);
@@ -67,7 +67,7 @@ fn test_hypothesis_part2() {
     assert!(program(VecDeque::from(hypothesis.clone())));
 
     let program = utils::input_lines(24);
-    let alu = ALU::new();
+    let alu = Alu::new();
     let program = Program::build(program, &alu);
     program.run(hypothesis);
     assert_eq!(*alu.z.borrow(), 0);

@@ -43,7 +43,7 @@ impl FromStr for Fold {
         let Some(matches) = FOLD_RE.captures(s) else {
             return Err(StringParseError::new(s));
         };
-        let orientation = Orientation::from_str(&matches.get(1).unwrap().as_str())?;
+        let orientation = Orientation::from_str(matches.get(1).unwrap().as_str())?;
         let coord = matches
             .get(2)
             .unwrap()
@@ -55,10 +55,10 @@ impl FromStr for Fold {
 }
 
 fn parse_input(input: Vec<String>) -> (Vec<Pos>, Vec<Fold>) {
-    let mut tokens = input.split(|s| s == "");
+    let mut tokens = input.split(|s| s.is_empty());
     let coords = tokens.next().unwrap();
     let folds = tokens.next().unwrap();
-    let coords = coords.iter().map(|l| Pos::from_str(&l).unwrap()).collect();
+    let coords = coords.iter().map(|l| Pos::from_str(l).unwrap()).collect();
     let folds = folds.iter().map(|s| Fold::from_str(s).unwrap()).collect();
     (coords, folds)
 }

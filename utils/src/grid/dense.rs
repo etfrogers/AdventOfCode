@@ -51,10 +51,10 @@ impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
         self.n_cols() * self.n_rows()
     }
     #[allow(refining_impl_trait)]
-    fn map<'b, F, T: 'b>(&'b self, fun: F) -> Grid<T>
+    fn map<'b, F, T>(&'b self, fun: F) -> Grid<T>
     where
         F: Fn(&E) -> T,
-        T: Clone + Default,
+        T: 'b + Clone + Default,
     {
         let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
         for (c, elem) in self.iter() {
@@ -78,8 +78,7 @@ impl<E: Clone> Grid<E> {
     {
         let data: Vec<&[E]> = self.data[index.1]
             .iter()
-            .enumerate()
-            .map(|(_, v)| &v[index.0.clone()])
+            .map(|v| &v[index.0.clone()])
             .collect();
         GridSlice(data)
     }
@@ -258,7 +257,7 @@ impl<E: Display> fmt::Display for Grid<E> {
             for item in row {
                 write!(f, "{}", item)?;
             }
-            write!(f, "\n")?;
+            writeln!(f)?;
         }
         Ok(())
     }
@@ -282,13 +281,12 @@ where
         let grid_data: HashMap<Coord, E> = value
             .iter()
             .map(|(pos, v)| -> Result<(Pos<usize>, E), TryFromIntError> {
-                let pos32: Pos<i32> = (*pos).try_into()?;
-                let shifted_pos: Coord = (pos32 - shift).try_into()?;
+                let shifted_pos: Coord = (*pos - shift).try_into()?;
                 Ok((shifted_pos, *v))
             })
             .collect::<Result<HashMap<_, _>, TryFromIntError>>()?;
 
-        let def = value.default().unwrap_or(E::default());
+        let def = value.default().unwrap_or_default();
         let (x, y) = value.size();
         let mut new_grid = Self::full(x, y, def);
         for (pos, v) in grid_data.iter() {
@@ -302,12 +300,7 @@ impl<E: PartialEq> Grid<E> {
     // Returns x and y coords of first occurence of the input val
     // If the value is not found, None
     pub fn find(&self, val: E) -> Option<Coord> {
-        for c in self.coords() {
-            if self[c] == val {
-                return Some(c);
-            }
-        }
-        None
+        self.coords().find(|&c| self[c] == val)
     }
 }
 
@@ -343,7 +336,7 @@ impl<'a, E: Clone> From<GridSlice<'a, E>> for Grid<E> {
         value
             .0
             .into_iter()
-            .map(|row| Vec::from(row))
+            .map(Vec::from)
             .collect::<Vec<_>>()
             .into()
     }

@@ -22,7 +22,7 @@ fn test_n_corrupted(input: Vec<String>) {
     assert_eq!(
         input
             .iter()
-            .map(process_line)
+            .map(|s| process_line(s))
             .filter(|status| match status {
                 LineState::Corrupted(_) => true,
                 _ => false,
@@ -38,7 +38,7 @@ fn test_n_incomplete(input: Vec<String>) {
     assert_eq!(
         input
             .iter()
-            .map(process_line)
+            .map(|s: &String| process_line(s))
             .filter(|status| match status {
                 LineState::Incomplete(_) => true,
                 _ => false,
@@ -53,7 +53,7 @@ fn test_n_incomplete(input: Vec<String>) {
 fn test_incomplete_scores(input: Vec<String>) {
     let scores = input
         .iter()
-        .map(process_line)
+        .map(|s: &String| process_line(s))
         .filter(|status| match status {
             LineState::Incomplete(_) => true,
             _ => false,

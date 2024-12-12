@@ -47,8 +47,7 @@ impl HeightMap {
         self.low_point_coords().map(|c| {
             let mut to_visit = vec![c];
             let mut members = HashSet::<Coord>::from([c]);
-            while to_visit.len() > 0 {
-                let coord = to_visit.pop().unwrap();
+            while let Some(coord) = to_visit.pop() {
                 members.insert(coord);
                 for pos in self.neighbour_coords(&coord, false) {
                     let candidate = Coord::try_from(pos).unwrap();

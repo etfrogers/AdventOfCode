@@ -11,15 +11,15 @@ use utils::{
 #[derive(Debug, Default, Clone, Copy, PartialEq, Hash, Eq)]
 enum Pixel {
     #[default]
-    DARK,
-    LIGHT,
+    Dark,
+    Light,
 }
 
 impl Pixel {
-    fn to_int(&self) -> String {
+    fn to_int(self) -> String {
         match self {
-            Pixel::DARK => "0".to_string(),
-            Pixel::LIGHT => "1".to_string(),
+            Pixel::Dark => "0".to_string(),
+            Pixel::Light => "1".to_string(),
         }
     }
 }
@@ -29,8 +29,8 @@ impl FromStr for Pixel {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "#" => Ok(Pixel::LIGHT),
-            "." => Ok(Pixel::DARK),
+            "#" => Ok(Pixel::Light),
+            "." => Ok(Pixel::Dark),
             _ => Err(StringParseError::new(s)),
         }
     }
@@ -39,8 +39,8 @@ impl FromStr for Pixel {
 impl fmt::Display for Pixel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let c = match self {
-            Pixel::DARK => '.',
-            Pixel::LIGHT => '#',
+            Pixel::Dark => '.',
+            Pixel::Light => '#',
         };
         write!(f, "{}", c)
     }
@@ -97,7 +97,7 @@ impl Image {
         Image {
             data: Grid::new_from_strings(input.to_vec())
                 .map(|s| Pixel::from_str(&s.to_string()).unwrap()),
-            outside: Pixel::DARK,
+            outside: Pixel::Dark,
         }
     }
 
@@ -154,8 +154,8 @@ impl Image {
             new[pos] = algo[index];
         }
         self.outside = match self.outside {
-            Pixel::DARK => *algo.first().unwrap(),
-            Pixel::LIGHT => *algo.last().unwrap(),
+            Pixel::Dark => *algo.first().unwrap(),
+            Pixel::Light => *algo.last().unwrap(),
         };
         self.data = new;
     }
@@ -179,12 +179,12 @@ fn main() {
     let (algo, mut img) = parse_input(input.clone());
 
     img.enhance_n(&algo, 2);
-    let part_1_answer = img.counter()[&Pixel::LIGHT];
+    let part_1_answer = img.counter()[&Pixel::Light];
     println!("Day 20, Part 1 answer: {}", part_1_answer);
 
     let (_, mut img2) = parse_input(input);
     img2.enhance_n(&algo, 50);
-    let part_2_answer = img2.counter()[&Pixel::LIGHT];
+    let part_2_answer = img2.counter()[&Pixel::Light];
     println!("Day 20, Part 2 answer: {}", part_2_answer);
 }
 

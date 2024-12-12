@@ -1,7 +1,5 @@
 use std::{collections::HashMap, error::Error, fmt::Display, fs, hash::Hash, ops::Deref};
 
-use num;
-
 pub mod grid;
 
 #[derive(Debug)]

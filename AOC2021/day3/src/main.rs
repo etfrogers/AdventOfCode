@@ -1,4 +1,4 @@
-use std::num::ParseIntError;
+use std::{cmp::Ordering, num::ParseIntError};
 
 use utils::{self, Counter};
 
@@ -65,23 +65,21 @@ impl Report {
     }
 
     fn power_consumption(&self) -> u32 {
-        return self.gamma_rate * self.epsilon_rate;
+        self.gamma_rate * self.epsilon_rate
     }
 
     fn life_support_rating(&self) -> u32 {
-        return self.co2_rating * self.oxygen_rating;
+        self.co2_rating * self.oxygen_rating
     }
 
-    fn most_common_bit(array: &Vec<Vec<bool>>, pos: usize) -> Result<bool, NoMostCommon> {
+    fn most_common_bit(array: &[Vec<bool>], pos: usize) -> Result<bool, NoMostCommon> {
         let counts = Counter::new(array.iter().map(|row| row[pos]));
         let n_false = *counts.get(&false).unwrap_or(&0);
         let n_true = *counts.get(&true).unwrap_or(&0);
-        if n_false > n_true {
-            Ok(false)
-        } else if n_false < n_true {
-            Ok(true)
-        } else {
-            Err(NoMostCommon)
+        match n_false.cmp(&n_true) {
+            Ordering::Greater => Ok(false),
+            Ordering::Less => Ok(true),
+            Ordering::Equal => Err(NoMostCommon),
         }
     }
 
@@ -110,7 +108,7 @@ impl Report {
         self.gamma_rate = Report::to_int(&gamma_chars).unwrap();
     }
 
-    fn to_int(chars: &Vec<bool>) -> Result<u32, ParseIntError> {
+    fn to_int(chars: &[bool]) -> Result<u32, ParseIntError> {
         let chars: Vec<char> = chars.iter().map(Report::to_char).collect();
         u32::from_str_radix(&String::from_iter(chars), 2)
     }
@@ -135,10 +133,7 @@ impl Report {
                     }
                     Err(NoMostCommon) => use_most_common,
                 };
-                valid = valid
-                    .into_iter()
-                    .filter(|line| line[i] == filter_bit)
-                    .collect();
+                valid.retain(|line| line[i] == filter_bit);
                 if valid.len() == 1 {
                     return valid[0].clone();
                 }

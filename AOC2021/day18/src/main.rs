@@ -1,5 +1,5 @@
+use std::fmt;
 use std::fmt::Display;
-use std::{fmt, u8};
 use std::{ops::Add, str::FromStr};
 
 use itertools::Itertools;
@@ -228,11 +228,11 @@ impl Display for SnailfishNumber {
 struct Homework(Vec<SnailfishNumber>);
 
 impl Homework {
-    fn new(input: &Vec<String>) -> Self {
+    fn new(input: &[String]) -> Self {
         Homework(
             input
                 .iter()
-                .map(|s| SnailfishNumber::from_str(&s).unwrap())
+                .map(|s| SnailfishNumber::from_str(s).unwrap())
                 .collect(),
         )
     }
@@ -256,7 +256,7 @@ impl FromStr for Homework {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let data: Result<Vec<SnailfishNumber>, StringParseError> =
-            s.lines().map(|s| SnailfishNumber::from_str(s)).collect();
+            s.lines().map(SnailfishNumber::from_str).collect();
         Ok(Homework(data?))
     }
 }
