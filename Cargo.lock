@@ -12,6 +12,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "assert_matches"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
+
+[[package]]
 name = "autocfg"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -47,10 +53,108 @@ dependencies = [
 ]
 
 [[package]]
+name = "day10_2021"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day11_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day13_2021"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day14_2021"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day15_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day16_2021"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day18_2021"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "itertools",
+ "lazy_static",
+ "regex",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day1_2021"
+version = "0.1.0"
+dependencies = [
+ "utils",
+]
+
+[[package]]
 name = "day2"
 version = "0.1.0"
 dependencies = [
  "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day20_2021"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day24_2021"
+version = "0.1.0"
+dependencies = [
+ "num",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day2_2021"
+version = "0.1.0"
+dependencies = [
  "utils",
 ]
 
@@ -64,7 +168,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "day3_2021"
+version = "0.1.0"
+dependencies = [
+ "utils",
+]
+
+[[package]]
 name = "day4"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day4_2021"
 version = "0.1.0"
 dependencies = [
  "rstest",
@@ -80,12 +199,51 @@ dependencies = [
 ]
 
 [[package]]
+name = "day5_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
 name = "day6"
 version = "0.1.0"
 dependencies = [
  "rstest",
  "utils",
 ]
+
+[[package]]
+name = "day6_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day7_2021"
+version = "0.1.0"
+dependencies = [
+ "num",
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day9_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "either"
+version = "1.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
 
 [[package]]
 name = "equivalent"
@@ -219,6 +377,15 @@ checksum = "62f822373a4fe84d4bb149bf54e584a7f4abec90e072ed49cda0edea5b95471f"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "itertools"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
+dependencies = [
+ "either",
 ]
 
 [[package]]

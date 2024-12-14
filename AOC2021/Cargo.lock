@@ -30,14 +30,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "day1"
-version = "0.1.0"
-dependencies = [
- "utils",
-]
-
-[[package]]
-name = "day10"
+name = "day10_2021"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
@@ -46,7 +39,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day11"
+name = "day11_2021"
 version = "0.1.0"
 dependencies = [
  "rstest",
@@ -54,7 +47,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day13"
+name = "day13_2021"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
@@ -64,7 +57,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day14"
+name = "day14_2021"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
@@ -74,7 +67,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day15"
+name = "day15_2021"
 version = "0.1.0"
 dependencies = [
  "rstest",
@@ -82,7 +75,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day16"
+name = "day16_2021"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
@@ -91,7 +84,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day18"
+name = "day18_2021"
 version = "0.1.0"
 dependencies = [
  "assert_matches",
@@ -103,14 +96,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "day2"
+name = "day1_2021"
 version = "0.1.0"
 dependencies = [
  "utils",
 ]
 
 [[package]]
-name = "day20"
+name = "day20_2021"
 version = "0.1.0"
 dependencies = [
  "itertools",
@@ -119,7 +112,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day24"
+name = "day24_2021"
 version = "0.1.0"
 dependencies = [
  "num",
@@ -128,30 +121,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "day3"
+name = "day2_2021"
 version = "0.1.0"
 dependencies = [
  "utils",
 ]
 
 [[package]]
-name = "day4"
+name = "day3_2021"
 version = "0.1.0"
 dependencies = [
- "rstest",
  "utils",
 ]
 
 [[package]]
-name = "day5"
-version = "0.1.0"
-dependencies = [
- "rstest",
- "utils",
-]
-
-[[package]]
-name = "day6"
+name = "day4_2021"
 version = "0.1.0"
 dependencies = [
  "rstest",
@@ -159,7 +143,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "day7"
+name = "day5_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day6_2021"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "utils",
+]
+
+[[package]]
+name = "day7_2021"
 version = "0.1.0"
 dependencies = [
  "num",
@@ -168,7 +168,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "day9"
+name = "day9_2021"
 version = "0.1.0"
 dependencies = [
  "rstest",

@@ -1,6 +1,6 @@
 [workspace]
 
 
-members = ["utils", "templater", "AOC2024/day*"]
+members = ["utils", "templater", "AOC2024/day*", "AOC2021/day*"]
 
 resolver = "2"
