@@ -4,7 +4,10 @@ use super::pos::DIAGONAL_MOVES;
 use super::Grid;
 use super::{pos::ORTHOGONAL_MOVES, Pos};
 
+#[derive(Debug, Clone, Copy)]
 pub struct Invert(pub bool);
+
+#[derive(Debug, Clone, Copy)]
 pub struct ColumnMajor(pub bool);
 
 impl<E> IntoIterator for Grid<E>
@@ -33,12 +36,18 @@ where
 
 impl<'a, E> Grid<E> {
     pub fn iter(&'a self) -> GridIterator<'a, E> {
-        // two args: invert, and colMajor, both bool, default false
         GridIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
+    pub fn iter_ordered(&'a self, invert: Invert, col_major: ColumnMajor) -> GridIterator<'a, E> {
+        GridIterator::new(self, invert, col_major)
+    }
+
+    pub fn iter_mut(&'a mut self) -> impl Iterator<Item = (Coord, &mut E)> {
+        self.coords().zip(self.values_mut())
+    }
+
     pub fn values(&'a self) -> GridValueIterator<'a, E> {
-        // two args: invert, and colMajor, both bool, default false
         GridValueIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
@@ -47,13 +56,11 @@ impl<'a, E> Grid<E> {
         invert: Invert,
         col_major: ColumnMajor,
     ) -> GridValueIterator<'a, E> {
-        // two args: invert, and colMajor, both bool, default false
         GridValueIterator::new(self, invert, col_major)
     }
 
-    pub fn iter_ordered(&'a self, invert: Invert, col_major: ColumnMajor) -> GridIterator<'a, E> {
-        // two args: invert, and colMajor, both bool, default false
-        GridIterator::new(self, invert, col_major)
+    pub fn values_mut(&'a mut self) -> impl Iterator<Item = &mut E> {
+        self.data.iter_mut().flat_map(|v| v.iter_mut())
     }
 
     pub fn row_iter(&'a self) -> RowIterator<'a, E> {
@@ -83,8 +90,11 @@ impl<'a, E> Grid<E> {
 
 impl<E: Copy> Grid<E> {
     pub fn into_values(self) -> GridValueIntoIterator<E> {
-        // two args: invert, and colMajor, both bool, default false
         GridValueIntoIterator::new(self, Invert(false), ColumnMajor(false))
+    }
+
+    pub fn into_iter_ordered(self, invert: Invert, col_major: ColumnMajor) -> GridIntoIterator<E> {
+        GridIntoIterator::new(self, invert, col_major)
     }
 }
 
