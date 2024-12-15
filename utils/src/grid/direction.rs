@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 
 use crate::grid::pos::Pos;
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Direction {
     North,
     East,

@@ -17,6 +17,13 @@ enum MapSquare {
     Blocked,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+enum GuardState {
+    Walked,
+    Turned,
+    Outside,
+}
+
 impl FromStr for MapSquare {
     type Err = StringParseError;
 
@@ -29,11 +36,13 @@ impl FromStr for MapSquare {
     }
 }
 
+#[derive(Debug, Clone)]
 struct Guard {
     pos: Coord,
     dir: Direction,
 }
 
+#[derive(Clone, Debug)]
 struct GuardMap {
     map: Grid<MapSquare>,
     guard: Guard,
@@ -50,40 +59,68 @@ impl GuardMap {
         Self { map, guard }
     }
 
-    fn find_path(&mut self) -> usize {
-        let mut visited: HashSet<Coord> = HashSet::new();
-        loop {
-            if !self.map.is_inside(&self.guard.pos) {
-                break;
-            }
-            visited.insert(self.guard.pos);
-            if !self.walk_guard() {
-                break;
+    fn find_n_obstructions(&self) -> usize {
+        let mut candiates = 0;
+        for (pos, v) in self.map.iter() {
+            if *v == MapSquare::Empty {
+                let mut candidate_map = self.map.clone();
+                candidate_map[pos] = MapSquare::Blocked;
+                if Self::find_path_map(&candidate_map, &self.guard).is_none() {
+                    candiates += 1;
+                }
             }
         }
-        visited.len()
+        candiates
     }
 
-    fn walk_guard(&mut self) -> bool {
-        let ahead = self.guard.pos + <Direction as Into<Pos<i32>>>::into(self.guard.dir);
-        if let Ok(ahead) = ahead.try_into() {
-            if self.map.is_inside(&ahead) && self.map[ahead] == MapSquare::Blocked {
-                self.guard.dir.turn_right();
-                return true;
+    fn find_path(&self) -> usize {
+        Self::find_path_map(&self.map, &self.guard).unwrap()
+    }
+
+    fn find_path_map(map: &Grid<MapSquare>, guard: &Guard) -> Option<usize> {
+        let mut visited: HashSet<(Coord, Direction)> = HashSet::new();
+        let mut guard = guard.clone();
+        loop {
+            if !map.is_inside(&guard.pos) {
+                break;
             }
-            self.guard.pos = ahead;
-            true
+            let new_key = (guard.pos, guard.dir);
+            if visited.contains(&new_key) {
+                return None;
+            }
+            if Self::walk_guard(map, &mut guard) == GuardState::Outside {
+                break;
+            }
+            visited.insert(new_key);
+        }
+        let squares_only: HashSet<_> = visited.iter().map(|v| v.0).collect();
+        Some(squares_only.len())
+    }
+
+    fn walk_guard(map: &Grid<MapSquare>, guard: &mut Guard) -> GuardState {
+        let ahead = guard.pos + <Direction as Into<Pos<i32>>>::into(guard.dir);
+        if let Ok(ahead) = ahead.try_into() {
+            if map.is_inside(&ahead) && map[ahead] == MapSquare::Blocked {
+                guard.dir.turn_right();
+                return GuardState::Turned;
+            }
+            guard.pos = ahead;
+            GuardState::Walked
         } else {
-            false
+            GuardState::Outside
         }
     }
 }
 
 fn main() {
     let input = utils::input_lines(6);
-    let mut gm = GuardMap::new(input);
+    let gm = GuardMap::new(input);
     let part_1_answer = gm.find_path();
     println!("Day 6, Part 1 answer: {}", part_1_answer);
+
+    let part_2_answer = gm.find_n_obstructions();
+    println!("Day 6, Part 2 answer: {}", part_2_answer);
+
 }
 
 #[cfg(test)]
