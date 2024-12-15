@@ -37,8 +37,9 @@ impl Error for StringParseError {
     // fn provide<'a>(&'a self, request: &mut std::error::Requests<'a>) {}
 }
 
-pub fn input_lines(day: u8) -> Vec<String> {
-    let data = match fs::read_to_string(format!("day{day}/input.txt")) {
+pub fn input_lines(_day: u8) -> Vec<String> {
+    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let data = match fs::read_to_string(format!("{dir}/input.txt")) {
         Ok(d) => d,
         Err(_) => fs::read_to_string("input.txt").unwrap_or_else(|_| {
             panic!(
