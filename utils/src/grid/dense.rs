@@ -12,6 +12,7 @@ use std::{
 use crate::{Counter, StringParseError};
 
 use super::{
+    iter::{ColumnMajor, GridIterator, Invert},
     pos::{Coord, CoordType, Pos},
     sparse::SparseGrid,
     GridBounds, GridTrait,
@@ -22,12 +23,12 @@ pub struct Grid<E> {
     pub(in crate::grid) data: Vec<Vec<E>>,
 }
 
-impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
+impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
     type SliceType = GridSlice<'a, E> where E: 'a;
 
     type CoordType = usize;
 
-    fn is_inside(&self, coord: &Pos) -> bool {
+    fn is_inside(&self, coord: &Pos<CoordType>) -> bool {
         if let Ok(c) = Coord::try_from(*coord) {
             c.x() < self.n_cols() && c.y() < self.n_rows()
         } else {
@@ -47,30 +48,52 @@ impl<'a, E: 'a + Clone> GridTrait<'a, E> for Grid<E> {
     fn size(&self) -> (CoordType, CoordType) {
         (self.n_cols(), self.n_rows())
     }
+
     fn n_elem(&self) -> CoordType {
         self.n_cols() * self.n_rows()
     }
+
     #[allow(refining_impl_trait)]
     fn map<'b, F, T>(&'b self, fun: F) -> Grid<T>
     where
         F: Fn(&E) -> T,
-        T: 'b + Clone + Default,
+        T: 'b + Clone + Copy + Default,
     {
-        let mut new = Grid::full(self.n_cols(), self.n_rows(), T::default());
+        let mut new = Grid::<T>::full(self.n_cols(), self.n_rows(), T::default());
         for (c, elem) in self.iter() {
             new[c] = fun(elem);
         }
         new
     }
+    fn iter_mut(&'a mut self) -> impl Iterator<Item = (Coord, &'a mut E)> {
+        self.coords().zip(self.values_mut())
+    }
 
-    fn apply(&mut self, fun: impl Fn(&E) -> E) {
-        for pos in self.coords() {
-            self.data[pos.y()][pos.x()] = fun(&self[pos])
+    fn values_mut(&'a mut self) -> impl Iterator<Item = &mut E> {
+        self.data.iter_mut().flat_map(|v| v.iter_mut())
+    }
+
+    #[allow(refining_impl_trait)]
+    fn iter(&'a self) -> GridIterator<'a, E> {
+        GridIterator::new(self, Invert(false), ColumnMajor(false))
+    }
+    #[allow(refining_impl_trait)]
+    #[allow(refining_impl_trait)]
+    fn full(x: CoordType, y: CoordType, content: E) -> Grid<E> {
+        let mut data = Vec::with_capacity(y);
+        for _ in 0..y {
+            data.push(vec![content; x])
         }
+        Grid { data }
+    }
+
+    #[allow(refining_impl_trait)]
+    fn full_like(other: &'a Grid<E>, content: E) -> Grid<E> {
+        Grid::full(other.n_cols(), other.n_rows(), content)
     }
 }
 
-impl<E: Clone> Grid<E> {
+impl<E: Clone + Copy> Grid<E> {
     pub fn slice<'b, R1, R2>(&'b self, index: (R1, R2)) -> <Grid<E> as GridTrait<E>>::SliceType
     where
         R1: 'b + SliceIndex<[E], Output = [E]> + Clone,
@@ -281,7 +304,7 @@ where
         let grid_data: HashMap<Coord, E> = value
             .iter()
             .map(|(pos, v)| -> Result<(Pos<usize>, E), TryFromIntError> {
-                let shifted_pos: Coord = (*pos - shift).try_into()?;
+                let shifted_pos: Coord = (pos - shift).try_into()?;
                 Ok((shifted_pos, *v))
             })
             .collect::<Result<HashMap<_, _>, TryFromIntError>>()?;
@@ -305,18 +328,6 @@ impl<E: PartialEq> Grid<E> {
 }
 
 impl<E: Clone> Grid<E> {
-    pub fn full(x: CoordType, y: CoordType, content: E) -> Grid<E> {
-        let mut data = Vec::with_capacity(y);
-        for _ in 0..y {
-            data.push(vec![content.clone(); x])
-        }
-        Grid { data }
-    }
-
-    pub fn full_like<T>(other: &Grid<T>, content: E) -> Grid<E> {
-        Grid::full(other.n_cols(), other.n_rows(), content)
-    }
-
     pub fn insert_row_of(&mut self, x: CoordType, data: E) -> Result<(), IndexError> {
         self.insert_row(x, vec![data; self.n_cols()])
     }

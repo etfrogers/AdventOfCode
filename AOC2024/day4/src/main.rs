@@ -2,7 +2,7 @@ use std::ops::Deref;
 
 use utils::{
     self,
-    grid::{pos::Pos, Grid, GridTrait},
+    grid::{direction::DIAGONAL_MOVES, pos::Pos, Grid, GridTrait},
 };
 
 struct Wordsearch(Grid<char>);
@@ -22,8 +22,11 @@ impl Wordsearch {
                         let dir =
                             Pos::<i32>::try_from(nb).unwrap() - Pos::<i32>::try_from(p).unwrap();
                         for (i, c) in chars[2..].iter().enumerate() {
-                            let new_pos = nb + (dir * (i + 1));
-                            if !self.is_inside(&new_pos) || self[new_pos] != *c {
+                            if let Ok(new_pos) = (nb + (dir * (i + 1))).try_into() {
+                                if !self.is_inside(&new_pos) || self[new_pos] != *c {
+                                    continue 'dir;
+                                }
+                            } else {
                                 continue 'dir;
                             }
                         }
@@ -37,21 +40,18 @@ impl Wordsearch {
 
     fn n_x_mas(&self) -> u32 {
         let mut n = 0;
-        let diags: Vec<Pos> = vec![
-            Pos::new(-1, -1),
-            Pos::new(-1, 1),
-            Pos::new(1, 1),
-            Pos::new(1, -1),
-        ];
+        let diags: Vec<Pos> = DIAGONAL_MOVES.values().copied().collect();
         for (p, c) in &self.0 {
             if *c == 'A' {
                 let mut n_diags = 0;
                 for dir in &diags {
-                    let nb = p + *dir;
-                    if self.is_inside(&nb) && self[nb] == 'M' {
-                        let opp_nb = p - *dir;
-                        if self.is_inside(&opp_nb) && self[opp_nb] == 'S' {
-                            n_diags += 1;
+                    if let Ok(nb) = (p + *dir).try_into() {
+                        if self.is_inside(&nb) && self[nb] == 'M' {
+                            if let Ok(opp_nb) = (p - *dir).try_into() {
+                                if self.is_inside(&opp_nb) && self[opp_nb] == 'S' {
+                                    n_diags += 1;
+                                }
+                            }
                         }
                     }
                 }

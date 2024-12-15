@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{hash_map::IntoIter, HashMap},
     fmt::Display,
     ops::{Deref, DerefMut, Index, IndexMut, RangeBounds},
 };
@@ -53,7 +53,7 @@ impl<E> From<HashMap<Pos, E>> for SparseGrid<E> {
 }
 
 impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
-    fn is_inside(&self, _: &Pos) -> bool {
+    fn is_inside(&self, _: &Pos<Self::CoordType>) -> bool {
         true
     }
 
@@ -96,19 +96,37 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
     {
         let mut new_map = HashMap::<Pos, T>::new();
         for (key, value) in self.iter() {
-            new_map.insert(*key, fun(value));
+            new_map.insert(key, fun(value));
         }
         SparseGrid::from(new_map)
     }
 
-    fn apply(&mut self, fun: impl Fn(&E) -> E) {
-        for (_, value) in self.iter_mut() {
-            *value = fun(value);
-        }
+    fn iter_mut(&'a mut self) -> impl Iterator<Item = (Pos<Self::CoordType>, &'a mut E)> {
+        self.data.iter_mut().map(|(k, v)| (*k, v))
+    }
+
+    fn values_mut(&'a mut self) -> impl Iterator<Item = &'a mut E> {
+        self.data.values_mut()
     }
 
     type CoordType = i32;
     type SliceType = SparseSlice<'a, E> where E: 'a;
+
+    fn iter(&'a self) -> impl Iterator<Item = (Pos<Self::CoordType>, &'a E)> {
+        self.data.iter().map(|(k, v)| (*k, v))
+    }
+
+    fn full(
+        _x: super::pos::CoordType,
+        _y: super::pos::CoordType,
+        _content: E,
+    ) -> impl GridTrait<'a, E> {
+        SparseGrid::new()
+    }
+
+    fn full_like(_template: &'a Grid<E>, _content: E) -> impl GridTrait<'a, E> {
+        SparseGrid::new()
+    }
 }
 
 impl<E> SparseGrid<E> {
@@ -120,8 +138,7 @@ impl<E> SparseGrid<E> {
     {
         let mapped = self
             .iter()
-            .filter(move |(k, _)| index.0.contains(&k.x()) && index.1.contains(&k.y()))
-            .map(move |(k, v)| (*k, v));
+            .filter(move |(k, _)| index.0.contains(&k.x()) && index.1.contains(&k.y()));
         SparseSlice(Box::new(mapped))
     }
 
@@ -215,5 +232,15 @@ impl<E: Display + Default + Copy> Display for SparseGrid<E> {
         } else {
             write!(f, "Unable to format grid")
         }
+    }
+}
+
+impl<E> IntoIterator for SparseGrid<E> {
+    type Item = (Pos, E);
+
+    type IntoIter = IntoIter<Pos, E>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
     }
 }

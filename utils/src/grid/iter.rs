@@ -1,8 +1,6 @@
-use super::pos::Coord;
-use super::pos::CoordType;
-use super::pos::DIAGONAL_MOVES;
-use super::Grid;
-use super::{pos::ORTHOGONAL_MOVES, Pos};
+use super::pos::{Coord, CoordType};
+use super::{direction::DIAGONAL_MOVES, direction::ORTHOGONAL_MOVES, Pos};
+use super::{Grid, GridTrait};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Invert(pub bool);
@@ -35,16 +33,8 @@ where
 }
 
 impl<'a, E> Grid<E> {
-    pub fn iter(&'a self) -> GridIterator<'a, E> {
-        GridIterator::new(self, Invert(false), ColumnMajor(false))
-    }
-
     pub fn iter_ordered(&'a self, invert: Invert, col_major: ColumnMajor) -> GridIterator<'a, E> {
         GridIterator::new(self, invert, col_major)
-    }
-
-    pub fn iter_mut(&'a mut self) -> impl Iterator<Item = (Coord, &mut E)> {
-        self.coords().zip(self.values_mut())
     }
 
     pub fn values(&'a self) -> GridValueIterator<'a, E> {
@@ -57,10 +47,6 @@ impl<'a, E> Grid<E> {
         col_major: ColumnMajor,
     ) -> GridValueIterator<'a, E> {
         GridValueIterator::new(self, invert, col_major)
-    }
-
-    pub fn values_mut(&'a mut self) -> impl Iterator<Item = &mut E> {
-        self.data.iter_mut().flat_map(|v| v.iter_mut())
     }
 
     pub fn row_iter(&'a self) -> RowIterator<'a, E> {
@@ -179,119 +165,95 @@ impl Iterator for IndIterator {
     }
 }
 
-pub struct GridIterator<'a, E> {
-    ind_iter: IndIterator,
-    grid: &'a Grid<E>,
-}
-
-impl<'a, E> GridIterator<'a, E> {
-    fn new(grid: &'a Grid<E>, invert: Invert, col_major: ColumnMajor) -> Self {
-        Self {
-            ind_iter: IndIterator::new(grid, invert, col_major),
-            grid,
+macro_rules! make_iterator {
+    ($name:ident, $ret_type:ty, $next:expr) => {
+        pub struct $name<'a, E> {
+            ind_iter: IndIterator,
+            grid: &'a Grid<E>,
         }
-    }
+
+        impl<'a, E> $name<'a, E> {
+            pub(super) fn new(grid: &'a Grid<E>, invert: Invert, col_major: ColumnMajor) -> Self {
+                Self {
+                    ind_iter: IndIterator::new(grid, invert, col_major),
+                    grid,
+                }
+            }
+        }
+
+        impl<'a, E> Iterator for $name<'a, E> {
+            type Item = $ret_type;
+
+            fn next(&mut self) -> Option<Self::Item> {
+                $next(self)
+            }
+        }
+    };
+    //------------- INTO ITER -------------
+    ($name:ident, $ret_type:ty, $next:expr, into) => {
+        pub struct $name<E: Copy> {
+            ind_iter: IndIterator,
+            grid: Grid<E>,
+        }
+
+        impl<E: Copy> $name<E> {
+            fn new(grid: Grid<E>, invert: Invert, col_major: ColumnMajor) -> Self {
+                Self {
+                    ind_iter: IndIterator::new(&grid, invert, col_major),
+                    grid,
+                }
+            }
+        }
+
+        impl<E: Copy> Iterator for $name<E> {
+            type Item = $ret_type;
+
+            fn next(&mut self) -> Option<Self::Item> {
+                $next(self)
+            }
+        }
+    };
 }
 
-impl<'a, E> Iterator for GridIterator<'a, E> {
-    type Item = (Coord, &'a E);
+make_iterator!(GridIterator, (Coord, &'a E), |me: &mut GridIterator<
+    'a,
+    E,
+>| {
+    let c = me.ind_iter.next()?;
+    let item = &me.grid[c];
+    Some((c, item))
+});
 
-    fn next(&mut self) -> Option<Self::Item> {
-        let c = self.ind_iter.next()?;
-        let item = &self.grid[c];
+make_iterator!(GridValueIterator, &'a E, |me: &mut GridValueIterator<
+    'a,
+    E,
+>| {
+    let c = me.ind_iter.next()?;
+    let item = &me.grid[c];
+    Some(item)
+});
+
+make_iterator!(
+    GridIntoIterator,
+    (Coord, E),
+    |me: &mut GridIntoIterator<E>| {
+        let c = me.ind_iter.next()?;
+        let item = me.grid[c];
         Some((c, item))
-    }
-}
+    },
+    into
+);
 
-pub struct GridValueIterator<'a, E> {
-    ind_iter: IndIterator,
-    grid: &'a Grid<E>,
-}
-
-impl<'a, E> GridValueIterator<'a, E> {
-    fn new(g: &'a Grid<E>, invert: Invert, col_major: ColumnMajor) -> Self {
-        Self {
-            ind_iter: IndIterator::new(g, invert, col_major),
-            grid: g,
-        }
-    }
-}
-
-impl<'a, E> Iterator for GridValueIterator<'a, E> {
-    type Item = &'a E;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let c = self.ind_iter.next()?;
-        let item = &self.grid[c];
+make_iterator!(
+    GridValueIntoIterator,
+    E,
+    |me: &mut GridValueIntoIterator<E>| {
+        let c = me.ind_iter.next()?;
+        let item = me.grid[c];
         Some(item)
-    }
-}
-
-pub struct GridIntoIterator<E>
-where
-    E: Copy,
-{
-    ind_iter: IndIterator,
-    grid: Grid<E>,
-}
-
-impl<E> GridIntoIterator<E>
-where
-    E: Copy,
-{
-    fn new(g: Grid<E>, invert: Invert, col_major: ColumnMajor) -> Self {
-        Self {
-            ind_iter: IndIterator::new(&g, invert, col_major),
-            grid: g,
-        }
-    }
-}
-
-impl<E> Iterator for GridIntoIterator<E>
-where
-    E: Copy,
-{
-    type Item = (Coord, E);
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let c = self.ind_iter.next()?;
-        let item = self.grid[c];
-        Some((c, item))
-    }
-}
-
-pub struct GridValueIntoIterator<E>
-where
-    E: Copy,
-{
-    ind_iter: IndIterator,
-    grid: Grid<E>,
-}
-
-impl<E> GridValueIntoIterator<E>
-where
-    E: Copy,
-{
-    fn new(g: Grid<E>, invert: Invert, col_major: ColumnMajor) -> Self {
-        Self {
-            ind_iter: IndIterator::new(&g, invert, col_major),
-            grid: g,
-        }
-    }
-}
-
-impl<E> Iterator for GridValueIntoIterator<E>
-where
-    E: Copy,
-{
-    type Item = E;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let c = self.ind_iter.next()?;
-        let item = self.grid[c];
-        Some(item)
-    }
-}
+    },
+    into
+);
 
 pub struct RowIterator<'a, E> {
     grid: &'a Grid<E>,
@@ -359,7 +321,7 @@ impl NeighbourCoordIterator {
     fn new<E>(grid: &Grid<E>, coord: Coord, include_diagonals: bool) -> Self {
         let mut positions: Vec<_> = ORTHOGONAL_MOVES.values().copied().collect();
         if include_diagonals {
-            positions.append(&mut DIAGONAL_MOVES.clone());
+            positions.append(&mut DIAGONAL_MOVES.values().copied().collect());
         }
         Self {
             current_ind: 0,

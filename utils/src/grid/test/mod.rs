@@ -1,11 +1,16 @@
-use rstest::rstest;
+use rstest::{fixture, rstest};
 use std::slice::SliceIndex;
 
 use super::{
     iter::{ColumnMajor, Invert},
     pos::Coord,
-    Grid,
+    Grid, GridTrait,
 };
+
+#[fixture]
+fn grid() -> Grid<i32> {
+    Grid::from(vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]])
+}
 
 #[rstest]
 #[case(Invert(false), ColumnMajor(false), "ABCD", vec![(0,0), (1,0),(0,1), (1,1)])]
@@ -65,8 +70,7 @@ fn test_slice_round_trip() {
 }
 
 #[rstest]
-fn test_iter_mut() {
-    let mut grid = Grid::from(vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 8]]);
+fn test_iter_mut(mut grid: Grid<i32>) {
     for (p, v) in grid.iter_mut() {
         if *v >= 4 || p.x() == 2 {
             *v += 1
@@ -76,6 +80,15 @@ fn test_iter_mut() {
         grid,
         Grid::from(vec![vec![0, 1, 3], vec![3, 5, 6], vec![7, 8, 9]])
     )
+}
+
+#[rstest]
+fn test_apply_map(mut grid: Grid<i32>) {
+    let doubled = Grid::from(vec![vec![0, 2, 4], vec![6, 8, 10], vec![12, 14, 16]]);
+    assert_eq!(grid.map(|x| x * 2), doubled);
+
+    grid.apply(|x| *x * 2);
+    assert_eq!(grid, doubled);
 }
 
 mod test_sparse;

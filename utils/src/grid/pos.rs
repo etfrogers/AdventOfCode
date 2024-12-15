@@ -1,6 +1,4 @@
-use lazy_static::lazy_static;
 use std::{
-    collections::HashMap,
     num::TryFromIntError,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub},
     str::FromStr,
@@ -8,25 +6,7 @@ use std::{
 
 use crate::StringParseError;
 
-use super::direction::Direction;
-
-lazy_static! {
-    pub static ref ORTHOGONAL_MOVES: HashMap<Direction, Pos> = HashMap::from([
-        (Direction::Right, Pos::new(1, 0)),
-        (Direction::Left, Pos::new(-1, 0)),
-        (Direction::Down, Pos::new(0, 1)),
-        (Direction::Up, Pos::new(0, -1)),
-    ]);
-}
-
-lazy_static! {
-    pub static ref DIAGONAL_MOVES: Vec<Pos> = Vec::from([
-        Pos::new(-1, -1),
-        Pos::new(-1, 1),
-        Pos::new(1, -1),
-        Pos::new(1, 1),
-    ]);
-}
+use super::direction::{Direction, MOVES};
 
 pub type CoordType = usize;
 pub type Coord = Pos<usize>;
@@ -74,6 +54,20 @@ impl<T: num::PrimInt> Pos<T> {
 
     pub fn tuple(&self) -> (T, T) {
         (self.x, self.y)
+    }
+}
+
+impl Pos<i32> {
+    pub fn move_dir(&mut self, dir: Direction) {
+        *self += dir.into();
+    }
+}
+
+impl Pos<usize> {
+    pub fn move_dir(&mut self, dir: Direction) {
+        let mut new_val: Pos<i32> = (*self).try_into().unwrap();
+        new_val += dir.into();
+        *self = new_val.try_into().unwrap();
     }
 }
 
@@ -183,11 +177,8 @@ impl Sub<Pos<i32>> for Pos<usize> {
     type Output = Pos<i32>;
 
     fn sub(self, rhs: Pos<i32>) -> Self::Output {
-        let old_x: i32 = self.x.try_into().unwrap();
-        let old_y: i32 = self.y.try_into().unwrap();
-        let x = old_x - rhs.x;
-        let y = old_y - rhs.y;
-        Pos { x, y }
+        let old: Pos<i32> = self.try_into().unwrap();
+        old - rhs
     }
 }
 
@@ -195,11 +186,14 @@ impl Add<Pos<i32>> for Pos<usize> {
     type Output = Pos<i32>;
 
     fn add(self, rhs: Pos<i32>) -> Self::Output {
-        let old_x: i32 = self.x.try_into().unwrap();
-        let old_y: i32 = self.y.try_into().unwrap();
-        let x = old_x + rhs.x;
-        let y = old_y + rhs.y;
-        Pos { x, y }
+        let old: Pos<i32> = self.try_into().unwrap();
+        old + rhs
+    }
+}
+
+impl From<Direction> for Pos {
+    fn from(value: Direction) -> Self {
+        MOVES[&value]
     }
 }
 

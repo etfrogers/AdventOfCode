@@ -1,6 +1,6 @@
-use grid::Grid;
-use rstest::{rstest, fixture};
 use super::*;
+use grid::{Grid, GridTrait};
+use rstest::{fixture, rstest};
 
 const TEST_1: &str = "7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
@@ -34,12 +34,17 @@ fn game(input: Vec<String>) -> Game {
 
 #[rstest]
 fn test_parse_calls(game: Game) {
-    assert_eq!(game.calls,
-        vec![7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1])
+    assert_eq!(
+        game.calls,
+        vec![
+            7, 4, 9, 5, 11, 17, 23, 2, 0, 14, 21, 24, 10, 16, 13, 6, 15, 25, 12, 22, 18, 20, 8, 19,
+            3, 26, 1
+        ]
+    )
 }
 
 #[rstest]
-fn test_parse_boards(input: Vec<String>){
+fn test_parse_boards(input: Vec<String>) {
     let game = Game::from_strs(input).expect("Failed to build game");
     let boards = game.boards.borrow();
 
@@ -48,9 +53,8 @@ fn test_parse_boards(input: Vec<String>){
     assert_eq!(boards[2].numbers.get_row(4), &vec![2, 0, 12, 3, 7])
 }
 
-
 #[rstest]
-fn test_run_game(mut game: Game){
+fn test_run_game(mut game: Game) {
     let winners = game.play_game();
     let winner = &winners[0];
     let score = winner.board.total_unmarked() * winner.last_call;
@@ -60,7 +64,7 @@ fn test_run_game(mut game: Game){
 }
 
 #[rstest]
-fn test_run_game_part_2(mut game: Game){
+fn test_run_game_part_2(mut game: Game) {
     let winners = game.play_game();
     let winner = winners.last().unwrap();
     let score = winner.board.total_unmarked() * winner.last_call;
@@ -69,7 +73,6 @@ fn test_run_game_part_2(mut game: Game){
     assert_eq!(winner.board.total_unmarked(), 148);
     assert_eq!(score, 1924);
 }
-
 
 #[test]
 fn test_part1() {
@@ -81,7 +84,6 @@ fn test_part1() {
     let part_1_answer = winner.board.total_unmarked() * winner.last_call;
     assert_eq!(part_1_answer, 58374);
 }
-
 
 #[test]
 fn test_part2() {

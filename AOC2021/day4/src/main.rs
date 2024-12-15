@@ -1,6 +1,9 @@
 use std::{cell::RefCell, num::ParseIntError};
 
-use utils::{grid, StringParseError};
+use utils::{
+    grid::{self, GridTrait},
+    StringParseError,
+};
 
 #[derive(Clone)]
 struct Board {

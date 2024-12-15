@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, fmt::Display, fs, hash::Hash, ops::Deref};
+use std::{collections::HashMap, env, error::Error, fmt::Display, fs, hash::Hash, ops::Deref};
 
 pub mod grid;
 
@@ -40,7 +40,12 @@ impl Error for StringParseError {
 pub fn input_lines(day: u8) -> Vec<String> {
     let data = match fs::read_to_string(format!("day{day}/input.txt")) {
         Ok(d) => d,
-        Err(_) => fs::read_to_string("input.txt").expect("Failed to read input file"),
+        Err(_) => fs::read_to_string("input.txt").unwrap_or_else(|_| {
+            panic!(
+                "Failed to read input file. Current dir: {:?}",
+                env::current_dir()
+            )
+        }),
     };
     string_input_lines(&data)
 }
