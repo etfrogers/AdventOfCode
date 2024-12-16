@@ -5,12 +5,21 @@ pub mod grid;
 #[derive(Debug)]
 pub struct StringParseError {
     item: String,
+    source: Option<&'static (dyn Error + 'static)>,
 }
 
 impl StringParseError {
     pub fn new(s: &str) -> Self {
         Self {
             item: s.to_string(),
+            source: None,
+        }
+    }
+
+    pub fn new_with_source(s: &str, source: Option<&'static (dyn Error + 'static)>) -> Self {
+        Self {
+            item: s.to_string(),
+            source,
         }
     }
 }
@@ -23,7 +32,7 @@ impl Display for StringParseError {
 
 impl Error for StringParseError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        None
+        self.source
     }
 
     fn description(&self) -> &str {
