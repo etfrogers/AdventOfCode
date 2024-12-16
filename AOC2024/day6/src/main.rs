@@ -61,10 +61,11 @@ impl GuardMap {
 
     fn find_n_obstructions(&self) -> usize {
         let mut candiates = 0;
-        for (pos, v) in self.map.iter() {
-            if *v == MapSquare::Empty {
+        let orig_path = Self::find_path_map(&self.map, &self.guard).unwrap();
+        for pos in orig_path.iter() {
+            if self.map[*pos] == MapSquare::Empty {
                 let mut candidate_map = self.map.clone();
-                candidate_map[pos] = MapSquare::Blocked;
+                candidate_map[*pos] = MapSquare::Blocked;
                 if Self::find_path_map(&candidate_map, &self.guard).is_none() {
                     candiates += 1;
                 }
@@ -74,10 +75,10 @@ impl GuardMap {
     }
 
     fn find_path(&self) -> usize {
-        Self::find_path_map(&self.map, &self.guard).unwrap()
+        Self::find_path_map(&self.map, &self.guard).unwrap().len()
     }
 
-    fn find_path_map(map: &Grid<MapSquare>, guard: &Guard) -> Option<usize> {
+    fn find_path_map(map: &Grid<MapSquare>, guard: &Guard) -> Option<HashSet<Coord>> {
         let mut visited: HashSet<(Coord, Direction)> = HashSet::new();
         let mut guard = guard.clone();
         loop {
@@ -94,7 +95,7 @@ impl GuardMap {
             visited.insert(new_key);
         }
         let squares_only: HashSet<_> = visited.iter().map(|v| v.0).collect();
-        Some(squares_only.len())
+        Some(squares_only)
     }
 
     fn walk_guard(map: &Grid<MapSquare>, guard: &mut Guard) -> GuardState {
@@ -120,7 +121,6 @@ fn main() {
 
     let part_2_answer = gm.find_n_obstructions();
     println!("Day 6, Part 2 answer: {}", part_2_answer);
-
 }
 
 #[cfg(test)]
