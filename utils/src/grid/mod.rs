@@ -13,7 +13,10 @@ pub mod pos;
 pub mod sparse;
 
 pub trait GridTrait<'a, E: 'a>:
-    Index<Pos> + IndexMut<Pos> + From<Self::SliceType> + IntoIterator<Item = (Pos<Self::CoordType>, E)>
+    Index<Pos<Self::CoordType>>
+    + IndexMut<Pos<Self::CoordType>>
+    + From<Self::SliceType>
+    + IntoIterator<Item = (Pos<Self::CoordType>, E)>
 where
     Self: 'a,
 {
@@ -39,6 +42,18 @@ where
     fn values_mut(&'a mut self) -> impl Iterator<Item = &'a mut E>;
     fn full(x: CoordType, y: CoordType, content: E) -> impl GridTrait<'a, E>;
     fn full_like(template: &'a Grid<E>, content: E) -> impl GridTrait<'a, E>;
+}
+
+pub trait GridFind<'a, E: 'a + PartialEq>: GridTrait<'a, E> {
+    // Returns x and y coords of first occurence of the input val
+    // If the value is not found, None
+    fn find(&'a self, val: E) -> Option<Pos<Self::CoordType>> {
+        self.iter().find(|(_, v)| **v == val).map(|v| v.0)
+    }
+
+    fn find_all(&'a self, val: E) -> impl Iterator<Item = Pos<Self::CoordType>> {
+        self.iter().filter(move |(_, v)| **v == val).map(|v| v.0)
+    }
 }
 
 pub struct GridBounds<T: num::PrimInt> {

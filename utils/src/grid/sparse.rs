@@ -6,7 +6,7 @@ use std::{
 
 use crate::grid::Grid;
 
-use super::{GridBounds, GridTrait, Pos};
+use super::{GridBounds, GridFind, GridTrait, Pos};
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct SparseGrid<E> {
@@ -128,6 +128,8 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
         SparseGrid::new()
     }
 }
+
+impl<'a, E: 'a + PartialEq + Clone + Copy + Default> GridFind<'a, E> for SparseGrid<E> {}
 
 impl<E> SparseGrid<E> {
     pub fn slice<'a, R1, R2>(&'a self, index: (R1, R2)) -> SparseSlice<'a, E>

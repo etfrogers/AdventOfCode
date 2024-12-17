@@ -15,7 +15,7 @@ use super::{
     iter::{ColumnMajor, GridIterator, Invert},
     pos::{Coord, CoordType, Pos},
     sparse::SparseGrid,
-    GridBounds, GridTrait,
+    GridBounds, GridFind, GridTrait,
 };
 
 #[derive(Clone, Debug, PartialEq)]
@@ -92,6 +92,8 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
         Grid::full(other.n_cols(), other.n_rows(), content)
     }
 }
+
+impl<'a, E: 'a + PartialEq + Clone + Copy> GridFind<'a, E> for Grid<E> {}
 
 impl<E: Clone + Copy> Grid<E> {
     pub fn slice<'b, R1, R2>(&'b self, index: (R1, R2)) -> <Grid<E> as GridTrait<E>>::SliceType
@@ -316,14 +318,6 @@ where
             new_grid[*pos] = *v;
         }
         Ok(new_grid)
-    }
-}
-
-impl<E: PartialEq> Grid<E> {
-    // Returns x and y coords of first occurence of the input val
-    // If the value is not found, None
-    pub fn find(&self, val: E) -> Option<Coord> {
-        self.coords().find(|&c| self[c] == val)
     }
 }
 

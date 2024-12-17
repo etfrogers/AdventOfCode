@@ -1,7 +1,7 @@
 use std::{cell::RefCell, num::ParseIntError};
 
 use utils::{
-    grid::{self, GridTrait},
+    grid::{self, GridFind, GridTrait},
     StringParseError,
 };
 

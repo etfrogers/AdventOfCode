@@ -6,7 +6,7 @@ use utils::{
     grid::{
         direction::Direction,
         pos::{Coord, Pos},
-        Grid, GridTrait,
+        Grid, GridFind, GridTrait,
     },
     StringParseError,
 };
