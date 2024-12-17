@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use lazy_static::lazy_static;
+use rustc_hash::FxHashMap;
 
 use crate::grid::pos::Pos;
 
@@ -25,7 +24,7 @@ impl Direction {
 }
 
 lazy_static! {
-    pub static ref ORTHOGONAL_MOVES: HashMap<Direction, Pos> = HashMap::from([
+    pub static ref ORTHOGONAL_MOVES: FxHashMap<Direction, Pos> = FxHashMap::from_iter([
         (Direction::Right, Pos::new(1, 0)),
         (Direction::Left, Pos::new(-1, 0)),
         (Direction::Down, Pos::new(0, 1)),
@@ -34,7 +33,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref DIAGONAL_MOVES: HashMap<Direction, Pos> = HashMap::from([
+    pub static ref DIAGONAL_MOVES: FxHashMap<Direction, Pos> = FxHashMap::from_iter([
         (Direction::NorthWest, Pos::new(-1, -1)),
         (Direction::NorthEast, Pos::new(-1, 1)),
         (Direction::SouthWest, Pos::new(1, -1)),
@@ -43,7 +42,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    pub static ref MOVES: HashMap<Direction, Pos> = {
+    pub static ref MOVES: FxHashMap<Direction, Pos> = {
         let mut m = ORTHOGONAL_MOVES.clone();
         m.extend(DIAGONAL_MOVES.iter());
         m

@@ -211,6 +211,7 @@ name = "day6"
 version = "0.1.0"
 dependencies = [
  "rstest",
+ "rustc-hash",
  "utils",
 ]
 
@@ -595,6 +596,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustc-hash"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c7fb8039b3032c191086b10f11f319a6e99e1e82889c5cc6046f515c9db1d497"
+
+[[package]]
 name = "rustc_version"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -694,6 +701,7 @@ dependencies = [
  "lazy_static",
  "num",
  "rstest",
+ "rustc-hash",
  "take_mut",
 ]
 

@@ -1,4 +1,5 @@
-use std::{collections::HashSet, str::FromStr};
+use rustc_hash::FxHashSet;
+use std::str::FromStr;
 
 use utils::{
     self,
@@ -62,13 +63,14 @@ impl GuardMap {
     fn find_n_obstructions(&self) -> usize {
         let mut candiates = 0;
         let orig_path = Self::find_path_map(&self.map, &self.guard).unwrap();
+        let mut candidate_map = self.map.clone();
         for pos in orig_path.iter() {
             if self.map[*pos] == MapSquare::Empty {
-                let mut candidate_map = self.map.clone();
                 candidate_map[*pos] = MapSquare::Blocked;
                 if Self::find_path_map(&candidate_map, &self.guard).is_none() {
                     candiates += 1;
                 }
+                candidate_map[*pos] = MapSquare::Empty;
             }
         }
         candiates
@@ -78,8 +80,8 @@ impl GuardMap {
         Self::find_path_map(&self.map, &self.guard).unwrap().len()
     }
 
-    fn find_path_map(map: &Grid<MapSquare>, guard: &Guard) -> Option<HashSet<Coord>> {
-        let mut visited: HashSet<(Coord, Direction)> = HashSet::new();
+    fn find_path_map(map: &Grid<MapSquare>, guard: &Guard) -> Option<FxHashSet<Coord>> {
+        let mut visited: FxHashSet<(Coord, Direction)> = FxHashSet::default();
         let mut guard = guard.clone();
         loop {
             if !map.is_inside(&guard.pos) {
@@ -94,7 +96,7 @@ impl GuardMap {
             }
             visited.insert(new_key);
         }
-        let squares_only: HashSet<_> = visited.iter().map(|v| v.0).collect();
+        let squares_only: FxHashSet<_> = visited.iter().map(|v| v.0).collect();
         Some(squares_only)
     }
 
