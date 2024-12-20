@@ -31,9 +31,14 @@ fn test_parse(input: Vec<String>) {
 fn test_antinodes(input: Vec<String>) {
     let ants = Antennas::new(input);
     let an = ants.find_antinodes();
-    // println!("{:?}", ants);
-    // println!("{:?}", an);
     assert_eq!(an.len(), 14)
+}
+
+#[rstest]
+fn test_resonant_antinodes(input: Vec<String>) {
+    let ants = Antennas::new(input);
+    let an = ants.find_resonant_antinodes();
+    assert_eq!(an.len(), 34)
 }
 
 #[test]
@@ -44,3 +49,14 @@ fn test_part1() {
     let part_1_answer = antinodes.len();
     assert_eq!(part_1_answer, 252);
 }
+
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(8);
+    let ants = Antennas::new(input);
+    let antinodes = ants.find_resonant_antinodes();
+    let part_2_answer = antinodes.len();
+    assert_eq!(part_2_answer, 839);
+}
+

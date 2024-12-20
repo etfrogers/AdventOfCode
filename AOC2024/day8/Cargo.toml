@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 utils = { path = "../../utils" }
 itertools = "0.13.0"
+num-integer = "0.1.46"
 
 [dev-dependencies]
 rstest = "0.23.0"
