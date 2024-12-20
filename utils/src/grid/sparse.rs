@@ -12,6 +12,7 @@ use super::{GridBounds, GridFind, GridTrait, Pos};
 pub struct SparseGrid<E> {
     data: HashMap<Pos, E>,
     default: Option<E>,
+    bounds: Option<GridBounds<i32>>,
 }
 
 impl<E> Deref for SparseGrid<E> {
@@ -33,6 +34,7 @@ impl<E> SparseGrid<E> {
         Self {
             data: HashMap::<Pos, E>::new(),
             default: None,
+            bounds: None,
         }
     }
 }
@@ -47,14 +49,25 @@ impl<E> From<HashMap<Pos, E>> for SparseGrid<E> {
     fn from(data: HashMap<Pos, E>) -> Self {
         Self {
             data,
-            default: None,
+            ..Default::default()
         }
     }
 }
 
 impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
-    fn is_inside(&self, _: &Pos<Self::CoordType>) -> bool {
-        true
+    type CoordType = i32;
+    type SliceType = SparseSlice<'a, E> where E: 'a;
+
+    fn is_inside(&self, pos: &Pos<Self::CoordType>) -> bool {
+        match self.bounds {
+            Some(bounds) => {
+                pos.x() >= bounds.min_x
+                    && pos.x() < bounds.max_x
+                    && pos.y() >= bounds.min_y
+                    && pos.y() < bounds.max_y
+            }
+            None => true,
+        }
     }
 
     fn bounds(&self) -> GridBounds<Self::CoordType> {
@@ -109,9 +122,6 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
         self.data.values_mut()
     }
 
-    type CoordType = i32;
-    type SliceType = SparseSlice<'a, E> where E: 'a;
-
     fn iter(&'a self) -> impl Iterator<Item = (Pos<Self::CoordType>, &'a E)> {
         self.data.iter().map(|(k, v)| (*k, v))
     }
@@ -160,18 +170,23 @@ impl<E> SparseGrid<E> {
 }
 
 impl<E: PartialEq + Copy> SparseGrid<E> {
-    pub fn from_dense(dense: Grid<E>, default: E) -> Self {
+    pub fn from_dense(
+        dense: Grid<E>,
+        default: E,
+    ) -> Result<Self, <GridBounds<i32> as TryFrom<GridBounds<usize>>>::Error> {
         let mut map = HashMap::<Pos, E>::new();
+        let bounds = Some(dense.bounds().try_into()?);
         for (pos, v) in dense {
-            let pos: Pos<i32> = pos.try_into().unwrap();
+            let pos: Pos<i32> = pos.try_into()?;
             if v != default {
                 map.insert(pos, v);
             }
         }
-        SparseGrid {
+        Ok(SparseGrid {
             data: map,
             default: Some(default),
-        }
+            bounds,
+        })
     }
 }
 

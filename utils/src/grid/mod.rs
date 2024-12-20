@@ -56,11 +56,25 @@ pub trait GridFind<'a, E: 'a + PartialEq>: GridTrait<'a, E> {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct GridBounds<T: num::PrimInt> {
     pub min_x: T,
     pub min_y: T,
     pub max_x: T,
     pub max_y: T,
+}
+
+impl TryFrom<GridBounds<usize>> for GridBounds<i32> {
+    type Error = <usize as TryFrom<i32>>::Error;
+
+    fn try_from(value: GridBounds<usize>) -> Result<Self, Self::Error> {
+        Ok(Self {
+            min_x: value.min_x.try_into()?,
+            min_y: value.min_y.try_into()?,
+            max_x: value.max_x.try_into()?,
+            max_y: value.max_y.try_into()?,
+        })
+    }
 }
 
 #[cfg(test)]
