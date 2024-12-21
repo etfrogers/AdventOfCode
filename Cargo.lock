@@ -254,6 +254,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "day9"
+version = "0.1.0"
+dependencies = [
+ "itertools",
+ "rstest",
+ "utils",
+]
+
+[[package]]
 name = "day9_2021"
 version = "0.1.0"
 dependencies = [
