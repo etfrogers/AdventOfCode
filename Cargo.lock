@@ -53,6 +53,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "day10"
+version = "0.1.0"
+dependencies = [
+ "rstest",
+ "rustc-hash",
+ "utils",
+]
+
+[[package]]
 name = "day10_2021"
 version = "0.1.0"
 dependencies = [
