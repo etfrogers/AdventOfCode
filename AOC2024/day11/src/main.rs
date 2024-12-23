@@ -1,11 +1,14 @@
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
-use linked_list::LinkedList;
+#[derive(Debug, Hash, PartialEq, Eq)]
+struct MemoKey(Stone, usize);
 
-use utils;
+type MemoType = HashMap<MemoKey, usize>;
 
-struct Stones(LinkedList<Stone>);
+#[derive(Default)]
+struct Stones(Vec<Stone>);
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 struct Stone(u64);
 
 impl Stones {
@@ -20,40 +23,47 @@ impl Stones {
         )
     }
 
-    fn blink(&mut self) {
-        let mut cursor = self.0.cursor_mut();
-        cursor.move_next();
-        while let Some(stone) = cursor.current() {
-            let n_digits = (stone.0 as f64 + 0.1).log10().ceil() as u32;
-            if stone.0 == 0 {
-                stone.0 = 1;
+    fn single(s: Stone) -> Self {
+        Self(vec![s])
+    }
+
+    fn pair(s1: Stone, s2: Stone) -> Self {
+        Self(vec![s1, s2])
+    }
+
+    fn blink(&self, remaining_depth: usize, memo: &mut MemoType) -> usize {
+        self.0.iter().map(|s| s.blink(remaining_depth, memo)).sum()
+    }
+
+    fn blinks(&mut self, n: usize) -> usize {
+        let mut memo: MemoType = HashMap::new();
+        self.0.iter().map(|s| s.blink(n, &mut memo)).sum()
+    }
+}
+
+impl Stone {
+    fn blink(&self, remaining_depth: usize, memo: &mut MemoType) -> usize {
+        let memo_key = MemoKey(*self, remaining_depth);
+        if let Some(memoised) = memo.get(&memo_key) {
+            *memoised
+        } else if remaining_depth == 0 {
+            1
+        } else {
+            let n_digits = (self.0 as f64 + 0.1).log10().ceil() as u32;
+            let stones = if self.0 == 0 {
+                Stones::single(Stone(1))
             } else if n_digits % 2 == 0 {
                 let factor = 10_u64.pow(n_digits / 2);
-                let left = Stone(stone.0 / factor);
-                let right = Stone(stone.0 - (left.0 * factor));
-                *stone = left;
-                let rest = cursor.split_after();
-                let mut right_list = LinkedList::new();
-                right_list.push_back(right);
-                cursor.splice_after(right_list);
-                cursor.move_next();
-                cursor.splice_after(rest);
-                // cursor.move_next();
+                let left = Stone(self.0 / factor);
+                let right = Stone(self.0 - (left.0 * factor));
+                Stones::pair(left, right)
             } else {
-                stone.0 *= 2024;
-            }
-            cursor.move_next();
+                Stones::single(Stone(self.0 * 2024))
+            };
+            let n = stones.blink(remaining_depth - 1, memo);
+            memo.insert(memo_key, n);
+            n
         }
-    }
-
-    fn blinks(&mut self, n: usize) {
-        for _ in 0..n {
-            self.blink();
-        }
-    }
-
-    fn len(&self) -> usize {
-        self.0.len()
     }
 }
 
@@ -67,9 +77,11 @@ impl Display for Stones {
 fn main() {
     let input = utils::input_lines(11);
     let mut stones = Stones::new(&input);
-    stones.blinks(25);
-    let part_1_answer = stones.len();
+    let part_1_answer = stones.blinks(25);
     println!("Day 11, Part 1 answer: {}", part_1_answer);
+
+    let part_2_answer = stones.blinks(75);
+    println!("Day 11, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]
