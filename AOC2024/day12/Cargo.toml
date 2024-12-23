@@ -1,0 +1,11 @@
+[package]
+name = "day12"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+utils = { path = "../../utils" }
+petgraph = "0.6.5"
+
+[dev-dependencies]
+rstest = "0.23.0"
