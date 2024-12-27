@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use lazy_static::lazy_static;
 use rustc_hash::FxHashMap;
 
@@ -51,7 +53,25 @@ lazy_static! {
 
 impl Direction {
     pub fn turn_right(&mut self) {
-        *self = match self {
+        *self = Direction::right_of(*self);
+    }
+
+    pub fn turn_left(&mut self) {
+        *self = Direction::left_of(*self);
+    }
+
+    pub fn left_of(dir: Self) -> Self {
+        match dir {
+            Direction::East => Direction::North,
+            Direction::South => Direction::East,
+            Direction::West => Direction::South,
+            Direction::North => Direction::West,
+            _ => todo!(),
+        }
+    }
+
+    pub fn right_of(dir: Self) -> Self {
+        match dir {
             Direction::East => Direction::South,
             Direction::South => Direction::West,
             Direction::West => Direction::North,
@@ -60,8 +80,18 @@ impl Direction {
         }
     }
 
-    pub fn turn_left(&mut self) {
-        todo!()
+    pub fn left(&self) -> Self {
+        Direction::left_of(*self)
+    }
+
+    pub fn right(&self) -> Self {
+        Direction::right_of(*self)
+    }
+}
+
+impl Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
     }
 }
 // static all: Vec<Direction> = []Direction{NORTH, EAST, SOUTH, WEST}

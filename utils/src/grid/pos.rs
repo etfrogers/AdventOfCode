@@ -1,4 +1,5 @@
 use std::{
+    fmt::Display,
     num::TryFromIntError,
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub},
     str::FromStr,
@@ -58,16 +59,26 @@ impl<T: num::PrimInt> Pos<T> {
 }
 
 impl Pos<i32> {
-    pub fn move_dir(&mut self, dir: Direction) {
+    pub fn move_(&mut self, dir: Direction) {
         *self += dir.into();
     }
 }
 
 impl Pos<usize> {
-    pub fn move_dir(&mut self, dir: Direction) {
-        let mut new_val: Pos<i32> = (*self).try_into().unwrap();
+    pub fn move_(&mut self, dir: Direction) {
+        self.try_move(dir)
+            .expect("Failed to move due to integer range errors")
+    }
+
+    pub fn try_move(&mut self, dir: Direction) -> Result<(), TryFromIntError> {
+        *self = self.add_dir(dir)?;
+        Ok(())
+    }
+
+    pub fn add_dir(&self, dir: Direction) -> Result<Pos<usize>, TryFromIntError> {
+        let mut new_val: Pos<i32> = (*self).try_into()?;
         new_val += dir.into();
-        *self = new_val.try_into().unwrap();
+        Ok(new_val.try_into()?)
     }
 }
 
@@ -194,6 +205,12 @@ impl Add<Pos<i32>> for Pos<usize> {
 impl From<Direction> for Pos {
     fn from(value: Direction) -> Self {
         MOVES[&value]
+    }
+}
+
+impl<T: num::PrimInt + Display> Display for Pos<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x(), self.y())
     }
 }
 
