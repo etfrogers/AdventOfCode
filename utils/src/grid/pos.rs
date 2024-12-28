@@ -78,7 +78,7 @@ impl Pos<usize> {
     pub fn add_dir(&self, dir: Direction) -> Result<Pos<usize>, TryFromIntError> {
         let mut new_val: Pos<i32> = (*self).try_into()?;
         new_val += dir.into();
-        Ok(new_val.try_into()?)
+        new_val.try_into()
     }
 }
 

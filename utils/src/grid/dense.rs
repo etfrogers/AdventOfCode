@@ -192,6 +192,10 @@ impl<E> Grid<E> {
         self.data.extend(other.data);
         self.check_lengths();
     }
+
+    pub fn is_edge(&self, pos: &Coord) -> bool {
+        pos.x() == 0 || pos.y() == 0 || pos.x() == self.n_cols() - 1 || pos.y() == self.n_rows() - 1
+    }
 }
 
 impl<E: Eq + Hash + Copy> Grid<E> {
