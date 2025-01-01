@@ -4,7 +4,11 @@ use itertools::izip;
 use petgraph::graph::{NodeIndex, UnGraph};
 use utils::{
     self,
-    grid::{direction::Direction, pos::Coord, Grid},
+    grid::{
+        direction::{Direction, DIAGONAL_MOVES},
+        pos::Coord,
+        Grid,
+    },
 };
 
 struct Garden(Grid<char>);
@@ -57,8 +61,145 @@ impl Region {
     }
 
     pub fn n_sides(&self) -> usize {
-        assert_ne!(self.n_sides, 0, "n_sides has not been initialised");
-        self.n_sides
+        self.graph
+            .node_indices()
+            .map(|idx| {
+                let pos = self.graph.node_weight(idx).unwrap();
+                let ortho_neighbours: Vec<Direction> = self
+                    .graph
+                    .neighbors_undirected(idx)
+                    .map(|i| {
+                        let n = *self.graph.node_weight(i).unwrap();
+                        pos.direction_to(&n).unwrap()
+                    })
+                    .collect();
+
+                let diag_neighbours: Vec<_> = DIAGONAL_MOVES
+                    .keys()
+                    .filter(|dir| {
+                        pos.add_dir(**dir)
+                            .ok()
+                            .filter(|p| self.node_map.contains_key(&p))
+                            .is_some()
+                    })
+                    .copied()
+                    .collect();
+                let n_ortho = ortho_neighbours.len();
+                let n_diag = diag_neighbours.len();
+                let n = match n_ortho {
+                    0 => {
+                        // ?.?
+                        // .O.
+                        // ?.?
+                        // as long as the four ortho neighbours are not filled, then this is a dot with four sides
+                        4
+                    }
+                    1 => {
+                        2
+                        // let orth = ortho_neighbours[0];
+                        // let n_adj = diag_neighbours
+                        //     .iter()
+                        //     .filter(|d| orth.is_adjacent(d))
+                        //     .collect::<Vec<_>>()
+                        //     .len();
+                        // if n_adj == 0 {
+                        //     // .X.
+                        //     // .O.
+                        //     // ?.?
+                        //     2
+                        // } else {
+                        //     // ?X?
+                        //     // .O.
+                        //     // ?.?
+                        //     // the one above is an inner corner
+                        //     1
+                        // }
+                    }
+                    2 => {
+                        let n1 = ortho_neighbours[0];
+                        let n2 = ortho_neighbours[1];
+                        if n1.is_opposite(&n2) {
+                            // ?X?
+                            // .O.
+                            // ?X?
+                            if n_diag == 0 {
+                                // .X.
+                                // .O.
+                                // .X.
+                                0
+                            } else {
+                                // think the ones above and below being inner corners will handle this
+                                0
+                            }
+                        } else {
+                            debug_assert!(n1.is_right_angles(&n2));
+                            // ?X?
+                            // .OX
+                            // ?.?
+                            if diag_neighbours.contains(&n1.direction_between(&n2).unwrap()) {
+                                //Outer corner only
+                                1
+                            } else {
+                                // inner AND outer corner
+                                2
+                            }
+                        }
+                    }
+                    3 => {
+                        // ?X?
+                        // XOX
+                        // ?.?
+                        let mut centre = None;
+                        for i in 0..3 {
+                            let test = ortho_neighbours[i];
+                            let other1 = ortho_neighbours[(i + 1) % 3];
+                            let other2 = ortho_neighbours[(i + 2) % 3];
+
+                            if test.is_right_angles(&other1) && test.is_right_angles(&other2) {
+                                centre = Some(test);
+                            }
+                        }
+                        let centre = centre.unwrap();
+                        let n_adj = diag_neighbours
+                            .iter()
+                            .filter(|d| centre.is_adjacent(d))
+                            .collect::<Vec<_>>()
+                            .len();
+                        // if n_adj == 0 {
+                        //     // .X.
+                        //     // XOX
+                        //     // ...
+                        //     2
+                        // }else if {
+                        //     // .XX
+                        //     // XOX
+                        //     // ...
+                        //     1
+
+                        //     // case where botom diags are occupied is dealt with by left/right square:
+                        //     // e.g.
+                        //     // .X.
+                        //     // XOX
+                        //     // ..X
+                        // }
+                        2 - n_adj
+                        // } else {
+                        //     0
+                    }
+                    4 => {
+                        // if n_diag == 4 {
+                        //Centre
+                        // 0
+                        // } else {
+                        4 - n_diag
+                        // }
+                    }
+                    _ => panic!("Unhandled case: "),
+                };
+                println!("{pos}:\t{ortho_neighbours:?}\t{diag_neighbours:?}\t{n}");
+                n
+            })
+            .sum()
     }
 
     fn n_outer_sides(&self) -> usize {

@@ -7,7 +7,7 @@ use std::{
 
 use crate::StringParseError;
 
-use super::direction::{Direction, MOVES};
+use super::direction::{Direction, NoDirectionFound, MOVES};
 
 pub type CoordType = usize;
 pub type Coord = Pos<usize>;
@@ -62,6 +62,10 @@ impl Pos<i32> {
     pub fn move_(&mut self, dir: Direction) {
         *self += dir.into();
     }
+
+    pub fn direction_to(&self, other: &Pos<i32>) -> Result<Direction, NoDirectionFound> {
+        (*other - *self).try_into()
+    }
 }
 
 impl Pos<usize> {
@@ -79,6 +83,15 @@ impl Pos<usize> {
         let mut new_val: Pos<i32> = (*self).try_into()?;
         new_val += dir.into();
         new_val.try_into()
+    }
+
+    pub fn direction_to(&self, other: &Pos<usize>) -> Result<Direction, anyhow::Error> {
+        let other32 = <Pos<usize> as TryInto<Pos<i32>>>::try_into(*other)?;
+        let self32 = <Pos<usize> as TryInto<Pos<i32>>>::try_into(*self)?;
+
+        let pos32 = other32 - self32;
+        Ok(<Pos as TryInto<Direction>>::try_into(pos32)?)
+        //.try_into()?.try_into()
     }
 }
 

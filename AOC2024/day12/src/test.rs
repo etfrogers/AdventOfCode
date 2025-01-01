@@ -17,6 +17,19 @@ fn input() -> Vec<String> {
     utils::string_input_lines(TEST_1)
 }
 
+fn print_debug(region: &Region) {
+    println!(
+        "{}:, {} * {} = {}; \t{} * {} = {}",
+        region.label,
+        region.area(),
+        region.perimeter(),
+        region.cost(false),
+        region.area(),
+        region.n_sides(),
+        region.cost(true),
+    );
+}
+
 #[rstest]
 fn test_regions(input: Vec<String>) {
     let garden = Garden::new(input);
@@ -66,6 +79,7 @@ EEEC",
     // println!("{:?}", regions);
     let exp = [16, 16, 32, 4, 12];
     for (r, n) in regions.iter().zip(exp) {
+        print_debug(r);
         // println!("{}: {}", r.label, n);
         assert_eq!(r.cost(true), n);
     }
@@ -83,7 +97,11 @@ OOOOO",
     );
     let garden = Garden::new(input);
     let regions = garden.regions();
+    for r in &regions {
+        print_debug(r);
+    }
     assert_eq!(regions.len(), 5);
+
     assert_eq!(garden.total_fencing_cost(true), 436)
 }
 
@@ -124,6 +142,8 @@ AAAAAA",
     );
     assert_eq!(regions[0].area(), 36 - 8);
     assert_eq!(regions[0].n_sides(), 12);
+    assert_eq!(regions[1].n_sides(),4 );
+    assert_eq!(regions[2].n_sides(),4 );
     assert_eq!(garden.total_fencing_cost(true), 368)
 }
 
