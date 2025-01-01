@@ -97,9 +97,9 @@ OOOOO",
     );
     let garden = Garden::new(input);
     let regions = garden.regions();
-    for r in &regions {
-        print_debug(r);
-    }
+    // for r in &regions {
+    //     print_debug(r);
+    // }
     assert_eq!(regions.len(), 5);
 
     assert_eq!(garden.total_fencing_cost(true), 436)
@@ -142,8 +142,8 @@ AAAAAA",
     );
     assert_eq!(regions[0].area(), 36 - 8);
     assert_eq!(regions[0].n_sides(), 12);
-    assert_eq!(regions[1].n_sides(),4 );
-    assert_eq!(regions[2].n_sides(),4 );
+    assert_eq!(regions[1].n_sides(), 4);
+    assert_eq!(regions[2].n_sides(), 4);
     assert_eq!(garden.total_fencing_cost(true), 368)
 }
 
@@ -185,19 +185,10 @@ AABBA
 AAAAA",
     );
     let garden = Garden::new(input);
-    for region in garden.regions() {
-        println!(
-            "{}:, {} * {} = {} ... {} * {} = {}",
-            region.label,
-            region.area(),
-            region.perimeter(),
-            region.cost(false),
-            region.area(),
-            region.n_sides(),
-            region.cost(true),
-        );
-    }
-    println!("{:?}", garden.find_enclosures(&garden.regions()));
+    // for region in garden.regions() {
+    // print_debug(&region);
+    // }
+    // println!("{:?}", garden.find_enclosures(&garden.regions()));
     assert_eq!(garden.total_fencing_cost(true), 164)
 }
 
@@ -213,4 +204,12 @@ fn test_part1() {
     let garden = Garden::new(input);
     let part_1_answer = garden.total_fencing_cost(false);
     assert_eq!(part_1_answer, 1550156);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(12);
+    let garden = Garden::new(input);
+    let part_2_answer = garden.total_fencing_cost(true);
+    assert_eq!(part_2_answer, 946084);
 }
