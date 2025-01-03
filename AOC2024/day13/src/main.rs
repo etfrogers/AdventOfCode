@@ -21,57 +21,55 @@ struct Prize {
 }
 
 impl ClawMachine {
-    fn build_list(input: Vec<String>) -> Vec<Self> {
+    fn build_list(input: Vec<String>, convert_units: bool) -> Vec<Self> {
         input
             .split(|line| line.is_empty())
-            .map(ClawMachine::build)
+            .map(|v| ClawMachine::build(v, convert_units))
             .collect()
     }
 
-    fn build(input: &[String]) -> Self {
+    fn build(input: &[String], convert_units: bool) -> Self {
         assert_eq!(input.len(), 3);
         let a = Button::from_str(&input[0]).unwrap();
         assert_eq!(a.label, "A");
         let b = Button::from_str(&input[1]).unwrap();
         assert_eq!(b.label, "B");
-        let prize = Prize::from_str(&input[2]).unwrap();
+        let mut prize = Prize::from_str(&input[2]).unwrap();
+        if convert_units {
+            prize.convert_units();
+        }
         Self { a, b, prize }
     }
 
     #[allow(non_snake_case)]
     fn n_presses(&self) -> Option<(u64, u64)> {
-        let Ax = self.a.x as f64;
-        let Bx = self.b.x as f64;
-        let Ay = self.a.y as f64;
-        let By = self.b.y as f64;
-        let X = self.prize.x as f64;
-        let Y = self.prize.y as f64;
+        let Ax = self.a.x as i64;
+        let Bx = self.b.x as i64;
+        let Ay = self.a.y as i64;
+        let By = self.b.y as i64;
+        let X = self.prize.x as i64;
+        let Y = self.prize.y as i64;
 
-        let a = (By * X - Bx * Y) / (Ax * By - Bx * Ay);
-
-        if a.fract().abs() > 1e-6 {
-            println!("NONE!");
-            return None;
-        }
+        let det = (Ax * By) - (Bx * Ay);
+        let a = (By * X - Bx * Y) / det;
         let b = (Y - a * Ay) / By;
 
-        // println!(
-        //     "{:?} -> {} => >? {}, <? {}",
-        //     (a, b),
-        //     a.fract(),
-        //     a.fract() > 1e-6,
-        //     a.fract() < 1e-6
-        // );
-
-        Some((a as u64, b as u64))
+        // println!("Before conversion: ({a}, {b})");
+        let a = a.try_into().ok()?;
+        let b = b.try_into().ok()?;
+        if self.check(a, b) {
+            // println!("Yup: {}, {}", a, b);
+            Some((a, b))
+        } else {
+            // println!("Nope: {}, {}", a, b);
+            None
+        }
     }
 
-    #[allow(dead_code)]
     fn execute(&self, a: u64, b: u64) -> (u64, u64) {
         (a * self.a.x + b * self.b.x, a * self.a.y + b * self.b.y)
     }
 
-    #[allow(dead_code)]
     fn check(&self, a: u64, b: u64) -> bool {
         (self.prize.x, self.prize.y) == self.execute(a, b)
     }
@@ -89,6 +87,14 @@ impl ClawMachine {
             .iter()
             .map(|m| m.cost_to_win().unwrap_or_default())
             .sum()
+    }
+}
+
+impl Prize {
+    fn convert_units(&mut self) {
+        let conversion_factor = 10000000000000;
+        self.x += conversion_factor;
+        self.y += conversion_factor;
     }
 }
 
@@ -127,9 +133,13 @@ impl FromStr for Prize {
 
 fn main() {
     let input = utils::input_lines(13);
-    let machines = ClawMachine::build_list(input);
+    let machines = ClawMachine::build_list(input.clone(), false);
     let part_1_answer = ClawMachine::total_cost(&machines);
     println!("Day 13, Part 1 answer: {}", part_1_answer);
+
+    let machines = ClawMachine::build_list(input, true);
+    let part_2_answer = ClawMachine::total_cost(&machines);
+    println!("Day 13, Part 2 answer: {}", part_2_answer);
 }
 
 #[cfg(test)]

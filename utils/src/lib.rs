@@ -47,7 +47,7 @@ impl Error for StringParseError {
 }
 
 pub fn input_lines(_day: u8) -> Vec<String> {
-    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let dir = env::var("CARGO_MANIFEST_DIR").unwrap_or_default();
     let data = match fs::read_to_string(format!("{dir}/input.txt")) {
         Ok(d) => d,
         Err(_) => fs::read_to_string("input.txt").unwrap_or_else(|_| {

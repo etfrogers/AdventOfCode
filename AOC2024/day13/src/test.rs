@@ -27,18 +27,17 @@ fn input() -> Vec<String> {
 #[case(1, None, None)]
 #[case(2, Some((38, 86)), Some(200))]
 #[case(3, None, None)]
-
 fn test_costs(
     input: Vec<String>,
     #[case] i: usize,
     #[case] exp_p: Option<(u64, u64)>,
     #[case] exp_cost: Option<u64>,
 ) {
-    let machines = ClawMachine::build_list(input);
+    let machines = ClawMachine::build_list(input, false);
     // assert!(machines[0].check(80, 40));
     let p = machines[i].n_presses();
     // println!("{:?}", p);
-    assert_eq!(exp_p, p);
+    assert_eq!(p, exp_p);
     if let Some(p) = p {
         assert!(machines[i].check(p.0, p.1));
     }
@@ -46,15 +45,45 @@ fn test_costs(
 }
 
 #[rstest]
+#[case(0, None, None)]
+#[case(1, Some((0,0)), Some(0))]
+#[case(2, None, None)]
+#[case(3, Some((0,0)), Some(0))]
+fn test_costs_part2(
+    input: Vec<String>,
+    #[case] i: usize,
+    #[case] exp_p: Option<(u64, u64)>,
+    #[case] exp_cost: Option<u64>,
+) {
+    let machines = ClawMachine::build_list(input, true);
+    // assert!(machines[0].check(80, 40));
+    let p = machines[i].n_presses();
+    // println!("{:?}", p);
+    assert_eq!(exp_p.is_some(), p.is_some());
+    if let Some(p) = p {
+        assert!(machines[i].check(p.0, p.1));
+    }
+    assert_eq!(machines[i].cost_to_win().is_some(), exp_cost.is_some())
+}
+
+#[rstest]
 fn test_total(input: Vec<String>) {
-    let machines = ClawMachine::build_list(input);
+    let machines = ClawMachine::build_list(input, false);
     assert_eq!(ClawMachine::total_cost(&machines), 480)
 }
 
 #[test]
 fn test_part1() {
     let input = utils::input_lines(13);
-    let machines = ClawMachine::build_list(input);
+    let machines = ClawMachine::build_list(input, false);
     let part_1_answer = ClawMachine::total_cost(&machines);
     assert_eq!(part_1_answer, 28138);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(13);
+    let machines = ClawMachine::build_list(input, true);
+    let part_2_answer = ClawMachine::total_cost(&machines);
+    assert_eq!(part_2_answer, 108394825772874);
 }
