@@ -27,7 +27,7 @@ where
     fn bounds(&self) -> GridBounds<Self::CoordType>;
     fn size(&self) -> (CoordType, CoordType);
     fn n_elem(&self) -> CoordType;
-    fn map<'b, F, T>(&'b self, fun: F) -> impl GridTrait<T>
+    fn map<'b, F, T>(&'b self, fun: F) -> impl GridTrait<'b, T>
     where
         F: Fn(&E) -> T,
         T: 'b + Copy + Default;

@@ -56,7 +56,10 @@ impl<E> From<HashMap<Pos, E>> for SparseGrid<E> {
 
 impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
     type CoordType = i32;
-    type SliceType = SparseSlice<'a, E> where E: 'a;
+    type SliceType
+        = SparseSlice<'a, E>
+    where
+        E: 'a;
 
     fn is_inside(&self, pos: &Pos<Self::CoordType>) -> bool {
         match self.bounds {
@@ -207,7 +210,7 @@ impl<'a, E> Deref for SparseSlice<'a, E> {
     }
 }
 
-impl<'a, E> DerefMut for SparseSlice<'a, E> {
+impl<E> DerefMut for SparseSlice<'_, E> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut (*self.0)
     }

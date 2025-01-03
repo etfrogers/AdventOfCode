@@ -65,15 +65,13 @@ struct Arg<'a> {
     ptr: Option<&'a Register>,
 }
 
-impl<'a> Arg<'a> {
+impl Arg<'_> {
     fn check_validity(&self) {
         assert!(
             (self.data.is_some() & self.ptr.is_none()) ^ (self.data.is_none() & self.ptr.is_some())
         )
     }
-}
 
-impl<'a> Arg<'a> {
     fn get(&self) -> NumberType {
         self.check_validity();
         if self.ptr.is_some() {

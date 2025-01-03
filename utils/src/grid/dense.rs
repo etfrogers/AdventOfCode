@@ -24,16 +24,16 @@ pub struct Grid<E> {
 }
 
 impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
-    type SliceType = GridSlice<'a, E> where E: 'a;
+    type SliceType
+        = GridSlice<'a, E>
+    where
+        E: 'a;
 
     type CoordType = usize;
 
     fn is_inside(&self, coord: &Pos<CoordType>) -> bool {
-        if let Ok(c) = Coord::try_from(*coord) {
-            c.x() < self.n_cols() && c.y() < self.n_rows()
-        } else {
-            false
-        }
+        let Ok(c) = Coord::try_from(*coord);
+        c.x() < self.n_cols() && c.y() < self.n_rows()
     }
 
     fn bounds(&self) -> GridBounds<Self::CoordType> {
@@ -69,7 +69,7 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
         self.coords().zip(self.values_mut())
     }
 
-    fn values_mut(&'a mut self) -> impl Iterator<Item = &mut E> {
+    fn values_mut(&'a mut self) -> impl Iterator<Item = &'a mut E> {
         self.data.iter_mut().flat_map(|v| v.iter_mut())
     }
 
@@ -77,6 +77,7 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
     fn iter(&'a self) -> GridIterator<'a, E> {
         GridIterator::new(self, Invert(false), ColumnMajor(false))
     }
+
     #[allow(refining_impl_trait)]
     #[allow(refining_impl_trait)]
     fn full(x: CoordType, y: CoordType, content: E) -> Grid<E> {
@@ -96,7 +97,7 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
 impl<'a, E: 'a + PartialEq + Clone + Copy> GridFind<'a, E> for Grid<E> {}
 
 impl<E: Clone + Copy> Grid<E> {
-    pub fn slice<'b, R1, R2>(&'b self, index: (R1, R2)) -> <Grid<E> as GridTrait<E>>::SliceType
+    pub fn slice<'b, R1, R2>(&'b self, index: (R1, R2)) -> <Grid<E> as GridTrait<'b, E>>::SliceType
     where
         R1: 'b + SliceIndex<[E], Output = [E]> + Clone,
         R2: 'b + SliceIndex<[Vec<E>], Output = [Vec<E>]> + Clone,

@@ -147,7 +147,7 @@ struct Dug<'a> {
     target: Option<&'a mut SnailfishNumber>,
 }
 
-impl<'a> Dug<'a> {
+impl Dug<'_> {
     fn empty() -> Self {
         Self {
             left_number: None,
