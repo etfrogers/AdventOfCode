@@ -2,7 +2,7 @@ use std::{collections::HashMap, env, error::Error, fmt::Display, fs, hash::Hash,
 
 pub mod grid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringParseError {
     item: String,
     source: Option<&'static (dyn Error + 'static)>,
