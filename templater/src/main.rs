@@ -1,21 +1,45 @@
 use std::{env, fs, path::Path};
 
+static USAGE: &str = "templater: creates rust template files for Advent of Code
+
+    Usage:
+    templater DAY_NUMBER [SUB_DIR]
+
+    DAY_NUMBER is compulsory
+    SUB_DIR is optional
+    ";
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        println!("templater takes exactly one argument: the day number");
+    if args.len() < 2 || args.len() > 3 {
+        println!("{USAGE}");
         return;
     }
     let day = &args[1];
+
     println!("templater creating files for day {day}\n");
-    // let path = env::current_dir().unwrap();
-    // println!("The current directory is {}", path.display());
 
     let p = String::from("day") + day;
-    let dirname = Path::new(&p);
+    let dirname = if args.len() == 3 {
+        let sub_dir = Path::new(&args[2]);
+        if !fs::exists(sub_dir).unwrap() {
+            println!("The SUB_DIR directory should be the name of an exsiting directory from the current path");
+            println!("\n{USAGE}");
+            return;
+        } else {
+            &sub_dir.join(p)
+        }
+    } else {
+        Path::new(&p)
+    };
     let fname = "main.rs";
     let test_name = "test.rs";
-    fs::create_dir(dirname).expect("Failed to create package dir");
+    if let Err(err) = fs::create_dir(dirname) {
+        if err.raw_os_error().is_some_and(|code| code == 17) {
+            println!("Directory {dirname:?} already exists: templater expects to create files for a new day.\n\n{USAGE}");
+            return;
+        }
+        panic!("Failed to create package dir: {err:?}");
+    }
     fs::create_dir(dirname.join("src")).expect("Failed to create src dir");
 
     let toml_code = TOML_TEXT.replace("{#day#}", day);
