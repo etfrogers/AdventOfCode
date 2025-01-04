@@ -5,6 +5,8 @@ use std::{
     str::FromStr,
 };
 
+use num::traits::Euclid;
+
 use crate::StringParseError;
 
 use super::direction::{Direction, NoDirectionFound, MOVES};
@@ -58,6 +60,15 @@ impl<T: num::PrimInt> Pos<T> {
     }
 }
 
+impl<T: num::PrimInt + Euclid> Pos<T> {
+    pub fn modulo(&self, rhs: Pos<T>) -> Self {
+        Self {
+            x: self.x().rem_euclid(&rhs.x()),
+            y: self.y().rem_euclid(&rhs.y()),
+        }
+    }
+}
+
 impl Pos<i32> {
     pub fn move_(&mut self, dir: Direction) {
         *self += dir.into();
@@ -65,6 +76,12 @@ impl Pos<i32> {
 
     pub fn direction_to(&self, other: &Pos<i32>) -> Result<Direction, NoDirectionFound> {
         (*other - *self).try_into()
+    }
+
+    pub fn try_modulo(&self, rhs: Pos<usize>) -> Result<Self, TryFromIntError> {
+        let x = try_rem_euclid_i32_to_usize(self.x, rhs.x)?;
+        let y = try_rem_euclid_i32_to_usize(self.y, rhs.y)?;
+        Ok(Self { x, y })
     }
 }
 
@@ -93,6 +110,22 @@ impl Pos<usize> {
         Ok(<Pos as TryInto<Direction>>::try_into(pos32)?)
         //.try_into()?.try_into()
     }
+
+    pub fn try_modulo(&self, rhs: Pos<i32>) -> Result<Self, TryFromIntError> {
+        let x = try_rem_euclid_usize_to_i32(self.x, rhs.x)?;
+        let y = try_rem_euclid_usize_to_i32(self.y, rhs.y)?;
+        Ok(Self { x, y })
+    }
+}
+
+fn try_rem_euclid_usize_to_i32(lhs: usize, rhs: i32) -> Result<usize, TryFromIntError> {
+    let l32: i32 = lhs.try_into()?;
+    l32.rem_euclid(rhs).try_into()
+}
+
+fn try_rem_euclid_i32_to_usize(lhs: i32, rhs: usize) -> Result<i32, TryFromIntError> {
+    let r32: i32 = rhs.try_into()?;
+    Ok(lhs.rem_euclid(r32))
 }
 
 impl<T> From<(T, T)> for Pos<T>
