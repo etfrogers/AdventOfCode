@@ -1,6 +1,8 @@
-use std::{cell::OnceCell, str::FromStr, time::Duration};
+use std::{cell::OnceCell, fmt::Display, hash::Hash, str::FromStr};
 
 use regex::Regex;
+use rustc_hash::FxHashSet;
+use thiserror::Error;
 use utils::{
     self,
     grid::{
@@ -10,11 +12,13 @@ use utils::{
     StringParseError,
 };
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 struct Hallway {
     size: Coord,
     robots: Vec<Robot>,
 }
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone)]
 struct Robot {
     pos: Coord,
     vel: Pos,
@@ -108,19 +112,8 @@ impl Hallway {
         (n_upper_left, n_upper_right, n_lower_left, n_lower_right)
     }
 
-    fn visualise(&self) {
-        let mut grid = Grid::full(self.size.x(), self.size.y(), 0);
-        for robot in &self.robots {
-            grid[robot.pos] += 1;
-        }
-        println!(
-            "{}",
-            grid.map(|v| if *v > 0 {
-                v.to_string().chars().next().unwrap()
-            } else {
-                '.'
-            })
-        )
+    fn _visualise(&self) {
+        println!("{self}")
     }
 
     fn step(&mut self, n: usize) {
@@ -129,9 +122,9 @@ impl Hallway {
         }
     }
 
-    fn centre_counts(&self) -> usize {
-        let low_edge = (self.size.x() - 1) / 4;
-        let high_edge = (self.size.y() - 1) * 3 / 4;
+    fn _centre_counts(&self) -> usize {
+        let low_edge = (self.size.x() - 1) * 2 / 5;
+        let high_edge = (self.size.y() - 1) * 3 / 5;
         let mut n = 0;
         for robot in &self.robots {
             let x = robot.pos.x();
@@ -140,8 +133,50 @@ impl Hallway {
                 n += 1;
             }
         }
-        println!("{n}");
+        // println!("{n}");
         n
+    }
+
+    fn find_tree(&mut self) -> Result<usize, Looped> {
+        let mut seen = FxHashSet::default();
+
+        let contiguous_digits = Regex::new(r"\d{10}").unwrap();
+
+        for i in 1.. {
+            seen.insert(self.clone());
+            self.step(1);
+            let s = self.to_string();
+            if contiguous_digits.is_match(&s) {
+                println!("{s}");
+                return Ok(i);
+            }
+            if seen.contains(self) {
+                return Err(Looped(i));
+            }
+        }
+        panic!("Loop failed")
+    }
+}
+
+#[derive(Debug, Error)]
+#[error("Loop found at index {0}")]
+struct Looped(usize);
+
+impl Display for Hallway {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut grid = Grid::full(self.size.x(), self.size.y(), 0);
+        for robot in &self.robots {
+            grid[robot.pos] += 1;
+        }
+        write!(
+            f,
+            "{}",
+            grid.map(|v| if *v > 0 {
+                v.to_string().chars().next().unwrap()
+            } else {
+                '.'
+            })
+        )
     }
 }
 
@@ -153,18 +188,9 @@ fn main() {
     println!("Day 14, Part 1 answer: {}", part_1_answer);
 
     let mut hallway = Hallway::new(101, 103, &input);
-    let n_robots = hallway.robots.len();
-    for i in 0.. {
-        if hallway.centre_counts() > n_robots / 3 {
-            println!("\n=====================================================\n");
-            println!("{i}");
-            hallway.step(1);
-            hallway.visualise();
-            std::thread::sleep(Duration::from_millis(200));
-        } else if i % 1000 == 0 {
-            println!("{i}");
-        }
-    }
+    let part_2_answer = hallway.find_tree().unwrap();
+    println!("Day 14, Part 2 answer: {}", part_2_answer);
+
 }
 
 #[cfg(test)]

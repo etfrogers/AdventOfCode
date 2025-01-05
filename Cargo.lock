@@ -135,6 +135,8 @@ version = "0.1.0"
 dependencies = [
  "regex",
  "rstest",
+ "rustc-hash",
+ "thiserror",
  "utils",
 ]
 

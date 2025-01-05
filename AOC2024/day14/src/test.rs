@@ -42,3 +42,11 @@ fn test_part1() {
     let part_1_answer = hallway.safety_factor();
     assert_eq!(part_1_answer, 218433348);
 }
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(14);
+    let mut hallway = Hallway::new(101, 103, &input);
+    let part_2_answer = hallway.find_tree().unwrap();
+    assert_eq!(part_2_answer, 6512);
+}
