@@ -2,10 +2,10 @@ use std::{collections::HashMap, env, error::Error, fmt::Display, fs, hash::Hash,
 
 pub mod grid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct StringParseError {
     item: String,
-    source: Option<&'static (dyn Error + 'static)>,
+    source: Option<anyhow::Error>,
 }
 
 impl StringParseError {
@@ -16,10 +16,10 @@ impl StringParseError {
         }
     }
 
-    pub fn new_with_source(s: &str, source: Option<&'static (dyn Error + 'static)>) -> Self {
+    pub fn new_with_source(s: &str, source: anyhow::Error) -> Self {
         Self {
             item: s.to_string(),
-            source,
+            source: Some(source),
         }
     }
 }
@@ -28,22 +28,6 @@ impl Display for StringParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Unable to parse String: {}", self.item)
     }
-}
-
-impl Error for StringParseError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source
-    }
-
-    fn description(&self) -> &str {
-        "description() is deprecated; use Display"
-    }
-
-    fn cause(&self) -> Option<&dyn Error> {
-        self.source()
-    }
-
-    // fn provide<'a>(&'a self, request: &mut std::error::Requests<'a>) {}
 }
 
 pub fn input_lines(_day: u8) -> Vec<String> {
