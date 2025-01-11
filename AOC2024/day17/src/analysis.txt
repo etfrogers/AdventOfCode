@@ -1,0 +1,39 @@
+Computer {
+    reg_a: 22817223
+    reg_b: 0
+    reg_c: 0
+    program: Program {
+        listing:
+        [   Bst(ComboOp(4))
+            Bxl(LiteralOp(2))
+            Cdv(ComboOp(5))
+            Bxc
+            Adv(ComboOp(3))
+            Bxl(LiteralOp(7))
+            Out(ComboOp(5))
+            Jnz(LiteralOp(0))
+        ]
+    }
+    pointer: 0
+    output_buffer: []
+    original_listing: "2,4,1,2,7,5,4,5,0,3,1,7,5,5,3,0"
+}
+
+loop{
+Bst(ComboOp(4))
+B = A % 8
+Bxl(LiteralOp(2))
+B ^= 2
+Cdv(ComboOp(5))
+C = A / 2^B
+Bxc
+B ^= C
+Adv(ComboOp(3))
+A = A / 2^3
+Bxl(LiteralOp(7))
+B ^= 7
+Out(ComboOp(5))
+Out(B)
+Jnz(LiteralOp(0))
+if A == 0 {break;}
+}

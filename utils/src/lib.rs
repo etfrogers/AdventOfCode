@@ -1,25 +1,25 @@
-use std::{collections::HashMap, env, error::Error, fmt::Display, fs, hash::Hash, ops::Deref};
+use std::{collections::HashMap, env, fmt::Display, fs, hash::Hash, ops::Deref};
 
 pub mod grid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StringParseError {
     item: String,
-    source: Option<anyhow::Error>,
+    // source: Option<anyhow::Error>,
 }
 
 impl StringParseError {
     pub fn new(s: &str) -> Self {
         Self {
             item: s.to_string(),
-            source: None,
+            // source: None,
         }
     }
 
-    pub fn new_with_source(s: &str, source: anyhow::Error) -> Self {
+    pub fn new_with_source(s: &str, _source: anyhow::Error) -> Self {
         Self {
             item: s.to_string(),
-            source: Some(source),
+            // source: Some(source),
         }
     }
 }

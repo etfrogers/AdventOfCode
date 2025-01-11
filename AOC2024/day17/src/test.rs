@@ -88,10 +88,36 @@ fn test_5() {
     assert_eq!(comp.reg_b, 44354)
 }
 
+#[rstest]
+fn test_quine() {
+    let input = utils::string_input_lines(
+        "Register A: 2024
+Register B: 0
+Register C: 0
+
+Program: 0,3,5,4,3,0",
+    );
+    let mut comp = Computer::build(&input);
+    assert_eq!(comp.find_quine(), 117440);
+}
+
 #[test]
 fn test_part1() {
     let input = utils::input_lines(17);
     let mut comp = Computer::build(&input);
     let part_1_answer = comp.run();
     assert_eq!(part_1_answer, "4,3,7,1,5,3,0,5,4");
+}
+
+#[test]
+fn test_translation() {
+    let part_1_answer = translated_prog(22817223);
+    assert_eq!(part_1_answer, vec![4, 3, 7, 1, 5, 3, 0, 5, 4]);
+}
+
+#[rstest]
+#[case(vec![4], 1)]
+#[case(vec![4,5], 0b1010)]
+fn test_invert(#[case] prog: Vec<Register>, #[case] exp: Register) {
+    assert_eq!(invert_prog(prog), exp)
 }
