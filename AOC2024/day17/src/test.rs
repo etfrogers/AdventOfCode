@@ -98,7 +98,10 @@ Register C: 0
 Program: 0,3,5,4,3,0",
     );
     let mut comp = Computer::build(&input);
-    assert_eq!(comp.find_quine(), 117440);
+    comp.reg_a = 117440;
+    assert_eq!(comp.run(), "0,3,5,4,3,0");
+    assert_eq!(comp.program.original_listing, vec![0, 3, 5, 4, 3, 0]);
+    assert_eq!(comp.find_quine_brute_force(), 117440);
 }
 
 #[test]
@@ -117,7 +120,22 @@ fn test_translation() {
 
 #[rstest]
 #[case(vec![4], 1)]
-#[case(vec![4,5], 0b1010)]
+#[case(vec![5,4], 0b1010)]
+#[case(vec![0, 5,4], 87)]
+#[case(vec![4, 3, 7, 1, 5, 3, 0, 5, 4], 22817223)]
 fn test_invert(#[case] prog: Vec<Register>, #[case] exp: Register) {
-    assert_eq!(invert_prog(prog), exp)
+    let answers = invert_prog(&prog);
+    assert!(answers.contains(&exp));
+    for a in answers {
+        assert_eq!(translated_prog(a), prog);
+    }
+}
+
+#[rstest]
+fn test_part2() {
+    let input = utils::input_lines(17);
+    let comp = Computer::build(&input);
+    let part_2_answer = comp.find_quine();
+
+    assert_eq!(part_2_answer, 190384615275535);
 }

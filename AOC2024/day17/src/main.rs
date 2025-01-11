@@ -2,6 +2,15 @@ use anyhow::{anyhow, Ok};
 use std::str::FromStr;
 use strum_macros::EnumIter;
 
+const DEBUG: bool = false;
+
+macro_rules! debug_println {
+    ($($arg:tt)*) => {
+        if DEBUG {
+            println!($($arg)*)
+        }
+    };
+}
 use utils::{self};
 
 #[derive(Debug)]
@@ -56,7 +65,6 @@ impl Computer {
             program,
             pointer: 0,
             output_buffer: Vec::new(),
-            // original_listing: input[4].split(": ").last().unwrap().to_string(),
         }
     }
 
@@ -131,10 +139,15 @@ impl Computer {
         }
     }
 
-    fn find_quine(&mut self) -> Register {
+    fn find_quine(&self) -> Register {
+        self.program.find_quine()
+    }
+
+    #[allow(dead_code)]
+    fn find_quine_brute_force(&mut self) -> Register {
         for candidate in 0.. {
             if candidate % 1000 == 0 {
-                println!("{candidate}")
+                debug_println!("{candidate}")
             }
             self.reset();
             self.reg_a = candidate;
@@ -177,6 +190,13 @@ impl FromStr for Program {
     }
 }
 
+impl Program {
+    fn find_quine(&self) -> Register {
+        let original_program: Vec<_> = self.original_listing.iter().map(|v| (*v).into()).collect();
+        *invert_prog(&original_program).iter().min().unwrap()
+    }
+}
+
 impl From<Register> for LiteralOp {
     fn from(value: Register) -> Self {
         Self(value)
@@ -207,41 +227,38 @@ impl Instruction {
 
 fn translated_prog(mut a: Register) -> Vec<Register> {
     let mut output: Vec<Register> = Vec::new();
-    // let mut a: Register = 0;
-
-    // let mut c;
     loop {
         // Bst(ComboOp(4))
-        println!("\n loop start: \n\ta: {a:b} ({a})");
+        debug_println!("\n loop start: \n\ta: {a:b} ({a})");
         let mut b = a % 8; // b = Lowest three bits of a
                            // Bxl(LiteralOp(2))
-        println!("b: {b:b}");
+                           // debug_println!("b: {b:b}");
         b ^= 2;
-        println!("b: {b:b} ({b})");
+        debug_println!("b: {b:b} ({b})");
         // Cdv(ComboOp(5))
         // c = a / 2_u64.pow(b.try_into().unwrap());
         // Bxc
         // b ^= c;
         // b ^= a / 2_u64.pow(b.try_into().unwrap());
-        println!("a >> b: {:b}", a >> b);
+        debug_println!("a >> b: {:b}", a >> b);
         b ^= a >> b; // last 3 bits of b xor'ed with digits b-(b+3) of a
-        println!("b: {b:b}");
-        // Adv(ComboOp(3))
-        // a = a / 2 ^ 3;
-        // Bxl(LiteralOp(7))
+                     // debug_println!("b: {b:b}");
+                     // Adv(ComboOp(3))
+                     // a = a / 2 ^ 3;
+                     // Bxl(LiteralOp(7))
         b ^= 7;
-        println!("b: {b:b}");
+        debug_println!("b: {b:b}");
         // Out(ComboOp(5))
         output.push(b % 8);
-        println!(
+        debug_println!(
             "output: {} - {:b}",
             output[output.len() - 1],
             output[output.len() - 1]
         );
         // Jnz(LiteralOp(0))
         // a /= 8;
-        a = a >> 3;
-        println!("a: {a:b}");
+        a >>= 3;
+        debug_println!("a: {a:b}");
 
         if a == 0 {
             break;
@@ -250,62 +267,69 @@ fn translated_prog(mut a: Register) -> Vec<Register> {
     output
 }
 
-fn invert_prog(output: Vec<Register>) -> Register {
-    let mut a = 0;
-    let mut input: Vec<_> = output.iter().rev().collect();
-    'input_loop: while let Some(b) = input.pop() {
-        let mut b = *b;
-        println!("\ncurrent a: {a:b}\nb input: {b:b}");
+#[derive(Debug)]
+struct SearchPoint<'a> {
+    a: Register,
+    remaining_input: &'a [Register],
+    input_so_far: Vec<Register>,
+}
+
+fn invert_prog(output: &[Register]) -> Vec<Register> {
+    let a = 0;
+    let input: Vec<_> = output.iter().rev().copied().collect();
+    let initial_point = SearchPoint {
+        a,
+        remaining_input: &input[..],
+        input_so_far: Vec::new(),
+    };
+    let mut search_stack = Vec::new();
+    search_stack.push(initial_point);
+    let mut poss_answers = Vec::new();
+    while let Some(search) = search_stack.pop() {
+        if search.remaining_input.is_empty() {
+            poss_answers.push(search.a);
+            debug_println!("Saving output: {}", search.a);
+            continue;
+        }
+        let mut b = search.remaining_input[0];
+        let a = search.a;
+        debug_println!("\ncurrent a: {a:b}\nb input: {b:b}");
         b ^= 7;
-        println!("b: {b:b}");
-        // let mut shift = None;
-        let mut new_a = 0;
+        debug_println!("b: {b:b}");
         for c in 0..=7 {
-            // println!("a << c: {:b}", a << 3);
-            println!("c: {c}");
-            // println!("a << c | c: {:b}", (a << 3) | c);
+            debug_println!("c: {c}");
             let poss_a = (a << 3) | c;
             let shift = c ^ 2;
-            println!(
+            debug_println!(
                 "poss_a: {poss_a:b}, shift: {shift}, (poss_a >> shift), {:b}, (shift ^ (poss_a >> shift)) % 8: {:b}",
                 poss_a >> shift,
                 (shift ^ (poss_a >> shift)) % 8
             );
             if (shift ^ (poss_a >> shift)) % 8 == b {
-                println!("---Found\n");
-                // shift = Some(c);
-                new_a = poss_a;
-                // break;
+                debug_println!("---Found\n");
+
+                let mut new_so_far = search.input_so_far.clone();
+                new_so_far.insert(0, search.remaining_input[0]);
+                debug_println!(
+                    "Poss_a: {poss_a}, output of poss_a: {:?}, expected_output: {new_so_far:?}",
+                    translated_prog(poss_a)
+                );
+                if translated_prog(poss_a) == new_so_far {
+                    let new_point = SearchPoint {
+                        a: poss_a,
+                        remaining_input: &search.remaining_input[1..],
+                        input_so_far: new_so_far,
+                    };
+                    debug_println!("pushing: {new_point:?}");
+                    search_stack.push(new_point);
+                } else {
+                    debug_println!("Pruning search")
+                }
             };
-            // if poss_a >> c == b {
-            //     a = poss_a;
-            //     break;
-            // }
-        }
-        a = new_a;
-        // let shift = shift.unwrap();
-        // b ^= a >> shift;
-        // println!("b: {b:b}");
-        // b ^= 2;
-        // println!("b: {b:b}");
-        // a = a << 3 | b % 8;
-        // println!("a: {a:b}\n");
-    }
-    a
-}
-
-fn find_quine_translated() -> u64 {
-    let orig_prog = vec![2, 4, 1, 2, 7, 5, 4, 5, 0, 3, 1, 7, 5, 5, 3, 0];
-    for candidate in 0.. {
-        if candidate % 1000000 == 0 {
-            println!("{candidate}")
-        }
-
-        if translated_prog(candidate) == orig_prog {
-            return candidate;
         }
     }
-    panic!("Failed to converge");
+    debug_println!("{poss_answers:?}");
+    poss_answers
 }
 
 fn main() {
@@ -314,9 +338,7 @@ fn main() {
     let part_1_answer = comp.run();
     println!("Day 17, Part 1 answer: {}", part_1_answer);
 
-    // let mut comp = Computer::build(&input);
-    // println!("{comp:?}");
-    let part_2_answer = find_quine_translated();
+    let part_2_answer = comp.find_quine();
     println!("{:?}", translated_prog(part_2_answer));
     println!("Day 17, Part 2 answer: {}", part_2_answer);
 }
