@@ -1,13 +1,17 @@
-use std::fmt::{Debug, Display};
+use std::{
+    fmt::{Debug, Display},
+    ops::Neg,
+    str::FromStr,
+};
 
 use lazy_static::lazy_static;
 use rustc_hash::FxHashMap;
-use strum_macros::{EnumIter, EnumString};
+use strum_macros::EnumIter;
 use thiserror::Error;
 
-use crate::grid::pos::Pos;
+use crate::{grid::pos::Pos, StringParseError};
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, EnumString, EnumIter)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, EnumIter)]
 pub enum Direction {
     North,
     East,
@@ -163,6 +167,14 @@ impl Direction {
     }
 }
 
+impl Neg for Direction {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self.opposite()
+    }
+}
+
 impl Display for Direction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{self:?}")
@@ -203,6 +215,20 @@ impl TryFrom<Pos<i32>> for Direction {
             .get(&value)
             .ok_or(NoDirectionFound::new(value))
             .copied()
+    }
+}
+
+impl FromStr for Direction {
+    type Err = StringParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            ">" => Ok(Self::East),
+            "^" => Ok(Self::North),
+            "v" => Ok(Self::South),
+            "<" => Ok(Self::West),
+            _ => Err(StringParseError::new(s)),
+        }
     }
 }
 // static all: Vec<Direction> = []Direction{NORTH, EAST, SOUTH, WEST}

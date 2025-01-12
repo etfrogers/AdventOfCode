@@ -1,8 +1,10 @@
 use std::{collections::HashMap, env, fmt::Display, fs, hash::Hash, ops::Deref};
 
+use thiserror::Error;
+
 pub mod grid;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 pub struct StringParseError {
     item: String,
     // source: Option<anyhow::Error>,
