@@ -32,7 +32,7 @@ impl Direction {
 }
 
 lazy_static! {
-    pub static ref ORTHOGONAL_MOVES: FxHashMap<Direction, Pos> = FxHashMap::from_iter([
+    pub static ref CARDINAL_MOVES: FxHashMap<Direction, Pos> = FxHashMap::from_iter([
         (Direction::East, Pos::new(1, 0)),
         (Direction::West, Pos::new(-1, 0)),
         (Direction::South, Pos::new(0, 1)),
@@ -51,7 +51,7 @@ lazy_static! {
 
 lazy_static! {
     pub static ref MOVES: FxHashMap<Direction, Pos> = {
-        let mut m = ORTHOGONAL_MOVES.clone();
+        let mut m = CARDINAL_MOVES.clone();
         m.extend(DIAGONAL_MOVES.iter());
         m
     };
@@ -164,6 +164,22 @@ impl Direction {
         } else {
             Err(NoIntermediate::new(*self, *other))
         }
+    }
+
+    pub fn is_horizontal(&self) -> bool {
+        *self == Self::West || *self == Self::East
+    }
+
+    pub fn is_vertical(&self) -> bool {
+        *self == Self::North || *self == Self::South
+    }
+
+    pub fn is_diagonal(&self) -> bool {
+        DIAGONAL_MOVES.contains_key(self)
+    }
+
+    pub fn is_cardinal(&self) -> bool {
+        CARDINAL_MOVES.contains_key(self)
     }
 }
 

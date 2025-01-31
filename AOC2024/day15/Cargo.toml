@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 utils = { path = "../../utils" }
 anyhow = "1.0.95"
+indexmap = "2.7.1"
 
 [dev-dependencies]
 rstest = "0.23.0"

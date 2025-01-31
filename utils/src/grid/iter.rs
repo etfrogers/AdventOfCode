@@ -1,5 +1,5 @@
 use super::pos::{Coord, CoordType};
-use super::{direction::DIAGONAL_MOVES, direction::ORTHOGONAL_MOVES, Pos};
+use super::{direction::CARDINAL_MOVES, direction::DIAGONAL_MOVES, Pos};
 use super::{Grid, GridTrait};
 
 #[derive(Debug, Clone, Copy)]
@@ -319,7 +319,7 @@ pub struct NeighbourCoordIterator {
 
 impl NeighbourCoordIterator {
     fn new<E>(grid: &Grid<E>, coord: Coord, include_diagonals: bool) -> Self {
-        let mut positions: Vec<_> = ORTHOGONAL_MOVES.values().copied().collect();
+        let mut positions: Vec<_> = CARDINAL_MOVES.values().copied().collect();
         if include_diagonals {
             positions.append(&mut DIAGONAL_MOVES.values().copied().collect());
         }

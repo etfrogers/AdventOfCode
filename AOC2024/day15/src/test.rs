@@ -50,13 +50,13 @@ fn test_build(input: Vec<String>) {
 #......#
 ########
 ";
-    let (wh, _) = build_warehouse(input, false);
+    let (wh, _) = build_warehouse(&input, false);
     assert_eq!(wh.map.to_string(), exp);
 }
 
 #[rstest]
 fn test_step(input: Vec<String>) {
-    let (mut wh, moves) = build_warehouse(input, false);
+    let (mut wh, moves) = build_warehouse(&input, false);
     assert_eq!(
         wh.map.to_string(),
         "########
@@ -99,8 +99,8 @@ fn test_step(input: Vec<String>) {
 
 #[rstest]
 fn test_moves_1(input: Vec<String>) {
-    let (mut wh, moves) = build_warehouse(input, false);
-    wh.follow_instructions(moves);
+    let (mut wh, moves) = build_warehouse(&input, false);
+    wh.follow_instructions(&moves);
     assert_eq!(
         wh.map.to_string(),
         "########
@@ -117,8 +117,8 @@ fn test_moves_1(input: Vec<String>) {
 
 #[rstest]
 fn test_moves_2() {
-    let (mut wh, moves) = build_warehouse(utils::string_input_lines(TEST_2), false);
-    wh.follow_instructions(moves);
+    let (mut wh, moves) = build_warehouse(&utils::string_input_lines(TEST_2), false);
+    wh.follow_instructions(&moves);
     assert_eq!(
         wh.map.to_string(),
         "##########
@@ -136,6 +136,27 @@ fn test_moves_2() {
 }
 
 #[rstest]
+fn test_moves_wide() {
+    let (mut wh, moves) = build_warehouse(&utils::string_input_lines(TEST_2), true);
+    wh.follow_instructions(&moves);
+    assert_eq!(
+        wh.map.to_string(),
+        "####################
+##[].......[].[][]##
+##[]...........[].##
+##[]........[][][]##
+##[]......[]....[]##
+##..##......[]....##
+##..[]............##
+##..@......[].[][]##
+##......[][]..[]..##
+####################
+"
+    );
+    assert_eq!(wh.gps(), 9021);
+}
+
+#[rstest]
 #[case(
     "#######
 #...O..
@@ -147,14 +168,14 @@ fn test_moves_2() {
 #[case(TEST_1, 2028)]
 #[case(TEST_2, 10092)]
 fn test_gps(#[case] input: &str, #[case] exp: usize) {
-    let (mut wh, moves) = build_warehouse(utils::string_input_lines(input), false);
-    wh.follow_instructions(moves);
+    let (mut wh, moves) = build_warehouse(&utils::string_input_lines(input), false);
+    wh.follow_instructions(&moves);
     assert_eq!(wh.gps(), exp);
 }
 
 #[rstest]
 fn test_wide_build() {
-    let (wh, _) = build_warehouse(utils::string_input_lines(TEST_2), true);
+    let (wh, _) = build_warehouse(&utils::string_input_lines(TEST_2), true);
     assert_eq!(
         wh.map.to_string(),
         "####################
@@ -171,11 +192,208 @@ fn test_wide_build() {
     );
 }
 
+#[rstest]
+fn test_wide_step() {
+    let input = "#######
+#...#.#
+#.....#
+#..OO@#
+#..O..#
+#.....#
+#######
+
+<vv<<^^<<^^";
+    let (mut wh, moves) = build_warehouse(&utils::string_input_lines(input), true);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##..........##
+##....[][]@.##
+##....[]....##
+##..........##
+##############
+"
+    );
+    wh.move_robot(moves.0[0]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##..........##
+##...[][]@..##
+##....[]....##
+##..........##
+##############
+"
+    );
+    wh.move_robot(moves.0[1]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##..........##
+##...[][]...##
+##....[].@..##
+##..........##
+##############
+"
+    );
+    wh.move_robot(moves.0[2]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##..........##
+##...[][]...##
+##....[]....##
+##.......@..##
+##############
+"
+    );
+    wh.move_robot(moves.0[3]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##..........##
+##...[][]...##
+##....[]....##
+##......@...##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[4]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##..........##
+##...[][]...##
+##....[]....##
+##.....@....##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[5]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##...[][]...##
+##....[]....##
+##.....@....##
+##..........##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[6]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##...[][]...##
+##....[]....##
+##.....@....##
+##..........##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[7]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##...[][]...##
+##....[]....##
+##....@.....##
+##..........##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[8]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##...[][]...##
+##....[]....##
+##...@......##
+##..........##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[9]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##......##..##
+##...[][]...##
+##...@[]....##
+##..........##
+##..........##
+##############
+"
+    );
+
+    wh.move_robot(moves.0[10]);
+    assert_eq!(
+        wh.map.to_string(),
+        "##############
+##...[].##..##
+##...@.[]...##
+##....[]....##
+##..........##
+##..........##
+##############
+"
+    );
+}
+
+#[rstest]
+fn test_double_push() {
+    let input = "###
+#.#
+#O#
+#O#
+#@#
+###
+
+^";
+    let (mut wh, moves) = build_warehouse(&utils::string_input_lines(input), true);
+    wh.follow_instructions(&moves);
+    assert_eq!(
+        wh.map.to_string(),
+        "######
+##[]##
+##[]##
+##@.##
+##..##
+######
+"
+    );
+}
+
 #[test]
 fn test_part1() {
     let input = utils::input_lines(15);
-    let (mut wh, moves) = build_warehouse(input, false);
-    wh.follow_instructions(moves);
+    let (mut wh, moves) = build_warehouse(&input, false);
+    wh.follow_instructions(&moves);
     let part_1_answer = wh.gps();
     assert_eq!(part_1_answer, 1414416);
+}
+
+#[test]
+fn test_part2() {
+    let input = utils::input_lines(15);
+    let (mut wh, moves) = build_warehouse(&input, true);
+    wh.follow_instructions(&moves);
+    let part_2_answer = wh.gps();
+    assert_eq!(part_2_answer, 1386070);
 }
