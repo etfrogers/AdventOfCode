@@ -57,9 +57,8 @@ impl Equation {
                 Operator::Add => result + val,
                 Operator::Multiply => result * val,
                 Operator::Concatenate => {
-                    let mut s = result.to_string();
-                    s.push_str(&val.to_string());
-                    s.parse().unwrap()
+                    let n_digits = (*val as f64).log10().floor() as u32 + 1;
+                    (result * 10_u64.pow(n_digits)) + val
                 }
             };
             if result > self.target {
