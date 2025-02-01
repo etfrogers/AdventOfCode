@@ -52,14 +52,13 @@ impl Equation {
     fn apply_ops(&self, ops: Vec<Operator>) -> u64 {
         let mut result = self.inputs[0];
 
-        for (op, val) in ops.iter().zip(self.inputs[1..].iter()) {
+        for (op, &val) in ops.iter().zip(self.inputs[1..].iter()) {
             result = match op {
                 Operator::Add => result + val,
                 Operator::Multiply => result * val,
                 Operator::Concatenate => {
-                    let mut s = result.to_string();
-                    s.push_str(&val.to_string());
-                    s.parse().unwrap()
+                    let n_digits = (val as f64).log10().floor() as u32 + 1;
+                    (result * 10_u64.pow(n_digits)) + val
                 }
             };
             if result > self.target {
