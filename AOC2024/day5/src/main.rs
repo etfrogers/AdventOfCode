@@ -27,7 +27,7 @@ impl FromStr for Rule {
 type RuleMap<'a> = HashMap<u32, Vec<&'a Rule>>;
 
 impl RuleSet {
-    fn rule_map(&self) -> RuleMap {
+    fn rule_map(&self) -> RuleMap<'_> {
         let mut map = HashMap::new();
         let mut update_map = |key, rule| {
             let e = map.entry(key).or_insert(Vec::new());

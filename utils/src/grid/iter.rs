@@ -61,7 +61,7 @@ impl<'a, E> Grid<E> {
         IndIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
-    pub fn neighbours(&self, coord: &Coord, include_diagonals: bool) -> NeighbourIterator<E> {
+    pub fn neighbours(&self, coord: &Coord, include_diagonals: bool) -> NeighbourIterator<'_, E> {
         NeighbourIterator::new(self, *coord, include_diagonals)
     }
 
