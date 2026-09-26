@@ -77,7 +77,7 @@ fn input() -> Vec<String> {
 }
 
 
-#[test]
+#[rstest]
 fn test_part1() {
     let input = utils::input_lines({#day#});
 
