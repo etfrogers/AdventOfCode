@@ -1,4 +1,4 @@
-go 1.22
+go 1.23
 
 use ./AOC2023/utils
 use ./AOC2023/day1
