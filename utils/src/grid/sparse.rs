@@ -4,7 +4,7 @@ use std::{
     ops::{Deref, DerefMut, Index, IndexMut, RangeBounds},
 };
 
-use crate::grid::Grid;
+use crate::grid::{iter::SparseGridIterator, Grid};
 
 use super::{GridBounds, GridFind, GridTrait, Pos};
 
@@ -60,6 +60,17 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
         = SparseSlice<'a, E>
     where
         E: 'a;
+
+    type Mapped<T>
+        = SparseGrid<T>
+    where
+        T: 'a + Copy + Default;
+
+    type ItemIter<'b>
+        = SparseGridIterator<'b, E>
+    where
+        Self: 'b,
+        E: 'b;
 
     fn is_inside(&self, pos: &Pos<Self::CoordType>) -> bool {
         match self.bounds {
@@ -125,19 +136,15 @@ impl<'a, E: Default + Copy + 'a> GridTrait<'a, E> for SparseGrid<E> {
         self.data.values_mut()
     }
 
-    fn iter(&'a self) -> impl Iterator<Item = (Pos<Self::CoordType>, &'a E)> {
-        self.data.iter().map(|(k, v)| (*k, v))
+    fn iter<'b>(&'b self) -> Self::ItemIter<'b> {
+        SparseGridIterator::new(self.data.iter())
     }
 
-    fn full(
-        _x: super::pos::CoordType,
-        _y: super::pos::CoordType,
-        _content: E,
-    ) -> impl GridTrait<'a, E> {
+    fn full(_x: super::pos::CoordType, _y: super::pos::CoordType, _content: E) -> Self {
         SparseGrid::new()
     }
 
-    fn full_like(_template: &'a Grid<E>, _content: E) -> impl GridTrait<'a, E> {
+    fn full_like<T: 'a + Copy + Default>(_template: &'a Grid<E>, _content: T) -> Self::Mapped<T> {
         SparseGrid::new()
     }
 }

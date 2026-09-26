@@ -1,3 +1,5 @@
+use std::collections::hash_map;
+
 use super::pos::{Coord, CoordType};
 use super::{direction::CARDINAL_MOVES, direction::DIAGONAL_MOVES, Pos};
 use super::{Grid, GridTrait};
@@ -376,3 +378,29 @@ impl<'a, E> Iterator for NeighbourIterator<'a, E> {
         Some(&self.grid[self.n.next()?])
     }
 }
+
+pub struct SparseGridIterator<'b, E> {
+    inner: hash_map::Iter<'b, Pos, E>,
+}
+
+impl<'b, E> Iterator for SparseGridIterator<'b, E> {
+    type Item = (Pos, &'b E);
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|(pos, val)| (*pos, val))
+    }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.inner.size_hint()
+    }
+}
+
+impl<'b, E> SparseGridIterator<'b, E> {
+    pub fn new(inner: hash_map::Iter<'b, Pos, E>) -> Self {
+        Self { inner }
+    }
+}
+
+impl<'b, E> ExactSizeIterator for SparseGridIterator<'b, E> {}

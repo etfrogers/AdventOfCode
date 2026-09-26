@@ -22,12 +22,19 @@ where
 {
     type SliceType;
     type CoordType: PrimInt;
+    type Mapped<T>: GridTrait<'a, T>
+    where
+        T: 'a + Copy + Default;
+    type ItemIter<'b>: Iterator<Item = (Pos<Self::CoordType>, &'b E)>
+    where
+        Self: 'b,
+        E: 'b;
 
     fn is_inside(&self, coord: &Pos<Self::CoordType>) -> bool;
     fn bounds(&self) -> GridBounds<Self::CoordType>;
     fn size(&self) -> (CoordType, CoordType);
     fn n_elem(&self) -> CoordType;
-    fn map<'b, F, T>(&'b self, fun: F) -> impl GridTrait<'b, T>
+    fn map<'b, F, T>(&'b self, fun: F) -> Self::Mapped<T>
     where
         F: Fn(&E) -> T,
         T: 'b + Copy + Default;
@@ -37,11 +44,11 @@ where
             *v = fun(v)
         }
     }
-    fn iter(&'a self) -> impl Iterator<Item = (Pos<Self::CoordType>, &'a E)>;
+    fn iter<'b>(&'b self) -> Self::ItemIter<'b>; //impl Iterator<Item = (Pos<Self::CoordType>, &'a E)>;
     fn iter_mut(&'a mut self) -> impl Iterator<Item = (Pos<Self::CoordType>, &'a mut E)>;
     fn values_mut(&'a mut self) -> impl Iterator<Item = &'a mut E>;
-    fn full(x: CoordType, y: CoordType, content: E) -> impl GridTrait<'a, E>;
-    fn full_like(template: &'a Grid<E>, content: E) -> impl GridTrait<'a, E>;
+    fn full(x: CoordType, y: CoordType, content: E) -> Self;
+    fn full_like<T: 'a + Copy + Default>(template: &'a Grid<E>, content: T) -> Self::Mapped<T>;
 }
 
 pub trait GridFind<'a, E: 'a + PartialEq>: GridTrait<'a, E> {

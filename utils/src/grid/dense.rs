@@ -29,6 +29,17 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
     where
         E: 'a;
 
+    type Mapped<T>
+        = Grid<T>
+    where
+        T: 'a + Copy + Default;
+
+    type ItemIter<'b>
+        = GridIterator<'b, E>
+    where
+        Self: 'b,
+        E: 'b;
+
     type CoordType = usize;
 
     fn is_inside(&self, coord: &Pos<CoordType>) -> bool {
@@ -73,14 +84,11 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
         self.data.iter_mut().flat_map(|v| v.iter_mut())
     }
 
-    #[allow(refining_impl_trait)]
-    fn iter(&'a self) -> GridIterator<'a, E> {
+    fn iter<'b>(&'b self) -> GridIterator<'b, E> {
         GridIterator::new(self, Invert(false), ColumnMajor(false))
     }
 
-    #[allow(refining_impl_trait)]
-    #[allow(refining_impl_trait)]
-    fn full(x: CoordType, y: CoordType, content: E) -> Grid<E> {
+    fn full(x: CoordType, y: CoordType, content: E) -> Self {
         let mut data = Vec::with_capacity(y);
         for _ in 0..y {
             data.push(vec![content; x])
@@ -88,8 +96,7 @@ impl<'a, E: 'a + Clone + Copy> GridTrait<'a, E> for Grid<E> {
         Grid { data }
     }
 
-    #[allow(refining_impl_trait)]
-    fn full_like(other: &'a Grid<E>, content: E) -> Grid<E> {
+    fn full_like<T: Copy>(other: &'a Grid<E>, content: T) -> Grid<T> {
         Grid::full(other.n_cols(), other.n_rows(), content)
     }
 }
